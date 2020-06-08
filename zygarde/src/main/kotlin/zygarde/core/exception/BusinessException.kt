@@ -1,6 +1,6 @@
 package zygarde.core.exception
 
-import zygarde.extension.string.replaceByArgs
+import zygarde.core.extension.string.replaceByArgs
 
 class BusinessException : RuntimeException {
 

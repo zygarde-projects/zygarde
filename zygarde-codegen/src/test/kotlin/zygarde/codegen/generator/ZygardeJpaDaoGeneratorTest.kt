@@ -2,16 +2,17 @@ package zygarde.codegen.generator
 
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
-import io.kotlintest.matchers.collections.shouldContain
-import io.kotlintest.matchers.collections.shouldNotContain
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.StringSpec
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.shouldBe
 import org.jetbrains.kotlin.config.JvmTarget
 import org.springframework.core.io.ClassPathResource
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.processor.ZygardeProcessor
 
 class ZygardeJpaDaoGeneratorTest : StringSpec({
+
   "should able to generate Dao" {
     val result = KotlinCompilation().apply {
       sources = listOf(
@@ -35,6 +36,7 @@ class ZygardeJpaDaoGeneratorTest : StringSpec({
       println(it.readText())
     }
   }
+
   "should able to generate Dao with kaptOptions" {
     val result = KotlinCompilation().apply {
       sources = listOf(

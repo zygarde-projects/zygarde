@@ -15,9 +15,9 @@ plugins {
   id("de.jansauer.printcoverage") version "2.0.0"
   id("org.springframework.boot") version "2.2.2.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
-  kotlin("jvm") version "1.3.61"
-  kotlin("plugin.spring") version "1.3.61"
-  kotlin("kapt") version "1.3.61"
+  kotlin("jvm") version "1.3.72"
+  kotlin("plugin.spring") version "1.3.72"
+  kotlin("kapt") version "1.3.72"
   `maven-publish`
   jacoco
 }
@@ -71,7 +71,9 @@ subprojects {
   dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.2")
+    testImplementation("io.kotest:kotest-runner-junit5:4.0.6")
+    testImplementation("io.kotest:kotest-assertions:4.0.6")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.6")
     testImplementation("io.mockk:mockk:1.9.3")
   }
 

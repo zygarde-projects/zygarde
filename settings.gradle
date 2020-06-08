@@ -2,3 +2,4 @@ rootProject.name = 'zygarde'
 
 include("zygarde")
 include("zygarde-codegen")
+include("zygarde-test")

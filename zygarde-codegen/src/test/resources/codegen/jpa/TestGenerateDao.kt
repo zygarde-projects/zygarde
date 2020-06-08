@@ -17,13 +17,11 @@ class SimpleBook(
 
 @ZyModel
 @Entity
-class AutoIntIdBook(
-) : AutoIntIdEntity()
+class AutoIntIdBook : AutoIntIdEntity()
 
 @ZyModel
 @Entity
-class AutoLongIdBook(
-) : AutoLongIdEntity()
+class AutoLongIdBook : AutoLongIdEntity()
 
 data class BookId(val isbn: String, val country: String) : Serializable
 

@@ -1,8 +1,8 @@
 package zygarde.data.jpa
 
-import io.kotlintest.matchers.numerics.shouldBeGreaterThan
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
+import io.kotest.matchers.comparables.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.jeasy.random.EasyRandom
 import org.jeasy.random.EasyRandomParameters
 import org.junit.jupiter.api.*
