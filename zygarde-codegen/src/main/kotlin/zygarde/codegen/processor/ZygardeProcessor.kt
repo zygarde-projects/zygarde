@@ -3,6 +3,7 @@ package zygarde.codegen.processor
 import com.google.auto.service.AutoService
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZyModel
+import zygarde.codegen.generator.impl.ZygardeEntitySearchFieldGenerator
 import zygarde.codegen.generator.impl.ZygardeJpaDaoGenerator
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
@@ -21,6 +22,7 @@ class ZygardeProcessor : AbstractProcessor() {
   override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
     val elementsAnnotatedWithEntity = roundEnv.getElementsAnnotatedWith(Entity::class.java)
     ZygardeJpaDaoGenerator(processingEnv).generateDaoForEntityElements(elementsAnnotatedWithEntity)
+    ZygardeEntitySearchFieldGenerator(processingEnv).generateSearchFieldForEntityElements(elementsAnnotatedWithEntity)
     return false
   }
 }
