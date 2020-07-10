@@ -7,6 +7,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.jetbrains.kotlin.config.JvmTarget
 import org.springframework.core.io.ClassPathResource
+import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.processor.ZygardeStaticOptionApiProcessor
 
 class ZygardeStaticOptionApiGeneratorTest : StringSpec({
@@ -21,6 +22,7 @@ class ZygardeStaticOptionApiGeneratorTest : StringSpec({
       annotationProcessors = listOf(ZygardeStaticOptionApiProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
+      kaptArgs.put(ZygardeKaptOptions.BASE_PACKAGE, "foo.generated")
     }.compile()
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
     val generatedFileNames = result.generatedFiles.map { it.name }

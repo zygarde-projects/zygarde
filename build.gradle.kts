@@ -23,7 +23,7 @@ plugins {
 }
 
 allprojects {
-  group = "zygarde"
+  group = "puni"
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
   repositories {
