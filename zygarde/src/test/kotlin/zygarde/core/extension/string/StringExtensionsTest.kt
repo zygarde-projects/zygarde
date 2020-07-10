@@ -1,7 +1,7 @@
 package zygarde.core.extension.string
 
 import io.kotest.core.spec.style.StringSpec
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 
 /**
  * @author leo

@@ -12,6 +12,7 @@ dependencies {
   testImplementation("org.jeasy:easy-random-core:4.2.0")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testApi(project(":zygarde-test"))
+  kapt("org.springframework.boot:spring-boot-configuration-processor")
 }
 
 tasks.getByName("bootJar").enabled = false
