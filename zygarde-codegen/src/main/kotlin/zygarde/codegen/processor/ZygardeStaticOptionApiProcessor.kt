@@ -27,5 +27,4 @@ class ZygardeStaticOptionApiProcessor : AbstractProcessor() {
     }
     return false
   }
-
 }

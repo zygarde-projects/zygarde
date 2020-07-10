@@ -31,5 +31,4 @@ class ZygardeStaticOptionApiGeneratorTest : StringSpec({
       println(it.readText())
     }
   }
-
 })

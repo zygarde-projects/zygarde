@@ -13,7 +13,6 @@ import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.action.impl.SearchableImpl
-import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -94,7 +93,6 @@ class ZygardeEntitySearchFieldGenerator(
     fileBuilderForExtension.build().writeTo(fileTarget)
   }
 
-
   private fun Element.allSearchableFields(): List<Element> {
     return allFieldsIncludeSuper(processingEnv)
       .filter {
@@ -107,7 +105,6 @@ class ZygardeEntitySearchFieldGenerator(
   private fun Element.buildSearchableProperty(
     entityElement: Element
   ): PropertySpec {
-    val fieldTypeName = typeName()
     return PropertySpec
       .builder(
         fieldName(),
@@ -167,8 +164,8 @@ class ZygardeEntitySearchFieldGenerator(
   }
 
   private fun Element.toConditionAction(rootEntityElement: Element, currentEntityElement: Element): TypeName {
-    val rootEntityTypeName=rootEntityElement.typeName()
-    val currentEntityTypeName=currentEntityElement.typeName()
+    val rootEntityTypeName = rootEntityElement.typeName()
+    val currentEntityTypeName = currentEntityElement.typeName()
     return if (isComparable()) {
       if (this.typeName().toString() == "kotlin.String") {
         StringConditionAction::class.asClassName().parameterizedBy(
@@ -190,5 +187,4 @@ class ZygardeEntitySearchFieldGenerator(
       )
     }
   }
-
 }

@@ -7,7 +7,6 @@ import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.BASE_PACKAGE
 import zygarde.codegen.extension.kotlinpoet.allFieldsIncludeSuper
-import zygarde.data.option.OptionEnum
 import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.type.MirroredTypeException

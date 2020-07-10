@@ -23,8 +23,8 @@ class ZygardeStaticOptionApiGenerator(
   processingEnv: ProcessingEnvironment
 ) : AbstractZygardeGenerator(processingEnv) {
 
-  private val optionPackage : String by lazy {
-     packageName(processingEnv.options.getOrDefault(API_STATIC_OPTION_PACKAGE, "api.option"))
+  private val optionPackage: String by lazy {
+    packageName(processingEnv.options.getOrDefault(API_STATIC_OPTION_PACKAGE, "api.option"))
   }
   private val optionDtoPackage by lazy {
     "$optionPackage.dto"
@@ -139,7 +139,6 @@ class ZygardeStaticOptionApiGenerator(
     fileSpec
       .addType(staticOptionControllerBuilder.build())
       .build()
-        .writeTo(fileTarget)
+      .writeTo(fileTarget)
   }
-
 }
