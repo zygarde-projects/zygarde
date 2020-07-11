@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  zygarde.core.di.autoconfigure.DiConfig,\
+  zygarde.core.autoconfigure.ZygardeAutoConfigure

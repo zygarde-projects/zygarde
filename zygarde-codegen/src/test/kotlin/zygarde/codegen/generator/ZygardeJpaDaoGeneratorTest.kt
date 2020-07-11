@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.kotlin.config.JvmTarget
 import org.springframework.core.io.ClassPathResource
 import zygarde.codegen.ZygardeKaptOptions
-import zygarde.codegen.processor.ZygardeProcessor
+import zygarde.codegen.processor.ZygardeJpaProcessor
 
 class ZygardeJpaDaoGeneratorTest : StringSpec({
 
@@ -19,7 +19,7 @@ class ZygardeJpaDaoGeneratorTest : StringSpec({
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
       ).map { SourceFile.fromPath(it) }
       jvmTarget = JvmTarget.JVM_1_8.description
-      annotationProcessors = listOf(ZygardeProcessor())
+      annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
     }.compile()
@@ -43,7 +43,7 @@ class ZygardeJpaDaoGeneratorTest : StringSpec({
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
       ).map { SourceFile.fromPath(it) }
       jvmTarget = JvmTarget.JVM_1_8.description
-      annotationProcessors = listOf(ZygardeProcessor())
+      annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
       kaptArgs.put(ZygardeKaptOptions.BASE_PACKAGE, "foo.generated")

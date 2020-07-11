@@ -9,7 +9,7 @@ buildscript {
 
 plugins {
   id("org.jlleitschuh.gradle.ktlint") version "9.1.1"
-  id("org.jetbrains.dokka") version "0.10.0"
+  id("org.jetbrains.dokka") version "0.10.1"
   id("io.gitlab.arturbosch.detekt") version "1.3.1"
   id("com.jfrog.bintray") version "1.8.4"
   id("de.jansauer.printcoverage") version "2.0.0"

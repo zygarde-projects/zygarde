@@ -78,7 +78,7 @@ fun Element.allSuperTypes(processingEnv: ProcessingEnvironment): List<Element> {
       if (it is DeclaredType) {
         val element = it.asElement()
         elements.add(element)
-        elements.addAll(element.allFieldsIncludeSuper(processingEnv))
+        elements.addAll(element.allSuperTypes(processingEnv))
       }
       elements
     }
