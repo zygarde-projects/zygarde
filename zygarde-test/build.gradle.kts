@@ -4,9 +4,11 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
   implementation(project(":zygarde"))
-  implementation("io.kotest:kotest-runner-junit5:4.0.6")
-  implementation("io.kotest:kotest-assertions:4.0.6")
-  implementation("io.kotest:kotest-assertions-core-jvm:4.0.6")
+  api("io.kotest:kotest-assertions:4.0.6")
+  api("io.kotest:kotest-assertions-core-jvm:4.0.6")
+  api("io.mockk:mockk:1.9.3")
+  api("org.springframework.boot:spring-boot-starter-test")
+  api("org.springframework.security:spring-security-test")
   api("org.springframework.cloud:spring-cloud-starter-openfeign")
 }
 

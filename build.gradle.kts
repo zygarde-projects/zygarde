@@ -13,7 +13,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.3.1"
   id("com.jfrog.bintray") version "1.8.4"
   id("de.jansauer.printcoverage") version "2.0.0"
-  id("org.springframework.boot") version "2.2.2.RELEASE"
+  id("org.springframework.boot") version "2.3.1.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
   kotlin("jvm") version "1.3.72"
   kotlin("plugin.spring") version "1.3.72"
