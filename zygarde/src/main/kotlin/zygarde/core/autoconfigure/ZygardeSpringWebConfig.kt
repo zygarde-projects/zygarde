@@ -6,14 +6,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import zygarde.api.exception.ApiExceptionFilter
 import zygarde.api.exception.ApiExceptionHandler
-import zygarde.api.exception.mapper.MissingKotlinParameterExceptionMapper
 import zygarde.json.JacksonCommon
 
 @Configuration
 class ZygardeSpringWebConfig {
-
-  @Bean
-  fun missingKotlinParameterExceptionMapper(): MissingKotlinParameterExceptionMapper = MissingKotlinParameterExceptionMapper()
 
   @Bean
   @ConditionalOnMissingBean
