@@ -19,6 +19,7 @@ class ZygardeSpringWebConfig {
   @ConditionalOnMissingBean
   fun apiExceptionHandler(): ApiExceptionHandler = ApiExceptionHandler()
 
+  @ConditionalOnMissingBean
   @Bean
   fun objectMapper(): ObjectMapper = JacksonCommon.objectMapper()
 
