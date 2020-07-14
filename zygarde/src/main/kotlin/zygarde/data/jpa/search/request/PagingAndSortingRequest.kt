@@ -5,8 +5,9 @@ import io.swagger.annotations.ApiModelProperty
 
 @ApiModel
 open class PagingAndSortingRequest {
-  @ApiModelProperty(notes = "分頁")
+  @ApiModelProperty(notes = "分頁", required = true)
   var paging: PagingRequest = PagingRequest()
-  @ApiModelProperty(notes = "排序")
+
+  @ApiModelProperty(notes = "排序", required = false)
   var sorting: SortingRequest? = null
 }

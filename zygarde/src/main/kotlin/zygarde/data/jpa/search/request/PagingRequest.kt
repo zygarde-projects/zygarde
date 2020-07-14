@@ -10,9 +10,9 @@ import org.springframework.data.domain.Sort
  */
 @ApiModel
 data class PagingRequest(
-  @ApiModelProperty(notes = "頁次（從1開始）")
+  @ApiModelProperty(notes = "頁次（從1開始）", required = true)
   var page: Int = 1,
-  @ApiModelProperty(notes = "每頁數量")
+  @ApiModelProperty(notes = "每頁數量", required = true)
   var pageSize: Int = 10
 )
 

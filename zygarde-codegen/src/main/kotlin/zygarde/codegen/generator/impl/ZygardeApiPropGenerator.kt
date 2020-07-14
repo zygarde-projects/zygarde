@@ -170,6 +170,7 @@ class ZygardeApiPropGenerator(
             .addAnnotation(
               AnnotationSpec.builder(ApiModelProperty::class)
                 .addMember("notes=%S", dto.comment)
+                .addMember("required=%L", !fieldType.isNullable)
                 .build()
             ).build().also { dtoBuilder.addProperty(it) }
         }
