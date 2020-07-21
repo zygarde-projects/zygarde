@@ -102,7 +102,7 @@ class ZygardeApiPropGenerator(
                   refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(false),
                   refCollection = dto.refCollection,
                   dtoName = dto.name,
-                  dtoFieldName = "",
+                  dtoFieldName = dto.fieldName,
                   comment = apiProp.comment,
                   valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider(),
                   forceNotNull = dto.notNullInReq

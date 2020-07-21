@@ -8,6 +8,10 @@ import zygarde.codegen.value.ValueProvider
 @Retention(AnnotationRetention.SOURCE)
 annotation class RequestDto(
   val name: String = "",
+  /**
+   * override fieldName in DTO
+   */
+  val fieldName: String = "",
   val refClass: KClass<*> = Any::class,
   val refCollection: Boolean = false,
   val ref: String = "",
