@@ -148,7 +148,7 @@ class Book(
     ]
   )
   @Transient
-  var nameKeyWord: ApiSearchKeyword? = null
+  var _nameKeyWord: ApiSearchKeyword? = null
 
   @ApiProp(
     requestDto = [
@@ -161,7 +161,7 @@ class Book(
     ]
   )
   @Transient
-  var nameStartsWith: String? = null
+  var _nameStartsWith: String? = null
 
   @ApiProp(
     requestDto = [
@@ -174,7 +174,7 @@ class Book(
     ]
   )
   @Transient
-  var nameEndsWith: String? = null
+  var _nameEndsWith: String? = null
 
   @ApiProp(
     requestDto = [
@@ -187,7 +187,7 @@ class Book(
     ]
   )
   @Transient
-  var nameContains: String? = null
+  var _nameContains: String? = null
 
   @ApiProp(
     requestDto = [
@@ -201,7 +201,7 @@ class Book(
     ]
   )
   @Transient
-  var names: Set<String>? = null
+  var _names: Set<String>? = null
 
   @ApiProp(
     requestDto = [
@@ -209,5 +209,5 @@ class Book(
     ]
   )
   @Transient
-  var released: Boolean? = null
+  var _released: Boolean? = null
 }

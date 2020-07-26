@@ -57,7 +57,7 @@ class User(
       RequestDto(REQ_DO_VALIDATE_PHONE, applyValueToEntity = false)
     ]
   )
-  val phoneValidationToken: String = ""
+  val _phoneValidationToken: String = ""
 
   @Transient
   @ApiProp(
@@ -66,5 +66,5 @@ class User(
       RequestDto(REQ_DO_VALIDATE_PHONE, applyValueToEntity = false)
     ]
   )
-  val phoneValidationCode: String = ""
+  val _phoneValidationCode: String = ""
 }

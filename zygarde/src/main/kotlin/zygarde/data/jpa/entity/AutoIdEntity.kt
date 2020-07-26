@@ -12,7 +12,7 @@ import org.hibernate.Hibernate
 abstract class AutoIdEntity<T : Serializable> {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: T? = null
+  open val id: T? = null
 
   override fun equals(other: Any?): Boolean {
     return if (other == null) {

@@ -89,7 +89,8 @@ class ZygardeApiPropGenerator(
                   dtoFieldName = dto.fieldName,
                   comment = apiProp.comment,
                   valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider(),
-                  entityValueProvider = safeGetTypeFromAnnotation { dto.entityValueProvider.asTypeName() }.kotlin(false).validValueProvider()
+                  entityValueProvider = safeGetTypeFromAnnotation { dto.entityValueProvider.asTypeName() }.kotlin(false).validValueProvider(),
+                  isTransient = isTransient
                 ).copy(
                   generateToDtoExtension = dto.applyValueFromEntity,
                   generateApplyToEntityExtension = false
@@ -105,7 +106,8 @@ class ZygardeApiPropGenerator(
                   dtoFieldName = dto.fieldName,
                   comment = apiProp.comment,
                   valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider(),
-                  forceNotNull = dto.notNullInReq
+                  forceNotNull = dto.notNullInReq,
+                  isTransient = isTransient
                 ).copy(
                   generateToDtoExtension = false,
                   generateApplyToEntityExtension = !isTransient && dto.applyValueToEntity && dto.searchType == SearchType.NONE,
@@ -196,7 +198,8 @@ class ZygardeApiPropGenerator(
     comment: String,
     valueProvider: TypeName? = null,
     entityValueProvider: TypeName? = null,
-    forceNotNull: Boolean = false
+    forceNotNull: Boolean = false,
+    isTransient: Boolean
   ): DtoFieldDescriptionVo {
     val fieldType = when {
       ref.isNotEmpty() -> ClassName(dtoPackageName, ref).let {
@@ -216,11 +219,14 @@ class ZygardeApiPropGenerator(
       else -> elem.nullableTypeName()
     }
     val entityFieldName = elem.fieldName()
+    if (isTransient && !entityFieldName.startsWith("_")) {
+      throw IllegalArgumentException("transient field '$entityFieldName' should be starts with '_'")
+    }
     return DtoFieldDescriptionVo(
       entityFieldName = entityFieldName,
       fieldType = fieldType.kotlin(canBeNullable = !forceNotNull && elem.isNullable()),
       dtoName = dtoName,
-      dtoFieldName = if (dtoFieldName.isNotEmpty()) dtoFieldName else entityFieldName,
+      dtoFieldName = (if (dtoFieldName.isNotEmpty()) dtoFieldName else entityFieldName).replaceFirst("_", ""),
       comment = comment,
       dtoRef = ref,
       dtoRefCollection = refCollection,
@@ -312,7 +318,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
     dtoFieldDescriptions
       .forEach {
         val searchForField = it.searchForField ?: it.entityFieldName
-        val fieldName = it.entityFieldName
+        val fieldName = it.dtoFieldName
         val fieldExtensionMember = MemberName(
           packageName(processingEnv.options.getOrDefault(ZygardeKaptOptions.ENTITY_PACKAGE_SEARCH, "entity.search")),
           searchForField
