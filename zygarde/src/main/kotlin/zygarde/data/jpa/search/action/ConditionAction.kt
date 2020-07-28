@@ -2,6 +2,7 @@ package zygarde.data.jpa.search.action
 
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.Searchable
+import javax.persistence.criteria.JoinType
 
 interface ConditionAction<RootEntityType, EntityType, FieldType> {
 
@@ -29,7 +30,7 @@ interface ConditionAction<RootEntityType, EntityType, FieldType> {
     searchable: Searchable<FieldType, String>
   ): StringConditionAction<RootEntityType, FieldType>
 
-  fun join()
+  fun join(joinType: JoinType = JoinType.INNER)
 
   infix fun eq(value: FieldType?): EnhancedSearch<RootEntityType>
 

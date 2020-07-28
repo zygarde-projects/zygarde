@@ -9,6 +9,7 @@ import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
+import javax.persistence.criteria.JoinType
 
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
@@ -44,12 +45,12 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   override fun field(searchable: Searchable<FieldType, String>): StringConditionAction<RootEntityType, FieldType> =
     stringField(searchable.fieldName())
 
-  override fun join() {
+  override fun join(joinType: JoinType) {
     val splited = columnName.split(".")
     splited.takeLast(splited.size - 1)
       .fold(
-        enhancedSearch.root.fetch<EntityType, FieldType>(splited.first()),
-        { fetch, column -> fetch.fetch(column) }
+        enhancedSearch.root.fetch<EntityType, FieldType>(splited.first(), joinType),
+        { fetch, column -> fetch.fetch(column, joinType) }
       )
   }
 
