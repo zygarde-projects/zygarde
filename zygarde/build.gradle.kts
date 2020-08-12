@@ -6,6 +6,7 @@ dependencies {
   api("org.springframework.boot:spring-boot-starter-data-jpa")
   api("org.springframework.boot:spring-boot-starter-json")
   api("org.springframework.boot:spring-boot-starter-web")
+  api("org.springframework.boot:spring-boot-starter-thymeleaf")
   api("org.springframework.boot:spring-boot-starter-security")
   api("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2")
   api("io.swagger:swagger-annotations:1.6.0")
