@@ -46,12 +46,14 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     stringField(searchable.fieldName())
 
   override fun join(joinType: JoinType) {
-    val splited = columnName.split(".")
-    splited.takeLast(splited.size - 1)
-      .fold(
-        enhancedSearch.root.fetch<EntityType, FieldType>(splited.first(), joinType),
-        { fetch, column -> fetch.fetch(column, joinType) }
-      )
+    if (enhancedSearch.query.resultType.canonicalName != "java.lang.Long") {
+      val splited = columnName.split(".")
+      splited.takeLast(splited.size - 1)
+        .fold(
+          enhancedSearch.root.fetch<EntityType, FieldType>(splited.first(), joinType),
+          { fetch, column -> fetch.fetch(column, joinType) }
+        )
+    }
   }
 
   override fun eq(value: FieldType?): EnhancedSearch<RootEntityType> = applyNonNullAction(value) { path, v ->

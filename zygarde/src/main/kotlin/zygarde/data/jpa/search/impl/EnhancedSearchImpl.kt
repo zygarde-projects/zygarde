@@ -17,7 +17,7 @@ import zygarde.data.jpa.search.action.impl.StringConditionActionImpl
 class EnhancedSearchImpl<EntityType>(
   val predicates: MutableList<Predicate>,
   val root: Root<EntityType>,
-  private val query: CriteriaQuery<*>,
+  val query: CriteriaQuery<*>,
   val cb: CriteriaBuilder,
   val orders: MutableList<Order> = mutableListOf()
 ) : EnhancedSearch<EntityType> {
