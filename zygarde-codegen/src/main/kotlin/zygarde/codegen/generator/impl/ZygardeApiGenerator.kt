@@ -80,11 +80,23 @@ class ZygardeApiGenerator(
             apiDescription = genApi.apiDescription,
             serviceName = serviceName,
             serviceMethod = serviceMethod,
-            reqRef = if (genApi.reqRef.isEmpty()) null else ClassName(dtoPackage, genApi.reqRef).let {
-              if (genApi.reqCollection) {
-                Collection::class.generic(it)
-              } else {
-                it
+            reqRef = if (genApi.reqRef.isEmpty()) {
+              safeGetTypeFromAnnotation { genApi.reqRefClass.asTypeName() }.kotlin(false)
+                .takeIf { it.toString() != "java.lang.Object" }
+                ?.let {
+                  if (genApi.reqCollection) {
+                    Collection::class.generic(it)
+                  } else {
+                    it
+                  }
+                }
+            } else {
+              ClassName(dtoPackage, genApi.reqRef).let {
+                if (genApi.reqCollection) {
+                  Collection::class.generic(it)
+                } else {
+                  it
+                }
               }
             },
             resRef = if (genApi.resRef.isEmpty()) null else ClassName(dtoPackage, genApi.resRef).let {

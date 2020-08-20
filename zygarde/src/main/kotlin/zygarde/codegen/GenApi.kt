@@ -1,6 +1,7 @@
 package zygarde.codegen
 
 import org.springframework.web.bind.annotation.RequestMethod
+import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.ANNOTATION_CLASS)
 @Retention(AnnotationRetention.SOURCE)
@@ -11,9 +12,10 @@ annotation class GenApi(
   val api: String,
   val apiDescription: String = "",
   val service: String,
-  val reqRef: String,
+  val reqRef: String = "",
+  val reqRefClass: KClass<*> = Any::class,
   val reqCollection: Boolean = false,
-  val resRef: String,
+  val resRef: String = "",
   val resCollection: Boolean = false,
   val resPage: Boolean = false
 )
