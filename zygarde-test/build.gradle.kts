@@ -4,8 +4,8 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
   implementation(project(":zygarde"))
-  api("io.kotest:kotest-assertions:4.0.6")
-  api("io.kotest:kotest-assertions-core-jvm:4.0.6")
+  api("io.kotest:kotest-assertions-shared-jvm:4.2.0")
+  api("io.kotest:kotest-assertions-core-jvm:4.2.0")
   api("io.mockk:mockk:1.9.3")
   api("org.springframework.boot:spring-boot-starter-test")
   api("org.springframework.security:spring-security-test")

@@ -9,7 +9,7 @@ dependencies {
   implementation("com.google.auto.service:auto-service:1.0-rc6")
   implementation("io.swagger:swagger-annotations:1.6.0")
   kapt("com.google.auto.service:auto-service:1.0-rc6")
-  testApi("com.github.tschuchortdev:kotlin-compile-testing:1.2.8")
+  testApi("com.github.tschuchortdev:kotlin-compile-testing:1.2.9")
   testApi("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.72")
 }
 

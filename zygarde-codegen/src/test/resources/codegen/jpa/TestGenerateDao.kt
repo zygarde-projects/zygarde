@@ -3,6 +3,7 @@ package codegen.jpa
 import zygarde.codegen.ZyModel
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
+import zygarde.data.jpa.entity.SequenceIntIdEntity
 import java.io.Serializable
 import javax.persistence.Entity
 import javax.persistence.Id
@@ -32,3 +33,9 @@ class IdClassBook(
   val isbn: String,
   val country: String
 )
+
+@Entity
+@ZyModel
+class SequenceBook(
+  var name: String = ""
+) : SequenceIntIdEntity()

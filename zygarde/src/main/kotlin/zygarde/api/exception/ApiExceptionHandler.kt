@@ -23,6 +23,7 @@ class ApiExceptionHandler : Loggable {
 
   @Autowired
   private lateinit var messageSource: MessageSource
+
   @Autowired
   private lateinit var exceptionToBusinessExceptionMappers: List<ExceptionToBusinessExceptionMapper<*>>
 

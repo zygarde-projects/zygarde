@@ -1,8 +1,5 @@
 package zygarde.data.jpa.search.action.impl
 
-import javax.persistence.criteria.Path
-import javax.persistence.criteria.Predicate
-import javax.persistence.criteria.Root
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
@@ -10,6 +7,9 @@ import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import javax.persistence.criteria.JoinType
+import javax.persistence.criteria.Path
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
@@ -18,7 +18,8 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
 
   override fun <AnotherFieldType> field(fieldName: String): ConditionAction<RootEntityType, FieldType, AnotherFieldType> {
     return ConditionActionImpl<RootEntityType, FieldType, AnotherFieldType>(
-      enhancedSearch, "$columnName.$fieldName"
+      enhancedSearch,
+      "$columnName.$fieldName"
     )
   }
 
@@ -26,7 +27,8 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     fieldName: String
   ): ComparableConditionAction<RootEntityType, FieldType, AnotherFieldType> {
     return ComparableConditionActionImpl<RootEntityType, FieldType, AnotherFieldType>(
-      enhancedSearch, "$columnName.$fieldName"
+      enhancedSearch,
+      "$columnName.$fieldName"
     )
   }
 

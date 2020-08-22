@@ -8,16 +8,16 @@ buildscript {
 }
 
 plugins {
-  id("org.jlleitschuh.gradle.ktlint") version "9.1.1"
+  id("org.jlleitschuh.gradle.ktlint") version "9.3.0"
   id("org.jetbrains.dokka") version "0.10.1"
   id("io.gitlab.arturbosch.detekt") version "1.3.1"
   id("com.jfrog.bintray") version "1.8.4"
   id("de.jansauer.printcoverage") version "2.0.0"
   id("org.springframework.boot") version "2.3.1.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
-  kotlin("jvm") version "1.3.72"
-  kotlin("plugin.spring") version "1.3.72"
-  kotlin("kapt") version "1.3.72"
+  kotlin("jvm") version "1.4.0"
+  kotlin("plugin.spring") version "1.4.0"
+  kotlin("kapt") version "1.4.0"
   `maven-publish`
   jacoco
 }
@@ -34,6 +34,7 @@ allprojects {
 
   ktlint {
     enableExperimentalRules.set(true)
+    version.set("0.38.0")
   }
 }
 
@@ -71,9 +72,9 @@ subprojects {
   dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation("io.kotest:kotest-runner-junit5:4.0.6")
-    testImplementation("io.kotest:kotest-assertions:4.0.6")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.6")
+    testImplementation("io.kotest:kotest-runner-junit5:4.2.0")
+    testImplementation("io.kotest:kotest-assertions-shared-jvm:4.2.0")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:4.2.0")
     testImplementation("io.mockk:mockk:1.9.3")
   }
 
@@ -191,6 +192,10 @@ task("covAll", JacocoReport::class) {
   dependsOn(
     *subprojects.map { it.tasks.getByName("test") }.toTypedArray()
   )
+}
+
+task("lint") {
+  dependsOn("ktlintFormat")
 }
 
 tasks.getByName("bintrayUpload").enabled = false

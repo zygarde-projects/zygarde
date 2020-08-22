@@ -14,6 +14,8 @@ import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.core.extension.exception.errWhenNull
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
+import zygarde.data.jpa.entity.SequenceIntIdEntity
+import zygarde.data.jpa.entity.SequenceLongIdEntity
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.persistence.Id
@@ -87,6 +89,10 @@ class ZygardeJpaDaoGenerator(
     if (allSuperTypes.any { it.typeName() == AutoLongIdEntity::class.asTypeName() }) {
       return Long::class.asTypeName()
     } else if (allSuperTypes.any { it.typeName() == AutoIntIdEntity::class.asTypeName() }) {
+      return Int::class.asTypeName()
+    } else if (allSuperTypes.any { it.typeName() == SequenceLongIdEntity::class.asTypeName() }) {
+      return Long::class.asTypeName()
+    } else if (allSuperTypes.any { it.typeName() == SequenceIntIdEntity::class.asTypeName() }) {
       return Int::class.asTypeName()
     }
 
