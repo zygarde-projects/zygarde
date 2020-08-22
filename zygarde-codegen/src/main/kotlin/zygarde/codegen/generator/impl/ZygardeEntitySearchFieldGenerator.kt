@@ -7,6 +7,8 @@ import zygarde.codegen.extension.kotlinpoet.*
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
+import zygarde.data.jpa.entity.SequenceIntIdEntity
+import zygarde.data.jpa.entity.SequenceLongIdEntity
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
@@ -126,12 +128,20 @@ class ZygardeEntitySearchFieldGenerator(
     val fieldTypeName = fieldElement.typeName()
     return if (fieldTypeName.toString() == "T") {
       val allSuperTypes = this.allSuperTypes(processingEnv)
-      if (allSuperTypes.any { it.typeName() == AutoLongIdEntity::class.asTypeName() }) {
+      val isIdDefinedLong = allSuperTypes.any {
+        it.typeName() == AutoLongIdEntity::class.asTypeName() || it.typeName() == SequenceLongIdEntity::class.asTypeName()
+      }
+      if (isIdDefinedLong) {
         Long::class.asTypeName()
-      } else if (allSuperTypes.any { it.typeName() == AutoIntIdEntity::class.asTypeName() }) {
-        Int::class.asTypeName()
       } else {
-        throw IllegalArgumentException("cannot resolve field type for $this $fieldTypeName")
+        val isIdDefinedInt = allSuperTypes.any {
+          it.typeName() == AutoIntIdEntity::class.asTypeName() || it.typeName() == SequenceIntIdEntity::class.asTypeName()
+        }
+        if (isIdDefinedInt) {
+          Int::class.asTypeName()
+        } else {
+          throw IllegalArgumentException("cannot resolve field type for $this $fieldTypeName")
+        }
       }
     } else {
       fieldTypeName
