@@ -14,5 +14,11 @@ class StringExtensionsTest : StringSpec(
       "{} {} {}".replaceByArgs("I", "am", "Groot") shouldBe "I am Groot"
       "this is an apple".replaceByArgs("book") shouldBe "this is an apple"
     }
+    "should able to check if string is numeric" {
+      "123".isNumeric() shouldBe true
+      "-0223".isNumeric() shouldBe true
+      "5.8".isNumeric() shouldBe true
+      "a".isNumeric() shouldBe false
+    }
   }
 )
