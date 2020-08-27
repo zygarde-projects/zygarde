@@ -185,7 +185,7 @@ class ZygardeApiGenerator(
               )
               fb.addAnnotation(
                 AnnotationSpec.builder(ApiOperation::class)
-                  .addMember("value=%S", "${api.apiName}.${api.apiOperation} ${api.apiDescription}")
+                  .addMember("value=%S", "${api.apiOperation} ${api.apiDescription}")
                   .build()
               )
               api.pathVariable.forEach { pv ->
