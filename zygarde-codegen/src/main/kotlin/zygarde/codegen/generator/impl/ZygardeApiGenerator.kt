@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import puni.zygarde.data.dto.PageDto
+import zygarde.data.api.PageDto
 import zygarde.codegen.ZyApi
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator

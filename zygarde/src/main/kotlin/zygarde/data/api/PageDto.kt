@@ -1,4 +1,4 @@
-package puni.zygarde.data.dto
+package zygarde.data.api
 
 import io.swagger.annotations.ApiModel
 
