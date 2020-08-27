@@ -183,13 +183,11 @@ class ZygardeApiGenerator(
                   .addMember("value=[%S]", api.path)
                   .build()
               )
-              if (api.apiDescription.isNotEmpty()) {
-                fb.addAnnotation(
-                  AnnotationSpec.builder(ApiOperation::class)
-                    .addMember("value=%S", api.apiDescription)
-                    .build()
-                )
-              }
+              fb.addAnnotation(
+                AnnotationSpec.builder(ApiOperation::class)
+                  .addMember("value=%S", "${api.apiName}.${api.apiOperation} ${api.apiDescription}")
+                  .build()
+              )
               api.pathVariable.forEach { pv ->
                 fb.addParameter(
                   ParameterSpec.builder(pv.value, pv.type)
