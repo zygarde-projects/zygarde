@@ -2,6 +2,8 @@ package zygarde.core.extension.exception
 
 import zygarde.core.exception.BusinessException
 import zygarde.core.exception.ErrorCode
+import java.io.PrintWriter
+import java.io.StringWriter
 
 /**
  * @author leo
@@ -41,4 +43,10 @@ fun <R> nullWhenError(block: () -> R): R? = try {
   block.invoke()
 } catch (t: Throwable) {
   null
+}
+
+fun Throwable.getStackTraceString(): String {
+  val sw = StringWriter()
+  this.printStackTrace(PrintWriter(sw))
+  return sw.toString()
 }

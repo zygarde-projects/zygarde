@@ -2,13 +2,16 @@ package puni.extension.exception
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import zygarde.core.exception.CommonErrorCode
 import zygarde.core.extension.exception.errWhen
 import zygarde.core.extension.exception.errWhenException
 import zygarde.core.extension.exception.errWhenNull
+import zygarde.core.extension.exception.getStackTraceString
 import zygarde.core.extension.exception.nullWhenError
 import zygarde.test.extension.errCodeMatches
 import zygarde.test.extension.errMessageMatches
+import java.lang.RuntimeException
 
 class ExceptionExtensionsTest : StringSpec(
   {
@@ -48,6 +51,15 @@ class ExceptionExtensionsTest : StringSpec(
     "should able to get null when error" {
       nullWhenError { Class.forName("not_exist") } shouldBe null
       nullWhenError { "foo" } shouldBe "foo"
+    }
+    "should able to getStackTraceString" {
+      var s = ""
+      try {
+        throw RuntimeException("test")
+      } catch (e: Throwable) {
+        s = e.getStackTraceString()
+      }
+      s shouldNotBe ""
     }
   }
 )
