@@ -1,4 +1,4 @@
-package puni.options
+package zygarde.options
 
 import zygarde.codegen.StaticOptionApi
 import zygarde.data.option.OptionEnum

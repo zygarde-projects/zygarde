@@ -1,4 +1,4 @@
-package puni.test.support
+package zygarde.test.feign
 
 /**
  * @author leo

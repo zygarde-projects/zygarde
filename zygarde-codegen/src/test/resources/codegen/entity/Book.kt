@@ -1,4 +1,4 @@
-package puni.data.entity
+package codegen.entity
 
 import codegen.entity.Author
 import codegen.entity.BookTagsValueProvider

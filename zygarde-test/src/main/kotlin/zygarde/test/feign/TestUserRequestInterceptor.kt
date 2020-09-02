@@ -2,7 +2,6 @@ package zygarde.test.feign
 
 import feign.RequestInterceptor
 import feign.RequestTemplate
-import puni.test.support.TestSupportContext
 
 /**
  * @author leo

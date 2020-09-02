@@ -3,7 +3,6 @@ package codegen.entity
 import codegen.spec.AuthorApiSpec.Companion.DTO_AUTHOR
 import codegen.spec.AuthorApiSpec.Companion.DTO_AUTHOR_DETAIL
 import codegen.spec.BookApiSpec.Companion.DTO_BOOK
-import puni.data.entity.Book
 import zygarde.codegen.*
 import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.data.jpa.entity.AutoLongIdEntity
