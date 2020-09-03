@@ -29,7 +29,6 @@ class ZygardeApiGeneratorTest : StringSpec(
         kaptArgs.put(ZygardeKaptOptions.BASE_PACKAGE, "foo.generated")
       }.compile()
       result.exitCode shouldBe KotlinCompilation.ExitCode.OK
-      val generatedFileNames = result.generatedFiles.map { it.name }
       result.generatedFiles.filter { it.absolutePath.endsWith("kt") }.forEach {
         println(it.absolutePath)
         println(it.readText())

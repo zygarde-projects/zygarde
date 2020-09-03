@@ -10,11 +10,17 @@ import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.MappedSuperclass
 import javax.persistence.OneToMany
+import javax.persistence.Transient
 
 
 @MappedSuperclass
 abstract class FooEntity: AutoLongIdEntity() {
   var createdAt: LocalDateTime? = null
+}
+
+enum class BookType {
+  NORMAL,
+  MAGZINE
 }
 
 @Entity
@@ -44,4 +50,22 @@ class Author(
   )
   @OneToMany(targetEntity = Book::class, mappedBy = "author")
   val books: MutableSet<Book> = mutableSetOf()
-) : FooEntity()
+) : FooEntity() {
+  @Transient
+  @ApiProp(
+    dto = [Dto(DTO_AUTHOR_DETAIL)]
+  )
+  var _map: Map<BookType, Int> = emptyMap()
+
+  @Transient
+  @ApiProp(
+    dto = [Dto(DTO_AUTHOR_DETAIL)]
+  )
+  var _bookTypes: List<BookType> = emptyList()
+
+  @Transient
+  @ApiProp(
+    dto = [Dto(DTO_AUTHOR_DETAIL)]
+  )
+  var _vacationMonths: Collection<Int> = emptyList()
+}

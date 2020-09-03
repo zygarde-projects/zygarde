@@ -1,18 +1,15 @@
 package zygarde.codegen.generator
 
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.BASE_PACKAGE
 import zygarde.codegen.extension.kotlinpoet.allFieldsIncludeSuper
 import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
-import javax.lang.model.type.MirroredTypeException
 import javax.lang.model.element.Element
+import javax.lang.model.type.MirroredTypeException
 import javax.lang.model.type.TypeMirror
-import kotlin.reflect.KClass
 
 abstract class AbstractZygardeGenerator(
   val processingEnv: ProcessingEnvironment
@@ -44,11 +41,5 @@ abstract class AbstractZygardeGenerator(
 
   protected fun Element.allFieldsIncludeSuper(): List<Element> {
     return allFieldsIncludeSuper(processingEnv)
-  }
-
-  protected fun KClass<*>.generic(vararg typeName: TypeName): TypeName {
-    return asClassName().parameterizedBy(
-      *typeName
-    )
   }
 }
