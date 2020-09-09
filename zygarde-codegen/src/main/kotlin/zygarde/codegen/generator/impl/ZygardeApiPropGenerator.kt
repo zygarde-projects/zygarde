@@ -107,6 +107,7 @@ class ZygardeApiPropGenerator(
                   comment = apiProp.comment,
                   valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider(),
                   forceNotNull = dto.notNullInReq,
+                  forceNullable = dto.forceNullableInReq,
                   isTransient = isTransient
                 ).copy(
                   generateToDtoExtension = false,
@@ -199,6 +200,7 @@ class ZygardeApiPropGenerator(
     valueProvider: TypeName? = null,
     entityValueProvider: TypeName? = null,
     forceNotNull: Boolean = false,
+    forceNullable: Boolean = false,
     isTransient: Boolean
   ): DtoFieldDescriptionVo {
     val fieldType = when {
@@ -224,7 +226,7 @@ class ZygardeApiPropGenerator(
     }
     return DtoFieldDescriptionVo(
       entityFieldName = entityFieldName,
-      fieldType = fieldType.kotlin(canBeNullable = !forceNotNull && elem.isNullable()),
+      fieldType = fieldType.kotlin(canBeNullable = if (forceNullable) true else !forceNotNull && elem.isNullable()),
       dtoName = dtoName,
       dtoFieldName = (if (dtoFieldName.isNotEmpty()) dtoFieldName else entityFieldName).replaceFirst("_", ""),
       comment = comment,

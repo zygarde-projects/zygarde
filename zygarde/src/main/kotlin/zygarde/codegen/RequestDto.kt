@@ -19,5 +19,6 @@ annotation class RequestDto(
   val valueProvider: KClass<out ValueProvider<*, *>> = NoOpValueProvider::class,
   val searchType: SearchType = SearchType.NONE,
   val searchForField: String = "",
-  val notNullInReq: Boolean = false
+  val notNullInReq: Boolean = false,
+  val forceNullableInReq: Boolean = false,
 )
