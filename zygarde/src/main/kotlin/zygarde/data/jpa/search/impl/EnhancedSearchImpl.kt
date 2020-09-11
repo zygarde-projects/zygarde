@@ -1,10 +1,5 @@
 package zygarde.data.jpa.search.impl
 
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Order
-import javax.persistence.criteria.Predicate
-import javax.persistence.criteria.Root
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
@@ -13,6 +8,11 @@ import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.action.impl.ComparableConditionActionImpl
 import zygarde.data.jpa.search.action.impl.ConditionActionImpl
 import zygarde.data.jpa.search.action.impl.StringConditionActionImpl
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.Order
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 class EnhancedSearchImpl<EntityType>(
   val predicates: MutableList<Predicate>,
@@ -51,19 +51,33 @@ class EnhancedSearchImpl<EntityType>(
   }
 
   override fun or(searchContent: (enhancedSearch: EnhancedSearch<EntityType>) -> Unit): EnhancedSearch<EntityType> {
-    val predicatesForOr = mutableListOf<Predicate>()
-    searchContent.invoke(
-      EnhancedSearchImpl(
-        predicatesForOr,
-        root,
-        query,
-        cb
-      )
-    )
+    val predicatesForOr = nestedPredicates(searchContent)
     return this.apply {
       predicates.add(
         cb.or(*predicatesForOr.toTypedArray())
       )
     }
+  }
+
+  override fun and(searchContent: (enhancedSearch: EnhancedSearch<EntityType>) -> Unit): EnhancedSearch<EntityType> {
+    val predicatesForAnd = nestedPredicates(searchContent)
+    return this.apply {
+      predicates.add(
+        cb.and(*predicatesForAnd.toTypedArray())
+      )
+    }
+  }
+
+  private fun nestedPredicates(searchContent: (enhancedSearch: EnhancedSearch<EntityType>) -> Unit): List<Predicate> {
+    val predicates = mutableListOf<Predicate>()
+    searchContent.invoke(
+      EnhancedSearchImpl(
+        predicates,
+        root,
+        query,
+        cb
+      )
+    )
+    return predicates
   }
 }

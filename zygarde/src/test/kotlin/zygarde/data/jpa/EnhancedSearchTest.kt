@@ -175,6 +175,10 @@ class EnhancedSearchTest {
         comparableField<Int>("price") lte 999
         comparableField<Int>("price") lt 1000
         comparableField<Int>("price") eq 100
+        and {
+          stringField("name") startsWith "zygarde"
+          stringField("name") endsWith "zygarde"
+        }
       }
     }.size shouldBeGreaterThan 0
   }

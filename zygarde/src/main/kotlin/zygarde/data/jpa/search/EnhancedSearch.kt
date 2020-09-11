@@ -29,4 +29,6 @@ interface EnhancedSearch<EntityType> {
   fun field(searchable: Searchable<EntityType, String>): StringConditionAction<EntityType, EntityType>
 
   fun or(searchContent: EnhancedSearch<EntityType>.() -> Unit): EnhancedSearch<EntityType>
+
+  fun and(searchContent: EnhancedSearch<EntityType>.() -> Unit): EnhancedSearch<EntityType>
 }

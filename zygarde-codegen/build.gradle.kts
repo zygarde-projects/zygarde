@@ -11,6 +11,10 @@ dependencies {
   kapt("com.google.auto.service:auto-service:1.0-rc6")
   testApi("com.github.tschuchortdev:kotlin-compile-testing:1.2.9")
   testApi("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.72")
+  testApi("org.springframework.boot:spring-boot-starter-test") {
+    exclude(group = "junit")
+    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+  }
 }
 
 tasks.getByName("bootJar").enabled = false

@@ -72,7 +72,6 @@ subprojects {
   dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation("io.kotest:kotest-runner-junit5:4.2.0")
     testImplementation("io.kotest:kotest-assertions-shared-jvm:4.2.0")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.2.0")
     testImplementation("io.mockk:mockk:1.9.3")

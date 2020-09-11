@@ -17,8 +17,14 @@ dependencies {
   api("io.jsonwebtoken:jjwt-jackson:0.11.0")
   testImplementation("com.h2database:h2")
   testImplementation("org.jeasy:easy-random-core:4.2.0")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testApi(project(":zygarde-test"))
+  testImplementation("org.springframework.boot:spring-boot-starter-test") {
+    exclude(group = "junit")
+    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+  }
+  testApi(project(":zygarde-test")) {
+    exclude(group = "junit")
+    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+  }
   kapt("org.springframework.boot:spring-boot-configuration-processor")
 }
 
