@@ -64,9 +64,11 @@ class EnhancedSearchImpl<EntityType>(
   override fun and(searchContent: (enhancedSearch: EnhancedSearch<EntityType>) -> Unit): EnhancedSearch<EntityType> {
     val predicatesForAnd = nestedPredicates(searchContent)
     return this.apply {
-      predicates.add(
-        cb.and(*predicatesForAnd.toTypedArray())
-      )
+      if (predicatesForAnd.isNotEmpty()) {
+        predicates.add(
+          cb.and(*predicatesForAnd.toTypedArray())
+        )
+      }
     }
   }
 
