@@ -106,7 +106,7 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
       block.invoke(
         enhancedSearch,
         enhancedSearch.root.columnNameToPath(columnName),
-        anotherAction.enhancedSearch.root.columnNameToPath(columnName)
+        anotherAction.enhancedSearch.root.columnNameToPath(anotherAction.columnName)
       )
     } else {
       throw IllegalArgumentException("another action is not subclass of ConditionActionImpl")
