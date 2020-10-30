@@ -76,6 +76,14 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
       path.`in`(v).not()
     }
 
+  override fun eq(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+    cb.equal(l, r)
+  }
+
+  override fun notEq(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+    cb.notEqual(l, r)
+  }
+
   override fun isNotNull(): EnhancedSearch<RootEntityType> = enhancedSearch.apply {
     predicates.add(cb.isNotNull(root.columnNameToPath(columnName)))
   }
@@ -89,6 +97,21 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
 
   override fun desc(): EnhancedSearch<RootEntityType> =
     enhancedSearch.apply { orders.add(cb.desc(root.columnNameToPath(columnName))) }
+
+  protected fun applyThisAndAnother(
+    anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>,
+    block: EnhancedSearchImpl<RootEntityType>.(thisFieldPath: Path<FieldType>, anotherPath: Path<FieldType>) -> Unit
+  ) {
+    if (anotherAction is ConditionActionImpl) {
+      block.invoke(
+        enhancedSearch,
+        enhancedSearch.root.columnNameToPath(columnName),
+        anotherAction.enhancedSearch.root.columnNameToPath(columnName)
+      )
+    } else {
+      throw IllegalArgumentException("another action is not subclass of ConditionActionImpl")
+    }
+  }
 
   protected fun Root<RootEntityType>.columnNameToPath(columnName: String): Path<FieldType> {
     val splited = columnName.split(".")

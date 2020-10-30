@@ -2,6 +2,7 @@ package zygarde.data.jpa.search.action.impl
 
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.action.ComparableConditionAction
+import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 
 open class ComparableConditionActionImpl<RootEntityType, EntityType, FieldType : Comparable<FieldType>>(
@@ -24,5 +25,21 @@ open class ComparableConditionActionImpl<RootEntityType, EntityType, FieldType :
 
   override fun lte(value: FieldType?): EnhancedSearch<RootEntityType> = applyNonNullAction(value) { path, v ->
     cb.lessThanOrEqualTo(path, v)
+  }
+
+  override fun gt(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+    cb.greaterThan(l, r)
+  }
+
+  override fun gte(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+    cb.greaterThanOrEqualTo(l, r)
+  }
+
+  override fun lt(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+    cb.lessThan(l, r)
+  }
+
+  override fun lte(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+    cb.lessThanOrEqualTo(l, r)
   }
 }
