@@ -100,13 +100,15 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
 
   protected fun applyThisAndAnother(
     anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>,
-    block: EnhancedSearchImpl<RootEntityType>.(thisFieldPath: Path<FieldType>, anotherPath: Path<FieldType>) -> Unit
+    block: EnhancedSearchImpl<RootEntityType>.(thisFieldPath: Path<FieldType>, anotherPath: Path<FieldType>) -> Predicate
   ) {
     if (anotherAction is ConditionActionImpl) {
-      block.invoke(
-        enhancedSearch,
-        enhancedSearch.root.columnNameToPath(columnName),
-        anotherAction.enhancedSearch.root.columnNameToPath(anotherAction.columnName)
+      enhancedSearch.predicates.add(
+        block.invoke(
+          enhancedSearch,
+          enhancedSearch.root.columnNameToPath(columnName),
+          anotherAction.enhancedSearch.root.columnNameToPath(anotherAction.columnName)
+        )
       )
     } else {
       throw IllegalArgumentException("another action is not subclass of ConditionActionImpl")
