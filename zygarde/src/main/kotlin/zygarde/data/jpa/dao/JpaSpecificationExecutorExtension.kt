@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import zygarde.data.jpa.search.request.PagingAndSortingRequest
+import zygarde.data.jpa.search.request.SortingRequest
 import zygarde.data.jpa.search.request.asSort
 import zygarde.data.jpa.search.request.toPageRequest
 
@@ -25,6 +26,10 @@ private fun <T> buildSpec(searchContent: EnhancedSearch<T>.() -> Unit): Specific
 
 fun <T> JpaSpecificationExecutor<T>.search(searchContent: EnhancedSearch<T>.() -> Unit): List<T> {
   return findAll(buildSpec(searchContent))
+}
+
+fun <T> JpaSpecificationExecutor<T>.search(searchContent: EnhancedSearch<T>.() -> Unit, sorting: SortingRequest): List<T> {
+  return findAll(buildSpec(searchContent), sorting.asSort())
 }
 
 /**
