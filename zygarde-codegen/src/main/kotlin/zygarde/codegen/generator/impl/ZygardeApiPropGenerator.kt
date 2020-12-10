@@ -224,6 +224,9 @@ class ZygardeApiPropGenerator(
     if (isTransient && !entityFieldName.startsWith("_")) {
       throw IllegalArgumentException("transient field '$entityFieldName' should be starts with '_'")
     }
+    if (!isTransient && entityFieldName.startsWith("_")) {
+      throw IllegalArgumentException("field '$entityFieldName' should be annotated with @Transient")
+    }
     return DtoFieldDescriptionVo(
       entityFieldName = entityFieldName,
       fieldType = fieldType.kotlin(canBeNullable = if (forceNullable) true else !forceNotNull && elem.isNullable()),
