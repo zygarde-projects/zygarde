@@ -41,17 +41,18 @@ import javax.persistence.Transient
 )
 @ZyModel
 class Book(
-    @ApiProp(
+  @ApiProp(
     dto = [Dto(DTO_BOOK), Dto(DTO_BOOK_DETAIL)],
     requestDto = [
       RequestDto(REQ_BOOK_CREATE),
-      RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.EQ)
+      RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.EQ),
+      RequestDto(REQ_BOOK_SEARCH, fieldName = "nameList", refClass = String::class, refCollection = true, searchType = SearchType.LIST_CONTAINS_ANY)
     ],
     comment = "name of book"
   )
   var name: String = "",
 
-    @ApiProp(
+  @ApiProp(
     dto = [Dto(DTO_BOOK), Dto(DTO_BOOK_DETAIL)],
     requestDto = [RequestDto(REQ_BOOK_CREATE), RequestDto(
       REQ_BOOK_SEARCH,
@@ -61,16 +62,16 @@ class Book(
   )
   var price: Int = 0,
 
-    @ApiProp(dto = [Dto(DTO_BOOK_DETAIL)], requestDto = [RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.LT)])
+  @ApiProp(dto = [Dto(DTO_BOOK_DETAIL)], requestDto = [RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.LT)])
   var priceD: Double? = null,
 
-    @ApiProp(dto = [Dto(DTO_BOOK_DETAIL)], requestDto = [RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.GTE)])
+  @ApiProp(dto = [Dto(DTO_BOOK_DETAIL)], requestDto = [RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.GTE)])
   var priceF: Float? = null,
 
-    @ApiProp(dto = [Dto(DTO_BOOK_DETAIL)], requestDto = [RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.LTE)])
+  @ApiProp(dto = [Dto(DTO_BOOK_DETAIL)], requestDto = [RequestDto(REQ_BOOK_SEARCH, searchType = SearchType.LTE)])
   var priceS: Short? = null,
 
-    @ApiProp(
+  @ApiProp(
     dto = [
       Dto(DTO_BOOK, ref = AuthorApiSpec.DTO_AUTHOR),
       Dto(DTO_BOOK_DETAIL, ref = AuthorApiSpec.DTO_AUTHOR)
@@ -80,7 +81,7 @@ class Book(
   @ManyToOne(targetEntity = Author::class)
   var author: Author? = null,
 
-    @ApiProp(
+  @ApiProp(
     dto = [
       Dto(DTO_BOOK, ref = AuthorApiSpec.DTO_AUTHOR),
       Dto(DTO_BOOK_DETAIL, ref = AuthorApiSpec.DTO_AUTHOR)
@@ -90,7 +91,7 @@ class Book(
   @ManyToOne(targetEntity = Author::class)
   var recommendAuthor: Author? = null,
 
-    @ApiProp(
+  @ApiProp(
     dto = [
       Dto(DTO_BOOK),
       Dto(name = DTO_BOOK_DETAIL, fieldName = "releaseDateTime")
@@ -101,7 +102,7 @@ class Book(
   )
   var releaseAt: LocalDateTime = LocalDateTime.now(),
 
-    @ApiProp(
+  @ApiProp(
     dto = [
       Dto(
         name = DTO_BOOK_DETAIL,
@@ -121,7 +122,7 @@ class Book(
   )
   @Lob
   var tags: String,
-    @ApiProp(
+  @ApiProp(
     dto = [
       Dto(
         name = DTO_BOOK_DETAIL,
@@ -134,7 +135,7 @@ class Book(
   @Lob
   var categoryIds: String,
 
-    var user: User? = null
+  var user: User? = null
 ) : AutoIntIdEntity() {
 
   @ApiProp(

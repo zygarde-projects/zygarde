@@ -15,4 +15,5 @@ enum class SearchType {
   STARTS_WITH,
   ENDS_WITH,
   CONTAINS,
+  LIST_CONTAINS_ANY,
 }
