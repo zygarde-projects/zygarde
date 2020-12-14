@@ -31,4 +31,11 @@ class StringConditionActionImpl<RootEntityType, EntityType>(
   override fun contains(value: String?): EnhancedSearch<RootEntityType> {
     return keyword(SearchKeyword(value, SearchKeywordType.CONTAINS))
   }
+
+  override fun containsAny(value: Collection<String>?): EnhancedSearch<RootEntityType> =
+    applyNonNullAction(value?.takeIf { it.isNotEmpty() }?.toSet()) { path, keywords ->
+      cb.or(
+        *keywords.map { keyword -> cb.like(path, "%$keyword%") }.toTypedArray()
+      )
+    }
 }

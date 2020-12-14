@@ -340,16 +340,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
           SearchType.STARTS_WITH -> functionBuilder.addStatement("%M() startsWith req.$fieldName", fieldExtensionMember)
           SearchType.ENDS_WITH -> functionBuilder.addStatement("%M() endsWith req.$fieldName", fieldExtensionMember)
           SearchType.CONTAINS -> functionBuilder.addStatement("%M() contains req.$fieldName", fieldExtensionMember)
-          SearchType.LIST_CONTAINS_ANY -> functionBuilder.addStatement(
-            """req.$fieldName?.takeIf { it.isNotEmpty() }?.also { list ->
-  or {
-    list.forEach {
-      %M() contains it
-    }
-  }
-}""",
-            fieldExtensionMember
-          )
+          SearchType.LIST_CONTAINS_ANY -> functionBuilder.addStatement("%M() containsAny req.$fieldName", fieldExtensionMember)
           SearchType.DATE_RANGE -> functionBuilder.addStatement(
             "%M() %M req.$fieldName",
             fieldExtensionMember,

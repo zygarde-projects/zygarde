@@ -8,4 +8,5 @@ interface StringConditionAction<RootEntityType, EntityType> : ComparableConditio
   infix fun startsWith(value: String?): EnhancedSearch<RootEntityType>
   infix fun endsWith(value: String?): EnhancedSearch<RootEntityType>
   infix fun contains(value: String?): EnhancedSearch<RootEntityType>
+  infix fun containsAny(value: Collection<String>?): EnhancedSearch<RootEntityType>
 }

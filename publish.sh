@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./gradlew clean build bintrayUpload -Pversion=1.0.43
+./gradlew clean build bintrayUpload -Pversion=1.0.44
