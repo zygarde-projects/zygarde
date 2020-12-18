@@ -22,11 +22,18 @@ class TestFeignLogger(clazz: Class<*>) : Slf4jLogger(clazz) {
     } else {
       ""
     }
-    log(configKey, "---> %s %s", request.httpMethod().name, request.url())
-    log(configKey, "token: $tokenContent")
-    if (request.requestBody().asBytes() != null) {
-      log(configKey, "%s", request.requestBody().asString().fallbackWhenNull("Binary data"))
-    }
+    log(
+      configKey,
+      "---> %s %s %s %s",
+      request.httpMethod().name,
+      request.url(),
+      tokenContent.takeIf { it.isNotEmpty() }?.let { "\r\ntoken: $it" }.orEmpty(),
+      if (request.requestBody().asBytes() != null) {
+        "\r\n${request.requestBody().asString().fallbackWhenNull("Binary data")}"
+      } else {
+        ""
+      }
+    )
   }
 
   override fun logAndRebufferResponse(configKey: String?, logLevel: Level?, response: Response?, elapsedTime: Long): Response {
@@ -35,10 +42,18 @@ class TestFeignLogger(clazz: Class<*>) : Slf4jLogger(clazz) {
     if (response.body() != null) {
       val bodyData = Util.toByteArray(response.body().asInputStream())
       val bodyLength = bodyData.size
-      if (bodyLength > 0) {
-        log(configKey, "%s", Util.decodeOrDefault(bodyData, Util.UTF_8, "Binary data"))
-      }
-      log(configKey, "<--- %s%s (%sms)", status, reason, elapsedTime)
+      log(
+        configKey,
+        "<--- %s%s (%sms) %s",
+        status,
+        reason,
+        elapsedTime,
+        if (bodyLength > 0) {
+          "\r\n${Util.decodeOrDefault(bodyData, Util.UTF_8, "Binary data")}"
+        } else {
+          ""
+        }
+      )
       return response.toBuilder().body(bodyData).build()
     } else {
       return response
