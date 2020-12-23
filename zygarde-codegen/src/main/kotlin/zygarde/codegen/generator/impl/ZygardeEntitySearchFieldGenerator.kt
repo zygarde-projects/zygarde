@@ -77,6 +77,26 @@ class ZygardeEntitySearchFieldGenerator(
               .addStatement("return this.field(${className}Fields.$fieldName)")
               .build()
           )
+          .addFunction(
+            FunSpec.builder(fieldName)
+              .addTypeVariable(TypeVariableName("T"))
+              .receiver(
+                ConditionAction::class.asClassName().parameterizedBy(
+                  TypeVariableName("T"),
+                  TypeVariableName("*"),
+                  rootEntityType,
+                )
+              )
+              .returns(
+                field.toConditionAction(
+                  TypeVariableName("T"),
+                  TypeVariableName("*"),
+                  element.resolveFieldType(field)
+                )
+              )
+              .addStatement("return this.field(${className}Fields.$fieldName)")
+              .build()
+          )
       }
 
     allEntityElements
@@ -176,6 +196,10 @@ class ZygardeEntitySearchFieldGenerator(
   private fun Element.toConditionAction(rootEntityElement: Element, currentEntityElement: Element): TypeName {
     val rootEntityTypeName = rootEntityElement.typeName()
     val currentEntityTypeName = currentEntityElement.typeName()
+    return this.toConditionAction(rootEntityTypeName, currentEntityTypeName, currentEntityElement.resolveFieldType(this))
+  }
+
+  private fun Element.toConditionAction(rootEntityTypeName: TypeName, currentEntityTypeName: TypeName, fieldType: TypeName): TypeName {
     return if (isComparable()) {
       if (this.typeName().toString() == "kotlin.String") {
         StringConditionAction::class.asClassName().parameterizedBy(
@@ -186,14 +210,14 @@ class ZygardeEntitySearchFieldGenerator(
         ComparableConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,
           currentEntityTypeName,
-          currentEntityElement.resolveFieldType(this)
+          fieldType
         )
       }
     } else {
       ConditionAction::class.asClassName().parameterizedBy(
         rootEntityTypeName,
         currentEntityTypeName,
-        currentEntityElement.resolveFieldType(this)
+        fieldType
       )
     }
   }
