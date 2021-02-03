@@ -25,6 +25,7 @@ class ZygardeSpringTestFeignConfig(
   val serverPort: Int
 ) : Loggable {
 
+  @ConditionalOnMissingBean
   @Bean
   fun feignBuilder(): Feign.Builder {
     return object : Feign.Builder() {
@@ -35,16 +36,19 @@ class ZygardeSpringTestFeignConfig(
     }
   }
 
+  @ConditionalOnMissingBean
   @Bean
   fun feignClient(): Client {
     return Client.Default(null, null)
   }
 
+  @ConditionalOnMissingBean
   @Bean
   fun feignLoggerLevel(): Logger.Level {
     return Logger.Level.FULL
   }
 
+  @ConditionalOnMissingBean
   @Bean
   fun feignLoggerFactory(): FeignLoggerFactory {
     return FeignLoggerFactory { type -> TestFeignLogger(type) }
@@ -56,11 +60,13 @@ class ZygardeSpringTestFeignConfig(
     return Request.Options(30000, 30000)
   }
 
+  @ConditionalOnMissingBean
   @Bean
   fun testUserRequestInterceptor(): TestUserRequestInterceptor {
     return TestUserRequestInterceptor()
   }
 
+  @ConditionalOnMissingBean
   @Bean
   fun feignWebRegistrations(): WebMvcRegistrations {
     return object : WebMvcRegistrations {
