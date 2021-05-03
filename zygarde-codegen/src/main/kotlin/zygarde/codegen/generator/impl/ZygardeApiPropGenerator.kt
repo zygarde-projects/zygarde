@@ -241,7 +241,7 @@ class ZygardeApiPropGenerator(
   }
 
   private fun TypeName?.validValueProvider(): TypeName? {
-    return if (this != null && this.toString() != NoOpValueProvider::class.qualifiedName) {
+    return if (this != null && this.toString() != NoOpValueProvider::class.asTypeName().toString()) {
       this
     } else {
       null
