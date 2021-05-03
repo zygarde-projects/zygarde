@@ -125,11 +125,11 @@ subprojects {
   publishing {
     repositories {
       maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/zygarde-projects/zygarde")
+        name = "Nexus"
+        url = uri("https://nexus.puni.tw/repository/maven-releases")
         credentials {
-          username = System.getenv("ZYGARDE_GH_PUBLISH_USER") ?: System.getenv("GITHUB_ACTOR")
-          password = System.getenv("ZYGARDE_GH_PUBLISH_TOKEN") ?: System.getenv("GITHUB_TOKEN")
+          username = System.getenv("PUNI_NEXUS_DEPLOY_USER")
+          password = System.getenv("PUNI_NEXUS_DEPLOY_PWD")
         }
       }
     }
@@ -142,25 +142,25 @@ subprojects {
     }
   }
 
-  bintray {
-    user = System.getenv("ZYGARDE_BINTRAY_USER")
-    key = System.getenv("ZYGARDE_BINTRAY_API_KEY")
-    publish = true
-    setPublications("default")
-    pkg(
-      delegateClosureOf<com.jfrog.bintray.gradle.BintrayExtension.PackageConfig> {
-        repo = "maven"
-        name = subproject.name
-        websiteUrl = "https://zygarde-projects.github.io/zygarde/doc/"
-        githubRepo = "zygarde-projects/zygarde"
-        vcsUrl = "https://github.com/zygarde-projects/zygarde"
-        description = ""
-        setLabels("kotlin")
-        setLicenses("Apache-2.0")
-        desc = description
-      }
-    )
-  }
+  // bintray {
+  //   user = System.getenv("ZYGARDE_BINTRAY_USER")
+  //   key = System.getenv("ZYGARDE_BINTRAY_API_KEY")
+  //   publish = true
+  //   setPublications("default")
+  //   pkg(
+  //     delegateClosureOf<com.jfrog.bintray.gradle.BintrayExtension.PackageConfig> {
+  //       repo = "maven"
+  //       name = subproject.name
+  //       websiteUrl = "https://zygarde-projects.github.io/zygarde/doc/"
+  //       githubRepo = "zygarde-projects/zygarde"
+  //       vcsUrl = "https://github.com/zygarde-projects/zygarde"
+  //       description = ""
+  //       setLabels("kotlin")
+  //       setLicenses("Apache-2.0")
+  //       desc = description
+  //     }
+  //   )
+  // }
 }
 
 val jacocoIgnoreProjects = listOf<String>()
