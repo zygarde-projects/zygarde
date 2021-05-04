@@ -82,6 +82,14 @@ class EnhancedSearchTest {
   }
 
   @Test
+  fun `should able to search book page by name`() {
+    bookDao.searchPage(PagingAndSortingRequest()) {
+      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+      field<Author>("author").field<AuthorGroup>("authorGroup").join()
+    }.totalPages shouldBe 2
+  }
+
+  @Test
   fun `should ignore search condition`() {
     bookDao.search { stringField("name") inList null }.size shouldBe 1000
     bookDao.search { stringField("name") inList emptyList() }.size shouldBe 1000

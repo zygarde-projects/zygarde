@@ -48,8 +48,14 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     stringField(searchable.fieldName())
 
   override fun join(joinType: JoinType) {
-    if (joinType == JoinType.LEFT || enhancedSearch.query.resultType.canonicalName != "java.lang.Long") {
-      val splited = columnName.split(".")
+    val splited = columnName.split(".")
+    if (enhancedSearch.query.resultType.canonicalName == "java.lang.Long") {
+      splited.takeLast(splited.size - 1)
+        .fold(
+          enhancedSearch.root.join<EntityType, FieldType>(splited.first(), joinType),
+          { join, column -> join.join(column, joinType) }
+        )
+    } else {
       splited.takeLast(splited.size - 1)
         .fold(
           enhancedSearch.root.fetch<EntityType, FieldType>(splited.first(), joinType),
