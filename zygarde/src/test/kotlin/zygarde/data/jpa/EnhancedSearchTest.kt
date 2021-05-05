@@ -192,6 +192,13 @@ class EnhancedSearchTest {
   }
 
   @Test
+  fun `should able to in search with large lsit`() {
+    bookDao.search {
+      stringField("name") inList (1..2000).map { "zygarde$it" }
+    }.size shouldBe 0
+  }
+
+  @Test
   fun `should able to count book`() {
     bookDao.searchCount {
       comparableField<Int>("price") gt 100

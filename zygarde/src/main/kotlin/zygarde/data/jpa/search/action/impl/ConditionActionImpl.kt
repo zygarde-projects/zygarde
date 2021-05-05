@@ -74,7 +74,11 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
 
   override fun inList(values: Collection<FieldType>?): EnhancedSearch<RootEntityType> =
     applyNonNullAction(values?.takeIf { it.isNotEmpty() }) { path, v ->
-      path.`in`(v)
+      if (v.size > 500) {
+        cb.or(*v.chunked(500).map { chunkedValues -> path.`in`(v) }.toTypedArray())
+      } else {
+        path.`in`(v)
+      }
     }
 
   override fun notInList(values: Collection<FieldType>?): EnhancedSearch<RootEntityType> =
