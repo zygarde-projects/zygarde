@@ -192,10 +192,17 @@ class EnhancedSearchTest {
   }
 
   @Test
-  fun `should able to in search with large lsit`() {
+  fun `should able to in search with large list`() {
     bookDao.search {
       stringField("name") inList (1..2000).map { "zygarde$it" }
     }.size shouldBe 0
+  }
+
+  @Test
+  fun `should able to not in search with large list`() {
+    bookDao.search {
+      stringField("name") notInList (1..2000).map { "zygarde$it" }
+    }.size shouldBeGreaterThan 0
   }
 
   @Test
