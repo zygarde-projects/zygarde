@@ -2,8 +2,6 @@ package zygarde.data.jpa.search.request
 
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 
 /**
  * @author leo
@@ -15,11 +13,3 @@ data class PagingRequest(
   @ApiModelProperty(notes = "每頁數量", required = true)
   var pageSize: Int = 10
 )
-
-fun PagingRequest.toPageRequest(sort: Sort): PageRequest {
-  return PageRequest.of(
-    page - 1,
-    pageSize,
-    sort
-  )
-}

@@ -9,7 +9,6 @@ import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import zygarde.data.jpa.search.request.PagingAndSortingRequest
 import zygarde.data.jpa.search.request.SortingRequest
 import zygarde.data.jpa.search.request.asSort
-import zygarde.data.jpa.search.request.toPageRequest
 import javax.persistence.criteria.Predicate
 
 private fun <T> buildSpec(searchContent: EnhancedSearch<T>.() -> Unit): Specification<T> {
@@ -51,5 +50,5 @@ fun <T> JpaSpecificationExecutor<T>.searchPage(
   req: PagingAndSortingRequest,
   searchContent: EnhancedSearch<T>.() -> Unit
 ): Page<T> {
-  return findAll(buildSpec(searchContent), req.paging.toPageRequest(req.sorting.asSort()))
+  return findAll(buildSpec(searchContent), req.toPageRequest())
 }

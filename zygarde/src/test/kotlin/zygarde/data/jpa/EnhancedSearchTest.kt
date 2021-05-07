@@ -265,4 +265,41 @@ class EnhancedSearchTest {
     bookDao.searchPage(PagingAndSortingRequest().also { it.paging = PagingRequest() }) {}.totalPages shouldBe 100
     bookDao.searchPage(PagingAndSortingRequest().also { it.sorting = SortingRequest() }) {}.totalPages shouldBe 100
   }
+
+  @Test
+  fun `should able to search page with multiple sorts`() {
+    val page1 = bookDao.searchPage(
+      PagingAndSortingRequest()
+        .also {
+          it.paging = PagingRequest(1, 10).also {
+            it.page = 1
+            it.pageSize = 10
+          }
+          it.sorting = SortingRequest().also {
+            it.sortFields = listOf("id")
+            it.sort = Sort.Direction.DESC
+          }
+          it.sorts = listOf(
+            SortField(Sort.Direction.ASC, "name")
+          )
+        }
+    ) {}
+
+    val page2 = bookDao.searchPage(
+      PagingAndSortingRequest()
+        .also {
+          it.paging = PagingRequest(1, 10).also {
+            it.page = 1
+            it.pageSize = 10
+          }
+          it.sorting = null
+          it.sorts = listOf(
+            SortField(Sort.Direction.DESC, "id"),
+            SortField(Sort.Direction.ASC, "name")
+          )
+        }
+    ) {}
+
+    page1.first() shouldBe page2.first()
+  }
 }
