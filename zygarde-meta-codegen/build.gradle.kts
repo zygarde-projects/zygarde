@@ -3,6 +3,7 @@ apply(plugin = "io.spring.dependency-management")
 
 dependencies {
   implementation(project(":zygarde"))
+  implementation(project(":zygarde-codegen"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
   implementation("com.squareup:kotlinpoet:1.8.0")

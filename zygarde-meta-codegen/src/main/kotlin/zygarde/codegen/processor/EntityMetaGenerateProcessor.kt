@@ -8,7 +8,7 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import zygarde.codegen.ZygardeKaptOptions
-import zygarde.codegen.meta.EntityMeta
+import zygarde.codegen.model.EntityMeta
 import java.io.File
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Processor

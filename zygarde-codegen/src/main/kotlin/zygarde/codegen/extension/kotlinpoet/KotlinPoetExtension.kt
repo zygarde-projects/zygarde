@@ -10,6 +10,14 @@ import javax.lang.model.type.TypeMirror
 import org.jetbrains.annotations.Nullable
 import kotlin.reflect.KClass
 
+fun String.toClassName(): ClassName {
+  val lastDot = this.lastIndexOf(".")
+  return ClassName(
+    this.substring(0, lastDot),
+    this.substring(lastDot + 1),
+  )
+}
+
 fun Element.name() = simpleName.toString()
 
 fun Element.fieldName() = simpleName.toString().decapitalize()
