@@ -1,7 +1,7 @@
 package zygarde.codegen.model
 
 data class EntityToDtoMapping(
-  val entityClassFullName: String,
-  val dtoClassName: String,
+  val entityClass: String,
+  val dtoClass: String,
   val fieldMappings: List<EntityFieldToDtoFieldMapping>,
 )

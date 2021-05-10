@@ -15,42 +15,54 @@ import zygarde.codegen.extension.kotlinpoet.toClassName
 import zygarde.codegen.model.CodegenConfig
 import zygarde.codegen.model.EntityToDtoMapping
 import zygarde.codegen.model.FieldType
+import zygarde.codegen.model.internal.DtoBuilders
 import zygarde.codegen.model.type.ValueProviderParameterType
 import java.io.Serializable
 
-class Codegen(val codegenConfig: CodegenConfig) {
+class Codegen(val config: CodegenConfig) {
 
   private val entityToDtoExtensionSpecBuilders: MutableMap<String, FileSpec.Builder> = mutableMapOf()
   private val dtoFileSpecBuilders: MutableMap<String, FileSpec.Builder> = mutableMapOf()
   private val dtoClassSpecBuilders: MutableMap<String, TypeSpec.Builder> = mutableMapOf()
   private val dtoConstructorSpecBuilders: MutableMap<String, FunSpec.Builder> = mutableMapOf()
 
-  fun applyEntityToDtoMapping(mapping: EntityToDtoMapping) {
-    val entityClassName = mapping.entityClassFullName.toClassName()
-    val dtoClassName = mapping.dtoClassName.toClassName()
-    val dtoPackageName = dtoClassName.packageName
-    val extensionPackageName = "${codegenConfig.basePackageName}.entity.extensions"
-    dtoFileSpecBuilders.getOrPut(
-      dtoClassName.simpleName,
+  fun addDto(dtoClass: String, vararg dtoSuperClasses: String): DtoBuilders {
+    val dtoType = dtoClass.toClassName()
+    val dtoPackageName = dtoType.packageName
+    val dtoFileBuilder = dtoFileSpecBuilders.getOrPut(
+      dtoType.simpleName,
     ) {
-      FileSpec.builder(dtoPackageName, dtoClassName.simpleName)
+      FileSpec.builder(dtoPackageName, dtoType.simpleName)
     }
-    val dtoBuilder = dtoClassSpecBuilders.getOrPut(
-      dtoClassName.simpleName
+    val dtoClassBuilder = dtoClassSpecBuilders.getOrPut(
+      dtoType.simpleName
     ) {
-      TypeSpec.classBuilder(dtoClassName)
+      TypeSpec.classBuilder(dtoType)
         .addModifiers(KModifier.DATA)
         .addAnnotation(ApiModel::class)
         .addSuperinterface(Serializable::class)
     }
+
+    dtoSuperClasses.forEach { sp ->
+      dtoClassBuilder.superclass(sp.toClassName())
+    }
+
     val dtoConstructorBuilder = dtoConstructorSpecBuilders.getOrPut(
-      dtoClassName.simpleName
+      dtoType.simpleName
     ) {
       FunSpec.constructorBuilder()
     }
+    return DtoBuilders(dtoFileBuilder, dtoClassBuilder, dtoConstructorBuilder)
+  }
 
+  fun applyEntityToDtoMapping(mapping: EntityToDtoMapping) {
+    val entityType = mapping.entityClass.toClassName()
+    val dtoType = mapping.dtoClass.toClassName()
+    val dtoPackageName = dtoType.packageName
+    val (_, dtoBuilder, dtoConstructorBuilder) = addDto(mapping.dtoClass)
+    val extensionPackageName = "${config.basePackageName}.entity.extensions"
     val extraValueFields = mutableListOf<FieldType>()
-    val codeBlockArgs = mutableListOf<Any>(dtoClassName)
+    val codeBlockArgs = mutableListOf<Any>(dtoType)
     val dtoFieldSetterStatements = mapping.fieldMappings
       .map { fieldMapping ->
         val entityFieldName = fieldMapping.entityField?.fieldName
@@ -107,7 +119,7 @@ class Codegen(val codegenConfig: CodegenConfig) {
         }
       }
 
-    val extraValuesName = "${dtoClassName.simpleName}ExtraValues"
+    val extraValuesName = "${dtoType.simpleName}ExtraValues"
     val extraValueClass = ClassName(dtoPackageName, extraValuesName)
     if (extraValueFields.isNotEmpty()) {
       dtoFileSpecBuilders.getOrPut(
@@ -147,12 +159,12 @@ class Codegen(val codegenConfig: CodegenConfig) {
 
     val builder = entityToDtoExtensionSpecBuilders
       .getOrPut(
-        mapping.entityClassFullName
-      ) { FileSpec.builder(extensionPackageName, "${entityClassName.simpleName}ToDtoExtensions") }
+        mapping.entityClass
+      ) { FileSpec.builder(extensionPackageName, "${entityType.simpleName}ToDtoExtensions") }
 
     builder.addFunction(
-      FunSpec.builder("to${dtoClassName.simpleName}")
-        .receiver(entityClassName)
+      FunSpec.builder("to${dtoType.simpleName}")
+        .receiver(entityType)
         .also {
           if (extraValueFields.isNotEmpty()) {
             it.addParameter("extraValues", extraValueClass)
