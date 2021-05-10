@@ -1,20 +1,26 @@
 package zygarde.codegen.extension.kotlinpoet
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
+import org.jetbrains.annotations.Nullable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
-import org.jetbrains.annotations.Nullable
 import kotlin.reflect.KClass
 
 fun String.toClassName(): ClassName {
   val lastDot = this.lastIndexOf(".")
+  val typeName = this.substring(lastDot + 1)
   return ClassName(
     this.substring(0, lastDot),
-    this.substring(lastDot + 1),
+    typeName,
   )
 }
 

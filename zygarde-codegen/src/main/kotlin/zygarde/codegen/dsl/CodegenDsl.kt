@@ -3,12 +3,22 @@ package zygarde.codegen.dsl
 import zygarde.codegen.generator.Codegen
 import zygarde.codegen.model.CodegenConfig
 
-class CodegenDsl(private val config: CodegenConfig) {
-  private val codegen by lazy { Codegen(config) }
-  fun dto(vararg dtoArr: DtoDsl) {
-    dtoArr.forEach { dto ->
-      codegen.addDto("${config.basePackageName}.dto.${dto.name}", *dto.superClasses())
+class CodegenDsl(val config: CodegenConfig) {
+  val codegen by lazy { Codegen(config) }
+
+  inline fun <reified E : CodegenDto> dto() {
+    E::class.java.enumConstants.forEach { dto ->
+      codegen.getOrAddDtoBuilders(config.dtoNameToClass(dto.name), *dto.superClasses().toTypedArray())
     }
+  }
+
+  fun dtoFields(vararg dtoArr: CodegenDto, dsl: DtoFieldDsl.() -> Unit) {
+    dsl.invoke(
+      DtoFieldDsl(
+        codegen,
+        dtoArr.toList().map { config.dtoNameToClass(it.name) }
+      )
+    )
   }
 
   fun generate() {

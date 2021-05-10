@@ -8,14 +8,17 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.extension.kotlinpoet.toClassName
 import zygarde.codegen.model.CodegenConfig
 import zygarde.codegen.model.EntityToDtoMapping
 import zygarde.codegen.model.FieldType
 import zygarde.codegen.model.internal.DtoBuilders
+import zygarde.codegen.model.internal.DtoExtraField
 import zygarde.codegen.model.type.ValueProviderParameterType
 import java.io.Serializable
 
@@ -25,8 +28,9 @@ class Codegen(val config: CodegenConfig) {
   private val dtoFileSpecBuilders: MutableMap<String, FileSpec.Builder> = mutableMapOf()
   private val dtoClassSpecBuilders: MutableMap<String, TypeSpec.Builder> = mutableMapOf()
   private val dtoConstructorSpecBuilders: MutableMap<String, FunSpec.Builder> = mutableMapOf()
+  private val dtoExtraFields: MutableMap<String, MutableList<DtoExtraField>> = mutableMapOf()
 
-  fun addDto(dtoClass: String, vararg dtoSuperClasses: String): DtoBuilders {
+  fun getOrAddDtoBuilders(dtoClass: String, vararg dtoSuperClasses: String): DtoBuilders {
     val dtoType = dtoClass.toClassName()
     val dtoPackageName = dtoType.packageName
     val dtoFileBuilder = dtoFileSpecBuilders.getOrPut(
@@ -59,7 +63,7 @@ class Codegen(val config: CodegenConfig) {
     val entityType = mapping.entityClass.toClassName()
     val dtoType = mapping.dtoClass.toClassName()
     val dtoPackageName = dtoType.packageName
-    val (_, dtoBuilder, dtoConstructorBuilder) = addDto(mapping.dtoClass)
+    val (_, dtoClassBuilder) = getOrAddDtoBuilders(mapping.dtoClass)
     val extensionPackageName = "${config.basePackageName}.entity.extensions"
     val extraValueFields = mutableListOf<FieldType>()
     val codeBlockArgs = mutableListOf<Any>(dtoType)
@@ -68,29 +72,9 @@ class Codegen(val config: CodegenConfig) {
         val entityFieldName = fieldMapping.entityField?.fieldName
         val dtoFieldName = fieldMapping.dtoField.fieldName
         val dtoFieldType = fieldMapping.dtoField.kotlinType()
-        val propertySpecInDto = dtoBuilder.propertySpecs.find { p -> p.name == dtoFieldName }
+        val propertySpecInDto = dtoClassBuilder.propertySpecs.find { p -> p.name == dtoFieldName }
         if (propertySpecInDto == null) {
-          dtoConstructorBuilder.addParameter(
-            ParameterSpec
-              .builder(dtoFieldName, dtoFieldType)
-              .also {
-                if (fieldMapping.dtoField.nullable) {
-                  it.defaultValue("null")
-                }
-              }
-              .build()
-          )
-          dtoBuilder.addProperty(
-            PropertySpec
-              .builder(dtoFieldName, dtoFieldType)
-              .initializer(dtoFieldName)
-              .addAnnotation(
-                AnnotationSpec.builder(ApiModelProperty::class)
-                  .addMember("notes=%S", fieldMapping.comment)
-                  .addMember("required=%L", !fieldMapping.dtoField.nullable)
-                  .build()
-              ).build()
-          )
+          addFieldToDto(mapping.dtoClass, dtoFieldName, dtoFieldType, fieldMapping.comment)
         }
 
         val isExtraCollectValue = fieldMapping.entityField == null && fieldMapping.valueProviderClassName == null
@@ -180,6 +164,11 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
     )
   }
 
+  fun addExtraFieldToDto(dtoClass: String, fieldName: String, fieldClass: String, comment: String?, nullable: Boolean) {
+    dtoExtraFields.getOrPut(dtoClass) { mutableListOf() }.add(DtoExtraField(fieldName, fieldClass, comment))
+    addFieldToDto(dtoClass, fieldName, fieldClass.toClassName().kotlin(nullable), comment.orEmpty())
+  }
+
   fun allFileSpecs(): List<FileSpec> {
     return listOf(
       entityToDtoExtensionSpecBuilders.values.map { it.build() },
@@ -193,5 +182,30 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         e.value.build()
       }
     ).flatten()
+  }
+
+  private fun addFieldToDto(dtoClass: String, fieldName: String, fieldType: TypeName, comment: String) {
+    val (_, dtoClassBuilder, dtoConstructorBuilder) = getOrAddDtoBuilders(dtoClass)
+    dtoConstructorBuilder.addParameter(
+      ParameterSpec
+        .builder(fieldName, fieldType)
+        .also {
+          if (fieldType.isNullable) {
+            it.defaultValue("null")
+          }
+        }
+        .build()
+    )
+    dtoClassBuilder.addProperty(
+      PropertySpec
+        .builder(fieldName, fieldType)
+        .initializer(fieldName)
+        .addAnnotation(
+          AnnotationSpec.builder(ApiModelProperty::class)
+            .addMember("notes=%S", comment)
+            .addMember("required=%L", !fieldType.isNullable)
+            .build()
+        ).build()
+    )
   }
 }
