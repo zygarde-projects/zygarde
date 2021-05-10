@@ -30,7 +30,7 @@ class Codegen(val config: CodegenConfig) {
   private val dtoConstructorSpecBuilders: MutableMap<String, FunSpec.Builder> = mutableMapOf()
   private val dtoExtraFields: MutableMap<String, MutableList<DtoExtraField>> = mutableMapOf()
 
-  fun getOrAddDtoBuilders(dtoClass: String, vararg dtoSuperClasses: String): DtoBuilders {
+  fun getOrAddDtoBuilders(dtoClass: String, dtoSuperClass: String? = null): DtoBuilders {
     val dtoType = dtoClass.toClassName()
     val dtoPackageName = dtoType.packageName
     val dtoFileBuilder = dtoFileSpecBuilders.getOrPut(
@@ -47,9 +47,7 @@ class Codegen(val config: CodegenConfig) {
         .addSuperinterface(Serializable::class)
     }
 
-    dtoSuperClasses.forEach { sp ->
-      dtoClassBuilder.superclass(sp.toClassName())
-    }
+    dtoSuperClass?.toClassName()?.let(dtoClassBuilder::superclass)
 
     val dtoConstructorBuilder = dtoConstructorSpecBuilders.getOrPut(
       dtoType.simpleName

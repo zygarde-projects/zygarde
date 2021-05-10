@@ -6,13 +6,17 @@ import zygarde.codegen.model.CodegenConfig
 class CodegenDsl(val config: CodegenConfig) {
   val codegen by lazy { Codegen(config) }
 
-  inline fun <reified E : CodegenDto> dto() {
-    E::class.java.enumConstants.forEach { dto ->
-      codegen.getOrAddDtoBuilders(config.dtoNameToClass(dto.name), *dto.superClasses().toTypedArray())
+  inline fun <reified E : CodegenDto> dtos() {
+    val eClazz = E::class.java
+    if (!eClazz.isEnum) {
+      throw IllegalArgumentException("$eClazz is not Enum that implements CodegenDto")
+    }
+    eClazz.enumConstants.forEach { dto ->
+      codegen.getOrAddDtoBuilders(config.dtoNameToClass(dto.name), dto.superClass)
     }
   }
 
-  fun dtoFields(vararg dtoArr: CodegenDto, dsl: DtoFieldDsl.() -> Unit) {
+  fun dto(vararg dtoArr: CodegenDto, dsl: DtoFieldDsl.() -> Unit) {
     dsl.invoke(
       DtoFieldDsl(
         codegen,
