@@ -14,7 +14,8 @@ class CodegenDslTest {
   )
 
   class FooEntityMeta(val codegen: Codegen) {
-    fun name(comment: String = "", dsl: EntityFieldDsl.() -> Unit) = dsl.invoke(EntityFieldDsl(FooEntity::class.java.canonicalName, codegen, comment))
+    fun name(comment: String = "", dsl: EntityFieldDsl.() -> Unit) =
+      dsl.invoke(EntityFieldDsl(FooEntity::class.java.canonicalName, codegen, "name", "java.lang.String", comment))
   }
 
   enum class TestDtos : CodegenDtoSimple {

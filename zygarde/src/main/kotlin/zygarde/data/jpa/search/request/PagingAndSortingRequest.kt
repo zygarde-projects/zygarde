@@ -14,7 +14,7 @@ open class PagingAndSortingRequest {
   var sorting: SortingRequest? = null
 
   @ApiModelProperty(notes = "排序(new)", required = false)
-  var sorts: List<SortField> = emptyList()
+  var sorts: List<SortField>? = null
 
   fun toPageRequest(): PageRequest {
     return PageRequest.of(
@@ -27,7 +27,7 @@ open class PagingAndSortingRequest {
   private fun buildSorts(): Sort {
     val allSorts = listOf(
       this.sorting?.let { sorting -> sorting.sortFields.mapNotNull { sf -> SortField(sorting.sort, sf).toSort() } } ?: emptyList(),
-      this.sorts.mapNotNull { it.toSort() }
+      this.sorts?.mapNotNull { it.toSort() } ?: emptyList()
     ).flatten()
 
     return allSorts

@@ -206,4 +206,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         ).build()
     )
   }
+
+  fun addMappingEntityFieldToDto(entityClass: String, fieldName: String, fieldType: String, name: String) {
+  }
 }
