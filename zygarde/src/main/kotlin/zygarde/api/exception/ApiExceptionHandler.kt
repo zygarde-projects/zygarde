@@ -14,6 +14,8 @@ import zygarde.core.exception.BusinessException
 import zygarde.core.extension.general.fallbackWhenNull
 import zygarde.core.log.Loggable
 import zygarde.data.api.ApiErrorResponse
+import zygarde.json.toJsonString
+import javax.servlet.http.HttpServletRequest
 
 /**
  * @author leo
@@ -56,8 +58,8 @@ class ApiExceptionHandler : Loggable {
   }
 
   @ExceptionHandler(BusinessException::class)
-  fun handleBusinessException(e: BusinessException): ResponseEntity<ApiErrorResponse> {
-    LOGGER.error(e.message, e)
+  fun handleBusinessException(e: BusinessException, req: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
+    logThrowable(e, req)
     val code = e.code
     val res = ApiErrorResponse(
       errorCode = code,
@@ -67,13 +69,13 @@ class ApiExceptionHandler : Loggable {
   }
 
   @ExceptionHandler(Throwable::class)
-  fun handleThrowable(t: Throwable): ResponseEntity<ApiErrorResponse> {
+  fun handleThrowable(t: Throwable, req: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
     val cause = t.cause
     return if (cause != null) {
-      handleThrowableInternal(cause, this::handleThrowable)
+      handleThrowableInternal(cause, req) { handleThrowable(it, req) }
     } else {
-      handleThrowableInternal(t) {
-        LOGGER.error(t.message, t)
+      handleThrowableInternal(t, req) {
+        logThrowable(t, req)
         ResponseEntity(
           ApiErrorResponse(
             errorCode = ApiErrorCode.SERVER_ERROR,
@@ -87,16 +89,25 @@ class ApiExceptionHandler : Loggable {
 
   protected fun handleThrowableInternal(
     t: Throwable,
+    req: HttpServletRequest,
     onNoMatch: (t: Throwable) -> ResponseEntity<ApiErrorResponse>
   ) = when (t) {
-    is BusinessException -> handleBusinessException(t)
+    is BusinessException -> handleBusinessException(t, req)
     else -> {
       val supported = exceptionToBusinessExceptionMappers.find { it.supported(t) }
       if (supported != null) {
-        handleBusinessException(supported.handle(t))
+        handleBusinessException(supported.handle(t), req)
       } else {
         onNoMatch(t)
       }
     }
+  }
+
+  private fun HttpServletRequest.getHeadersAsString(): String {
+    return headerNames.toList().map { it to getHeaders(it).toList() }.toMap().toJsonString()
+  }
+
+  private fun logThrowable(t: Throwable, req: HttpServletRequest) {
+    LOGGER.error("uri='${req.requestURI}' headers=${req.getHeadersAsString()} message='${t.message}'", t)
   }
 }
