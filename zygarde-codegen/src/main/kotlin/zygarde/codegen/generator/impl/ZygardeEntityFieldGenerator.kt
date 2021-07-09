@@ -1,10 +1,25 @@
 package zygarde.codegen.generator.impl
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeVariableName
+import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.ZygardeKaptOptions.Companion.ENTITY_PACKAGE_SEARCH
-import zygarde.codegen.extension.kotlinpoet.*
+import zygarde.codegen.extension.kotlinpoet.allFieldsIncludeSuper
+import zygarde.codegen.extension.kotlinpoet.allSuperTypes
+import zygarde.codegen.extension.kotlinpoet.fieldName
+import zygarde.codegen.extension.kotlinpoet.nullableTypeName
+import zygarde.codegen.extension.kotlinpoet.typeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
+import zygarde.codegen.meta.EntityMetaField
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
 import zygarde.data.jpa.entity.SequenceIntIdEntity
@@ -18,9 +33,11 @@ import zygarde.data.jpa.search.action.impl.SearchableImpl
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
-import javax.persistence.*
+import javax.persistence.ManyToMany
+import javax.persistence.OneToMany
+import javax.persistence.Transient
 
-class ZygardeEntitySearchFieldGenerator(
+class ZygardeEntityFieldGenerator(
   processingEnv: ProcessingEnvironment
 ) : AbstractZygardeGenerator(processingEnv) {
 
@@ -35,8 +52,27 @@ class ZygardeEntitySearchFieldGenerator(
     }
     elements.forEach {
       generateFields(it)
+      generateMetaFields(it)
       generateExtensionFunctions(elements, it)
     }
+  }
+
+  private fun generateMetaFields(entityElement: Element) {
+    val className = entityElement.simpleName.toString()
+    val pack = packageName(processingEnv.options.getOrDefault(ENTITY_PACKAGE_SEARCH, "entity.meta"))
+    val fileNameForFields = "${className}Meta"
+    val classBuilder = TypeSpec.objectBuilder(fileNameForFields)
+
+    entityElement.allFieldsIncludeSuper().forEach { field ->
+      classBuilder.addProperty(
+        field.buildMetaProperty(entityElement)
+      )
+    }
+
+    FileSpec.builder(pack, fileNameForFields)
+      .addType(classBuilder.build())
+      .build()
+      .writeTo(fileTarget)
   }
 
   private fun generateFields(element: Element) {
@@ -139,6 +175,33 @@ class ZygardeEntitySearchFieldGenerator(
       .initializer(
         CodeBlock.builder()
           .addStatement("""%T("${fieldName()}")""", SearchableImpl::class.asClassName())
+          .build()
+      )
+      .build()
+  }
+
+  private fun Element.buildMetaProperty(
+    entityElement: Element
+  ): PropertySpec {
+    val fieldType = entityElement.resolveFieldType(this)
+    return PropertySpec
+      .builder(
+        fieldName(),
+        EntityMetaField::class.asClassName().parameterizedBy(
+          entityElement.typeName(),
+          fieldType
+        ),
+        KModifier.PUBLIC
+      )
+      .initializer(
+        CodeBlock.builder()
+          .addStatement(
+            """%T(%T::class,"${fieldName()}",%T::class,%L)""",
+            EntityMetaField::class.asClassName(),
+            entityElement.typeName(),
+            fieldType,
+            nullableTypeName().isNullable
+          )
           .build()
       )
       .build()

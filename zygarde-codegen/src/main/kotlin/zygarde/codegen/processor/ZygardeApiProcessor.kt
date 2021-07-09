@@ -8,7 +8,7 @@ import zygarde.codegen.ZyApi
 import zygarde.codegen.ZyModel
 import zygarde.codegen.generator.impl.ZygardeApiGenerator
 import zygarde.codegen.generator.impl.ZygardeApiPropGenerator
-import zygarde.codegen.generator.impl.ZygardeEntitySearchFieldGenerator
+import zygarde.codegen.generator.impl.ZygardeEntityFieldGenerator
 import javax.annotation.processing.*
 import javax.persistence.Entity
 
@@ -25,7 +25,7 @@ class ZygardeApiProcessor : AbstractProcessor() {
     val elementsAnnotatedWithZyModel = roundEnv.getElementsAnnotatedWith(ZyModel::class.java)
     val elementsAnnotatedWithZyApi = roundEnv.getElementsAnnotatedWith(ZyApi::class.java)
     val elementsAnnotatedWithEntity = roundEnv.getElementsAnnotatedWith(Entity::class.java)
-    ZygardeEntitySearchFieldGenerator(processingEnv).generateSearchFieldForEntityElements(elementsAnnotatedWithEntity)
+    ZygardeEntityFieldGenerator(processingEnv).generateSearchFieldForEntityElements(elementsAnnotatedWithEntity)
     ZygardeApiPropGenerator(processingEnv).generateModelForZyModelElements(elementsAnnotatedWithZyModel)
     ZygardeApiGenerator(processingEnv).generateApi(elementsAnnotatedWithZyApi)
     return false
