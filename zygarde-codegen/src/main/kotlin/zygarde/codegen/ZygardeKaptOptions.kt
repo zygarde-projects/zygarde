@@ -8,6 +8,8 @@ class ZygardeKaptOptions {
     const val DAO_PACKAGE = "zygarde.codegen.dao.package"
     const val DAO_COMBINE = "zygarde.codegen.dao.combine"
     const val ENTITY_PACKAGE_SEARCH = "zygarde.codegen.entity.search"
-    const val API_STATIC_OPTION_PACKAGE = "zygarde.codegen.static-option-api.package"
+    const val API_STATIC_OPTION_PACKAGE = "zygarde.codegen.static.option.api.package"
+    const val MODEL_META_GENERATE_PACKAGE = "zygarde.codegen.meta.package"
+    const val MODEL_META_GENERATE_TARGET = "zygarde.codegen.meta.target.folder"
   }
 }

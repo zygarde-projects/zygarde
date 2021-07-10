@@ -1,4 +1,4 @@
-package zygarde.codegen.model
+package zygarde.codegen.dsl.model
 
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName

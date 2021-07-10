@@ -45,7 +45,7 @@ class ZygardeJpaDaoGenerator(
               .build()
           )
           .build()
-          .writeTo(fileTarget)
+          .writeTo(folderToGenerate())
       }
     }
 
@@ -77,7 +77,7 @@ class ZygardeJpaDaoGenerator(
             .build()
         )
         .build()
-        .writeTo(fileTarget)
+        .writeTo(folderToGenerate())
     }
   }
 

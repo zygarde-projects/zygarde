@@ -20,6 +20,7 @@ plugins {
   kotlin("kapt") version "1.4.30"
   `maven-publish`
   jacoco
+  application
 }
 
 allprojects {

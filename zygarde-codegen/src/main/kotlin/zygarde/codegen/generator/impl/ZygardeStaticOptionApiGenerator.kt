@@ -75,7 +75,7 @@ class ZygardeStaticOptionApiGenerator(
         staticOptionDtoBuilder.primaryConstructor(constructorBuilder.build()).build()
       )
       .build()
-      .writeTo(fileTarget)
+      .writeTo(folderToGenerate())
   }
 
   private fun generateStaticOptionApi() {
@@ -117,7 +117,7 @@ class ZygardeStaticOptionApiGenerator(
     fileSpec
       .addType(staticOptionApiBuilder.build())
       .build()
-      .writeTo(fileTarget)
+      .writeTo(folderToGenerate())
   }
 
   private fun generateStaticOptionController() {
@@ -139,6 +139,6 @@ class ZygardeStaticOptionApiGenerator(
     fileSpec
       .addType(staticOptionControllerBuilder.build())
       .build()
-      .writeTo(fileTarget)
+      .writeTo(folderToGenerate())
   }
 }

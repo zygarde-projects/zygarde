@@ -1,13 +1,13 @@
 package sample.data.entity
 
-import zygarde.codegen.ZyModel
+import zygarde.codegen.meta.ZyModelMeta
 import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 
-@ZyModel
+@ZyModelMeta
 @Entity
 class PcBuild(
   @Id

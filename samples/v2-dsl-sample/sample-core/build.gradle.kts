@@ -10,10 +10,11 @@ dependencies {
 
 kapt {
   arguments {
+    arg("zygarde.codegen.meta.target.folder", project(":v2-sample-codegen").file("src/main/kotlin").absolutePath)
   }
 }
 
 tasks.getByName("bintrayUpload").enabled = false
-tasks.getByName("publish").enabled = false
-tasks.getByName("printCoverage").enabled = false
 tasks.getByName("bootJar").enabled = false
+tasks.getByName("jar").enabled = true
+tasks.getByName("printCoverage").enabled = false

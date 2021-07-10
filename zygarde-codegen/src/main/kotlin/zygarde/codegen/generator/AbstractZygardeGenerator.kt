@@ -15,10 +15,6 @@ abstract class AbstractZygardeGenerator(
   val processingEnv: ProcessingEnvironment
 ) {
 
-  protected val fileTarget: File by lazy {
-    File("${processingEnv.options[ZygardeKaptOptions.KAPT_KOTLIN_GENERATED_OPTION_NAME]}")
-  }
-
   fun packageName(pack: String) = processingEnv.options.getOrDefault(BASE_PACKAGE, "zygarde.generated") + ".$pack"
 
   fun safeGetTypeFromAnnotation(block: () -> TypeName): TypeName {
@@ -41,5 +37,11 @@ abstract class AbstractZygardeGenerator(
 
   protected fun Element.allFieldsIncludeSuper(): List<Element> {
     return allFieldsIncludeSuper(processingEnv)
+  }
+
+  protected fun folderToGenerate(
+    kaptOptionForFolderToGenerate: String = ZygardeKaptOptions.KAPT_KOTLIN_GENERATED_OPTION_NAME
+  ): File {
+    return File("${processingEnv.options[kaptOptionForFolderToGenerate]}").also { it.mkdirs() }
   }
 }

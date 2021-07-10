@@ -1,4 +1,4 @@
-package zygarde.codegen.model.type
+package zygarde.codegen.dsl.model.type
 
 enum class ValueProviderParameterType {
   OBJECT,

@@ -1,4 +1,4 @@
-package zygarde.codegen.model.internal
+package zygarde.codegen.dsl.model.internal
 
 data class DtoExtraField(
   val fieldName: String,

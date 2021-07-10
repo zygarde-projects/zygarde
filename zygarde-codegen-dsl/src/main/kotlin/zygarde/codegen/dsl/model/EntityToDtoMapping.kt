@@ -1,4 +1,4 @@
-package zygarde.codegen.model
+package zygarde.codegen.dsl.model
 
 data class EntityToDtoMapping(
   val entityClass: String,

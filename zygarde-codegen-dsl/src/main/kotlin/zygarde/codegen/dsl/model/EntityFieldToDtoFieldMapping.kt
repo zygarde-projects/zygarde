@@ -1,6 +1,6 @@
-package zygarde.codegen.model
+package zygarde.codegen.dsl.model
 
-import zygarde.codegen.model.type.ValueProviderParameterType
+import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 
 data class EntityFieldToDtoFieldMapping(
   val comment: String,

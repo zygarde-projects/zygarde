@@ -1,4 +1,4 @@
-package zygarde.codegen.model
+package zygarde.codegen.dsl.model
 
 data class CodegenConfig(
   val basePackageName: String = "zygarde.codegen",

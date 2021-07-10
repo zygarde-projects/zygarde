@@ -1,4 +1,4 @@
-package zygarde.codegen.generator
+package zygarde.codegen.dsl
 
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
@@ -6,11 +6,11 @@ import io.kotest.matchers.shouldBe
 import org.apache.commons.io.FileUtils
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
-import zygarde.codegen.model.CodegenConfig
-import zygarde.codegen.model.EntityFieldToDtoFieldMapping
-import zygarde.codegen.model.EntityToDtoMapping
-import zygarde.codegen.model.FieldType
-import zygarde.codegen.model.type.ValueProviderParameterType
+import zygarde.codegen.dsl.model.CodegenConfig
+import zygarde.codegen.dsl.model.EntityFieldToDtoFieldMapping
+import zygarde.codegen.dsl.model.EntityToDtoMapping
+import zygarde.codegen.dsl.model.FieldType
+import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.value.AutoIntIdValueProvider
 import zygarde.codegen.value.ValueProvider
 import zygarde.data.jpa.entity.AutoIntIdEntity
@@ -36,7 +36,7 @@ class EntityToDtoMappingCodegenTest {
 
   @Test
   fun `should able to codegen entity to dto`() {
-    val codegen = Codegen(CodegenConfig("zygarde.codegen"))
+    val codegen = ModelMappingCodeGenerator(CodegenConfig("zygarde.codegen"))
     codegen.applyEntityToDtoMapping(
       EntityToDtoMapping(
         MyFooEntity::class.java.canonicalName,

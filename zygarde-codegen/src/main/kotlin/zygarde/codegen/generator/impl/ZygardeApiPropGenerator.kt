@@ -183,10 +183,10 @@ class ZygardeApiPropGenerator(
             dtoBuilder.primaryConstructor(constructorBuilder.build()).build()
           )
           .build()
-          .writeTo(fileTarget)
+          .writeTo(folderToGenerate())
       }
 
-    fileBuilderForExtension.build().writeTo(fileTarget)
+    fileBuilderForExtension.build().writeTo(folderToGenerate())
   }
 
   private fun toDtoFieldDescription(

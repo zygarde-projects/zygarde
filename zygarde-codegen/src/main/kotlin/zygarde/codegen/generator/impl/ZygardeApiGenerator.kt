@@ -148,7 +148,7 @@ class ZygardeApiGenerator(
       }
       serviceFileBuilder.addType(serviceInterfaceBuilder.build())
         .build()
-        .writeTo(fileTarget)
+        .writeTo(folderToGenerate())
     }
   }
 
@@ -222,7 +222,7 @@ class ZygardeApiGenerator(
       }
       apiFileBuilder.addType(apiInterfaceBuilder.build())
         .build()
-        .writeTo(fileTarget)
+        .writeTo(folderToGenerate())
     }
   }
 
@@ -268,7 +268,7 @@ class ZygardeApiGenerator(
 
       apiImplFileBuilder.addType(apiImplClass.build())
         .build()
-        .writeTo(fileTarget)
+        .writeTo(folderToGenerate())
     }
   }
 }

@@ -1,4 +1,4 @@
-package zygarde.codegen.model.internal
+package zygarde.codegen.dsl.model.internal
 
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec

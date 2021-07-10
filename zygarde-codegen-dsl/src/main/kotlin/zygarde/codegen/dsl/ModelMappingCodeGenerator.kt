@@ -1,4 +1,4 @@
-package zygarde.codegen.generator
+package zygarde.codegen.dsl
 
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
@@ -12,17 +12,17 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import zygarde.codegen.dsl.model.CodegenConfig
+import zygarde.codegen.dsl.model.EntityToDtoMapping
+import zygarde.codegen.dsl.model.FieldType
+import zygarde.codegen.dsl.model.internal.DtoBuilders
+import zygarde.codegen.dsl.model.internal.DtoExtraField
+import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.extension.kotlinpoet.toClassName
-import zygarde.codegen.model.CodegenConfig
-import zygarde.codegen.model.EntityToDtoMapping
-import zygarde.codegen.model.FieldType
-import zygarde.codegen.model.internal.DtoBuilders
-import zygarde.codegen.model.internal.DtoExtraField
-import zygarde.codegen.model.type.ValueProviderParameterType
 import java.io.Serializable
 
-class Codegen(val config: CodegenConfig) {
+class ModelMappingCodeGenerator(val config: CodegenConfig) {
 
   private val entityToDtoExtensionSpecBuilders: MutableMap<String, FileSpec.Builder> = mutableMapOf()
   private val dtoFileSpecBuilders: MutableMap<String, FileSpec.Builder> = mutableMapOf()

@@ -19,7 +19,7 @@ import zygarde.codegen.extension.kotlinpoet.fieldName
 import zygarde.codegen.extension.kotlinpoet.nullableTypeName
 import zygarde.codegen.extension.kotlinpoet.typeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
-import zygarde.codegen.meta.EntityMetaField
+import zygarde.codegen.meta.ModelMetaField
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
 import zygarde.data.jpa.entity.SequenceIntIdEntity
@@ -72,7 +72,7 @@ class ZygardeEntityFieldGenerator(
     FileSpec.builder(pack, fileNameForFields)
       .addType(classBuilder.build())
       .build()
-      .writeTo(fileTarget)
+      .writeTo(folderToGenerate())
   }
 
   private fun generateFields(element: Element) {
@@ -90,7 +90,7 @@ class ZygardeEntityFieldGenerator(
     FileSpec.builder(pack, fileNameForFields)
       .addType(classBuilder.build())
       .build()
-      .writeTo(fileTarget)
+      .writeTo(folderToGenerate())
   }
 
   private fun generateExtensionFunctions(allEntityElements: Collection<Element>, element: Element) {
@@ -148,7 +148,7 @@ class ZygardeEntityFieldGenerator(
         }
       }
 
-    fileBuilderForExtension.build().writeTo(fileTarget)
+    fileBuilderForExtension.build().writeTo(folderToGenerate())
   }
 
   private fun Element.allSearchableFields(): List<Element> {
@@ -167,7 +167,7 @@ class ZygardeEntityFieldGenerator(
       .builder(
         fieldName(),
         Searchable::class.asClassName().parameterizedBy(
-          entityElement.asType().asTypeName(),
+          entityElement.typeName(),
           entityElement.resolveFieldType(this)
         ),
         KModifier.PUBLIC
@@ -187,7 +187,7 @@ class ZygardeEntityFieldGenerator(
     return PropertySpec
       .builder(
         fieldName(),
-        EntityMetaField::class.asClassName().parameterizedBy(
+        ModelMetaField::class.asClassName().parameterizedBy(
           entityElement.typeName(),
           fieldType
         ),
@@ -197,7 +197,7 @@ class ZygardeEntityFieldGenerator(
         CodeBlock.builder()
           .addStatement(
             """%T(%T::class,"${fieldName()}",%T::class,%L)""",
-            EntityMetaField::class.asClassName(),
+            ModelMetaField::class.asClassName(),
             entityElement.typeName(),
             fieldType,
             nullableTypeName().isNullable
