@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl.model.internal
 
+import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.meta.ModelMetaField
 
@@ -9,5 +10,6 @@ data class ModelToDtoFieldMappingVo(
   val comment: String = "",
   val dtoRef: CodegenDto? = null,
   val dtoRefClass: Class<*>? = null,
-  val refCollection: Boolean = false
+  val refCollection: Boolean = false,
+  val forceNull: ForceNull = ForceNull.NONE
 )

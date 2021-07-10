@@ -4,6 +4,8 @@ import com.squareup.kotlinpoet.*
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import zygarde.codegen.dsl.model.internal.ModelToDtoFieldMappingVo
+import zygarde.codegen.dsl.model.type.ForceNull
+import zygarde.codegen.extension.kotlinpoet.kotlin
 import java.io.Serializable
 
 class ModelToDtoMappingGenerator {
@@ -24,11 +26,16 @@ class ModelToDtoMappingGenerator {
       // TODO process super dto
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
       mappings.associateBy { it.modelField.fieldName }.forEach { fieldName, mapping ->
+        val fieldTypeNullable = when (mapping.forceNull) {
+          ForceNull.NONE -> mapping.modelField.fieldNullable
+          ForceNull.NULL -> true
+          ForceNull.NOT_NULL -> false
+        }
         val fieldType = (
           mapping.dtoRefClass?.asTypeName()
             ?: mapping.dtoRef?.let { ClassName(dtoPackageName, it.name) }
             ?: mapping.modelField.fieldClass.asTypeName()
-          )
+          ).kotlin(fieldTypeNullable)
         dtoConstructorBuilder.addParameter(
           ParameterSpec
             .builder(fieldName, fieldType)
