@@ -1,11 +1,11 @@
 package zygarde.codegen.dsl
 
 import zygarde.codegen.dsl.model.internal.ModelToDtoFieldMappingVo
-import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.meta.ModelMetaField
+import kotlin.reflect.KClass
 
-abstract class DslModelMappingCodegen {
+abstract class DslModelMappingCodegen<E : Any>(val modelClass: KClass<E>) {
 
   val modelFieldToDtoMappings = mutableListOf<ModelToDtoFieldMappingVo>()
 
@@ -17,63 +17,28 @@ abstract class DslModelMappingCodegen {
 
   protected fun ModelMetaField<*, *>.mapToDtos(
     vararg dtos: CodegenDto,
-  ) {
-    mapToDtos("", *dtos)
-  }
-
-  protected fun ModelMetaField<*, *>.mapToDtos(
-    forceNull: ForceNull,
-    vararg dtos: CodegenDto,
-  ) {
-    mapToDtos("", forceNull, *dtos)
-  }
-
-  protected fun ModelMetaField<*, *>.mapToDtos(
-    comment: String,
-    vararg dtos: CodegenDto,
-  ) {
-    mapToDtos(
-      comment = comment,
-      forceNull = ForceNull.NONE,
-      *dtos
-    )
-  }
-
-  protected fun ModelMetaField<*, *>.mapToDtos(
-    comment: String,
-    forceNull: ForceNull,
-    vararg dtos: CodegenDto,
-  ) {
-    mapToDtos(
-      comment = comment,
-      dtoRef = null,
-      dtoRefClass = null,
-      refCollection = false,
-      forceNull = forceNull,
-      *dtos
-    )
-  }
-
-  protected fun ModelMetaField<*, *>.mapToDtos(
-    comment: String = "",
-    dtoRef: CodegenDto? = null,
-    dtoRefClass: Class<*>? = null,
-    refCollection: Boolean = false,
-    forceNull: ForceNull = ForceNull.NONE,
-    vararg dtos: CodegenDto,
+    dsl: (ModelToDtoFieldMappingVo.() -> Unit)? = null
   ) {
     dtos.forEach { dto ->
-      modelFieldToDtoMappings.add(
-        ModelToDtoFieldMappingVo(
-          modelField = this,
-          dto = dto,
-          comment = comment,
-          dtoRef = dtoRef,
-          dtoRefClass = dtoRefClass,
-          refCollection = refCollection,
-          forceNull = forceNull,
-        )
-      )
+      ModelToDtoFieldMappingVo(this, dto)
+        .also {
+          dsl?.invoke(it)
+        }
+        .also(modelFieldToDtoMappings::add)
     }
+  }
+
+  protected inline fun <reified F : Any> extraField(
+    fieldName: String,
+    nullable: Boolean = false,
+  ): ModelMetaField<E, F> {
+    return ModelMetaField(modelClass, fieldName, F::class, nullable, true)
+  }
+
+  protected inline fun <reified F : Any> extraCollectionField(
+    fieldName: String,
+    nullable: Boolean = false,
+  ): ModelMetaField<E, Collection<*>> {
+    return ModelMetaField(modelClass, fieldName, Collection::class, nullable, true, arrayOf(F::class))
   }
 }

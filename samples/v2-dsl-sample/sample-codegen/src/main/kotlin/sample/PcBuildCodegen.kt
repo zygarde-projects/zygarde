@@ -1,12 +1,13 @@
 package sample
 
-import zygarde.codegen.dsl.DslModelMappingCodegen
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.meta.RegisterDto
 import zygarde.codegen.meta.RegisterDtos
+import zygarde.codegen.value.AutoIntIdValueProvider
 import zygarde.data.jpa.search.request.PagingAndSortingRequest
 import zygarde.generated.dto.PcBuildDtos
-import zygarde.generated.model.meta.PcBuildMeta
+import zygarde.generated.dto.PcBuildDtos.PcBuildDetailDto
+import zygarde.generated.model.meta.AbstractPcBuildCodegen
 
 @RegisterDtos(
   "PcBuild",
@@ -21,17 +22,16 @@ import zygarde.generated.model.meta.PcBuildMeta
     superClass = PagingAndSortingRequest::class
   )
 )
-class PcBuildCodegen : DslModelMappingCodegen() {
+class PcBuildCodegen : AbstractPcBuildCodegen() {
   override fun codegen() {
-    PcBuildMeta.id.mapToDtos(
-      forceNull = ForceNull.NOT_NULL,
-      *PcBuildDtos.values()
-    )
-    PcBuildMeta.name.mapToDtos(
-      *PcBuildDtos.values()
-    )
-    PcBuildMeta.description.mapToDtos(
-      *PcBuildDtos.values()
-    )
+    id.mapToDtos(*PcBuildDtos.values()) {
+      forceNull = ForceNull.NOT_NULL
+      valueProvider = AutoIntIdValueProvider::class
+    }
+    name.mapToDtos(*PcBuildDtos.values())
+    description.mapToDtos(*PcBuildDtos.values())
+
+    extraField<Double>("rating", true).mapToDtos(PcBuildDetailDto)
+    extraCollectionField<String>("tags").mapToDtos(PcBuildDetailDto)
   }
 }

@@ -7,4 +7,6 @@ data class ModelMetaField<E : Any, F : Any>(
   val fieldName: String,
   val fieldClass: KClass<F>,
   val fieldNullable: Boolean,
+  val extra: Boolean = false,
+  val genericClasses: Array<KClass<*>> = emptyArray(),
 )

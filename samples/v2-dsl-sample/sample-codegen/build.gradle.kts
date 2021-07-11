@@ -15,4 +15,5 @@ tasks.getByName("printCoverage").enabled = false
 
 configure<JavaApplication> {
   mainClass.set("zygarde.codegen.dsl.DslMainKt")
+  applicationDefaultJvmArgs = listOf()
 }

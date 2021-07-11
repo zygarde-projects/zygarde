@@ -1,20 +1,11 @@
 package zygarde.codegen.generator.impl
 
-import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
-import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.MODEL_META_GENERATE_PACKAGE
-import zygarde.codegen.extension.kotlinpoet.allSuperTypes
-import zygarde.codegen.extension.kotlinpoet.fieldName
-import zygarde.codegen.extension.kotlinpoet.nullableTypeName
-import zygarde.codegen.extension.kotlinpoet.typeName
+import zygarde.codegen.dsl.DslModelMappingCodegen
+import zygarde.codegen.extension.kotlinpoet.*
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.codegen.meta.ModelMetaField
 import zygarde.data.jpa.entity.AutoIntIdEntity
@@ -37,15 +28,18 @@ class ZygardeModelMetaGenerator(
     }
   }
 
-  private fun generateMetaFields(entityElement: Element) {
-    val className = entityElement.simpleName.toString()
+  private fun generateMetaFields(modelElement: Element) {
+    val className = modelElement.simpleName.toString()
     val pack = packageName(processingEnv.options.getOrDefault(MODEL_META_GENERATE_PACKAGE, "model.meta"))
-    val fileNameForFields = "${className}Meta"
-    val classBuilder = TypeSpec.objectBuilder(fileNameForFields)
+    val fileNameForFields = "Abstract${className}Codegen"
+    val classBuilder = TypeSpec.classBuilder(fileNameForFields)
+      .addModifiers(KModifier.ABSTRACT)
+      .superclass(DslModelMappingCodegen::class.generic(modelElement.typeName()))
+      .addSuperclassConstructorParameter("%T::class", modelElement.typeName())
 
-    entityElement.allFieldsIncludeSuper().forEach { field ->
+    modelElement.allFieldsIncludeSuper().forEach { field ->
       classBuilder.addProperty(
-        field.buildMetaProperty(entityElement)
+        field.buildMetaProperty(modelElement)
       )
     }
 
@@ -56,24 +50,24 @@ class ZygardeModelMetaGenerator(
   }
 
   private fun Element.buildMetaProperty(
-    entityElement: Element
+    modelElement: Element
   ): PropertySpec {
-    val fieldType = entityElement.resolveFieldType(this)
+    val fieldType = modelElement.resolveFieldType(this)
     return PropertySpec
       .builder(
         fieldName(),
         ModelMetaField::class.asClassName().parameterizedBy(
-          entityElement.typeName(),
+          modelElement.typeName(),
           fieldType
         ),
-        KModifier.PUBLIC
+        KModifier.PROTECTED
       )
       .initializer(
         CodeBlock.builder()
           .addStatement(
             """%T(%T::class,"${fieldName()}",%T::class,%L)""",
             ModelMetaField::class.asClassName(),
-            entityElement.typeName(),
+            modelElement.typeName(),
             fieldType,
             nullableTypeName().isNullable
           )

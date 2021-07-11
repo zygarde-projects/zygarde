@@ -124,8 +124,22 @@ private fun Element.typeName(canBeNullable: Boolean = true): TypeName {
   return this.asType().kotlinTypeName(canBeNullable && isNullable())
 }
 
+fun KClass<*>.generic(vararg genericClasses: KClass<*>): TypeName {
+  val className = asClassName()
+  if (genericClasses.isNotEmpty()) {
+    return className.parameterizedBy(
+      *genericClasses.map { it.asTypeName() }.toTypedArray()
+    )
+  }
+  return className
+}
+
 fun KClass<*>.generic(vararg typeName: TypeName): TypeName {
-  return asClassName().parameterizedBy(
-    *typeName
-  )
+  val className = asClassName()
+  if (typeName.isNotEmpty()) {
+    return className.parameterizedBy(
+      *typeName
+    )
+  }
+  return className
 }

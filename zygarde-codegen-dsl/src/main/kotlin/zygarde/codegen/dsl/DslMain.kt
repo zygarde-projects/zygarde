@@ -9,18 +9,23 @@ fun main() {
     .enableAnnotationInfo()
     .scan()
     .allClasses
-    .filter { it.extendsSuperclass(DslModelMappingCodegen::class.java.canonicalName) }
+    .filter {
+      it.extendsSuperclass(DslModelMappingCodegen::class.java.canonicalName)
+    }
+    .filter {
+      !it.isAbstract
+    }
 
   val modelMappingCodegenList = classes.loadClasses().map { clz ->
-    clz.newInstance() as DslModelMappingCodegen
+    clz.newInstance() as DslModelMappingCodegen<*>
   }
 
   modelMappingCodegenList.forEach { it.execte() }
 
-  ModelToDtoMappingGenerator()
-    .generateFileSpec(
-      modelMappingCodegenList.flatMap { it.modelFieldToDtoMappings }
-    )
+  val modelFieldToDtoMappings = modelMappingCodegenList.flatMap { it.modelFieldToDtoMappings }
+
+  ModelToDtoMappingGenerator(modelFieldToDtoMappings)
+    .generateFileSpec()
     .forEach {
       it.writeTo(System.out)
     }
