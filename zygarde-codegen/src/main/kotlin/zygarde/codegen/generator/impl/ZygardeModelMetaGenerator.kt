@@ -2,6 +2,7 @@ package zygarde.codegen.generator.impl
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import org.springframework.util.FileSystemUtils
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.MODEL_META_GENERATE_PACKAGE
 import zygarde.codegen.dsl.DslModelMappingCodegen
@@ -19,10 +20,15 @@ class ZygardeModelMetaGenerator(
   processingEnv: ProcessingEnvironment
 ) : AbstractZygardeGenerator(processingEnv) {
 
+  val targetFolder by lazy {
+    folderToGenerate(ZygardeKaptOptions.MODEL_META_GENERATE_TARGET)
+  }
+
   fun generateModelMeta(elements: Collection<Element>) {
     if (elements.isEmpty()) {
       return
     }
+    FileSystemUtils.deleteRecursively(targetFolder)
     elements.forEach {
       generateMetaFields(it)
     }
@@ -41,12 +47,15 @@ class ZygardeModelMetaGenerator(
       classBuilder.addProperty(
         field.buildMetaProperty(modelElement)
       )
+      classBuilder.addFunction(
+        field.buildMetaDslFn(modelElement)
+      )
     }
 
     FileSpec.builder(pack, fileNameForFields)
       .addType(classBuilder.build())
       .build()
-      .writeTo(folderToGenerate(ZygardeKaptOptions.MODEL_META_GENERATE_TARGET))
+      .writeTo(targetFolder)
   }
 
   private fun Element.buildMetaProperty(
@@ -73,6 +82,28 @@ class ZygardeModelMetaGenerator(
           )
           .build()
       )
+      .build()
+  }
+
+  private fun Element.buildMetaDslFn(
+    modelElement: Element
+  ): FunSpec {
+    val fieldType = modelElement.resolveFieldType(this)
+    val fieldName = fieldName()
+    return FunSpec.builder(fieldName)
+      .addParameter(
+        ParameterSpec(
+          "dsl",
+          LambdaTypeName.get(
+            receiver = ModelMetaField::class.asClassName().parameterizedBy(
+              modelElement.typeName(),
+              fieldType
+            ),
+            returnType = Unit::class.asTypeName()
+          )
+        )
+      )
+      .addCode("dsl.invoke($fieldName)")
       .build()
   }
 

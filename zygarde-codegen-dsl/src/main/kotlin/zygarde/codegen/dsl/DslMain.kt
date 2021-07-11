@@ -1,7 +1,9 @@
 package zygarde.codegen.dsl
 
 import io.github.classgraph.ClassGraph
+import org.springframework.util.FileSystemUtils
 import zygarde.codegen.dsl.generator.ModelToDtoMappingGenerator
+import java.io.File
 
 fun main() {
   val classes = ClassGraph()
@@ -24,9 +26,21 @@ fun main() {
 
   val modelFieldToDtoMappings = modelMappingCodegenList.flatMap { it.modelFieldToDtoMappings }
 
+  val codegenTarget = System.getProperty("zygarde.codegen.target")
+    ?.let {
+      File(it).also { f ->
+        FileSystemUtils.deleteRecursively(f)
+        f.mkdirs()
+      }
+    }
+
   ModelToDtoMappingGenerator(modelFieldToDtoMappings)
     .generateFileSpec()
     .forEach {
-      it.writeTo(System.out)
+      if (codegenTarget != null) {
+        it.writeTo(codegenTarget)
+      } else {
+        it.writeTo(System.out)
+      }
     }
 }

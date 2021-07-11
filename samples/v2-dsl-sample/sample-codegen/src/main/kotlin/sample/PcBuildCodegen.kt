@@ -1,6 +1,7 @@
 package sample
 
 import zygarde.codegen.dsl.model.type.ForceNull
+import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.RegisterDto
 import zygarde.codegen.meta.RegisterDtos
 import zygarde.codegen.value.AutoIntIdValueProvider
@@ -24,14 +25,26 @@ import zygarde.generated.model.meta.AbstractPcBuildCodegen
 )
 class PcBuildCodegen : AbstractPcBuildCodegen() {
   override fun codegen() {
-    id.mapToDtos(*PcBuildDtos.values()) {
-      forceNull = ForceNull.NOT_NULL
-      valueProvider = AutoIntIdValueProvider::class
+    id {
+      mapToDtos(*PcBuildDtos.values()) {
+        forceNull = ForceNull.NOT_NULL
+        valueProvider = AutoIntIdValueProvider::class
+        valueProviderParameterType = ValueProviderParameterType.OBJECT
+      }
     }
-    name.mapToDtos(*PcBuildDtos.values())
-    description.mapToDtos(*PcBuildDtos.values())
 
-    extraField<Double>("rating", true).mapToDtos(PcBuildDetailDto)
+    name {
+      mapToDtos(*PcBuildDtos.values())
+    }
+
+    description {
+      mapToDtos(*PcBuildDtos.values()) { comment = "描述" }
+    }
+
+    extraField<Double>("rating", true).mapToDtos(PcBuildDetailDto) {
+      comment = "評分"
+    }
+
     extraCollectionField<String>("tags").mapToDtos(PcBuildDetailDto)
   }
 }
