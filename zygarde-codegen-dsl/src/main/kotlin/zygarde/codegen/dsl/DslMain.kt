@@ -2,7 +2,7 @@ package zygarde.codegen.dsl
 
 import io.github.classgraph.ClassGraph
 import org.springframework.util.FileSystemUtils
-import zygarde.codegen.dsl.generator.ModelToDtoMappingGenerator
+import zygarde.codegen.dsl.generator.DtoFieldMappingCodeGenerator
 import java.io.File
 
 fun main() {
@@ -12,19 +12,19 @@ fun main() {
     .scan()
     .allClasses
     .filter {
-      it.extendsSuperclass(DslModelMappingCodegen::class.java.canonicalName)
+      it.extendsSuperclass(DslCodegen::class.java.canonicalName)
     }
     .filter {
       !it.isAbstract
     }
 
   val modelMappingCodegenList = classes.loadClasses().map { clz ->
-    clz.newInstance() as DslModelMappingCodegen<*>
+    clz.newInstance() as DslCodegen<*>
   }
 
   modelMappingCodegenList.forEach { it.execte() }
 
-  val modelFieldToDtoMappings = modelMappingCodegenList.flatMap { it.modelFieldToDtoMappings }
+  val dtoFieldMappings = modelMappingCodegenList.flatMap { it.dtoFieldMappings }
 
   val codegenTarget = System.getProperty("zygarde.codegen.target")
     ?.let {
@@ -34,7 +34,7 @@ fun main() {
       }
     }
 
-  ModelToDtoMappingGenerator(modelFieldToDtoMappings)
+  DtoFieldMappingCodeGenerator(dtoFieldMappings)
     .generateFileSpec()
     .forEach {
       if (codegenTarget != null) {

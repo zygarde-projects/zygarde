@@ -7,7 +7,7 @@ import zygarde.codegen.meta.ModelMetaField
 import zygarde.codegen.value.ValueProvider
 import kotlin.reflect.KClass
 
-data class ModelToDtoFieldMappingVo(
+data class DtoToModelFieldMappingVo(
   var modelField: ModelMetaField<*, *>,
   var dto: CodegenDto,
   var comment: String = "",

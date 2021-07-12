@@ -3,14 +3,14 @@ package zygarde.codegen.dsl.generator
 import com.squareup.kotlinpoet.*
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
-import zygarde.codegen.dsl.model.internal.ModelToDtoFieldMappingVo
+import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import java.io.Serializable
 
-class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<ModelToDtoFieldMappingVo>) {
+class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapping>) {
 
   val dtoPackageName = "zygarde.codegen.data.dto"
   val modelExtensionPackageName = "zygarde.codegen.model.extensions"
@@ -20,11 +20,12 @@ class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<Mo
       generateDtos(),
       generateDtoExtraValue(),
       generateMapToDtoExtension(),
+      generateApplyFromDtoExtension(),
     ).flatten()
   }
 
   private fun generateDtos(): List<FileSpec> {
-    return modelToDtoFieldMappingVoList.groupBy { it.dto }.map { e ->
+    return dtoFieldMappings.groupBy { it.dto }.map { e ->
       val dto = e.key
       val mappings = e.value
       val dtoClassName = ClassName(dtoPackageName, dto.name)
@@ -34,7 +35,6 @@ class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<Mo
         .addAnnotation(ApiModel::class)
         .addSuperinterface(Serializable::class)
       dto.superClass()?.let(dtoClassBuilder::superclass)
-      // TODO process super dto
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
       mappings.associateBy { it.modelField.fieldName }.forEach { fieldName, mapping ->
         val fieldType = mapping.fieldType()
@@ -54,7 +54,7 @@ class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<Mo
             .initializer(fieldName)
             .addAnnotation(
               AnnotationSpec.builder(ApiModelProperty::class)
-                .addMember("notes=%S", mapping.comment)
+                .addMember("notes=%S", mapping.comment ?: mapping.modelField.comment)
                 .addMember("required=%L", !fieldType.isNullable)
                 .build()
             ).build()
@@ -72,7 +72,7 @@ class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<Mo
   }
 
   private fun generateDtoExtraValue(): List<FileSpec> {
-    return modelToDtoFieldMappingVoList.filter { it.modelField.extra }.groupBy { it.dto }
+    return dtoFieldMappings.filter { it.modelField.extra }.groupBy { it.dto }
       .map { e ->
         val dto = e.key
         val mappings = e.value
@@ -108,10 +108,14 @@ class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<Mo
   }
 
   private fun generateMapToDtoExtension(): List<FileSpec> {
-    return modelToDtoFieldMappingVoList.groupBy { it.modelField.modelClass }
+    return dtoFieldMappings
+      .mapNotNull { if (it is DtoFieldMapping.ModelToDtoFieldMappingVo) it else null }
+      .groupBy { it.modelField.modelClass }
       .map { e ->
         val modelClass = e.key
-        val extensionFileSpecBuilder = FileSpec.builder(modelExtensionPackageName, "${modelClass.simpleName}ToDtoExtensions")
+        val extensionClassName = "${modelClass.simpleName}ToDtoExtensions"
+        val extensionFileSpecBuilder = FileSpec.builder(modelExtensionPackageName, extensionClassName)
+        val extensionClassBuilder = TypeSpec.objectBuilder(ClassName(modelExtensionPackageName, extensionClassName))
 
         e.value.groupBy { it.dto }.forEach { (dto, mappingsByDto) ->
           val codeBlockArgs = mutableListOf<Any>(ClassName(dtoPackageName, dto.name))
@@ -121,10 +125,11 @@ class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<Mo
             val dtoRef = mapping.dtoRef
             val q = if (mapping.modelField.fieldNullable) "?" else ""
             val valueProvider = mapping.valueProvider
+            val valueProviderParameterType = mapping.valueProviderParameterType
             val isExtraField = mapping.modelField.extra
             if (valueProvider != null) {
               codeBlockArgs.add(valueProvider)
-              val valueProviderParam = when (mapping.valueProviderParameterType) {
+              val valueProviderParam = when (valueProviderParameterType) {
                 ValueProviderParameterType.FIELD -> "this.$modelFieldName"
                 ValueProviderParameterType.OBJECT -> "this"
               }
@@ -144,7 +149,7 @@ class ModelToDtoMappingGenerator(val modelToDtoFieldMappingVoList: Collection<Mo
             }
           }
 
-          extensionFileSpecBuilder.addFunction(
+          extensionClassBuilder.addFunction(
             FunSpec.builder("to${dto.name}")
               .receiver(modelClass)
               .also {
@@ -162,11 +167,54 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
           )
         }
 
-        extensionFileSpecBuilder.build()
+        extensionFileSpecBuilder
+          .addType(extensionClassBuilder.build())
+          .build()
       }
   }
 
-  private fun ModelToDtoFieldMappingVo.fieldType(): TypeName {
+  private fun generateApplyFromDtoExtension(): List<FileSpec> {
+    return dtoFieldMappings
+      .mapNotNull { if (it is DtoFieldMapping.ModelApplyFromDtoFieldMappingVo) it else null }
+      .groupBy { it.modelField.modelClass }
+      .map { e ->
+        val modelClass = e.key
+        val extensionClassName = "${modelClass.simpleName}ApplyValueExtensions"
+        val extensionFileSpecBuilder = FileSpec.builder(modelExtensionPackageName, extensionClassName)
+        val extensionClassBuilder = TypeSpec.objectBuilder(ClassName(modelExtensionPackageName, extensionClassName))
+
+        e.value.groupBy { it.dto }.forEach { dto, mappings ->
+          val functionBuilder = FunSpec.builder("applyFrom")
+            .addParameter("req", ClassName(dtoPackageName, dto.name))
+            .receiver(modelClass)
+            .returns(modelClass)
+
+          mappings.forEach { mapping ->
+            val modelFieldName = mapping.modelField.fieldName
+            val dtoFieldName = mapping.modelField.fieldName
+            val valueProvider = mapping.valueProvider
+            if (valueProvider != null) {
+              functionBuilder.addStatement(
+                "this.${modelFieldName} = %T().getValue(req.${dtoFieldName})",
+                valueProvider
+              )
+            } else {
+              functionBuilder.addStatement("this.$modelFieldName = req.$dtoFieldName")
+            }
+          }
+
+          extensionClassBuilder.addFunction(
+            functionBuilder.addStatement("return this").build()
+          )
+        }
+
+        extensionFileSpecBuilder
+          .addType(extensionClassBuilder.build())
+          .build()
+      }
+  }
+
+  private fun DtoFieldMapping.fieldType(): TypeName {
     val mapping = this
     val fieldTypeNullable = when (mapping.forceNull) {
       ForceNull.NONE -> mapping.modelField.fieldNullable

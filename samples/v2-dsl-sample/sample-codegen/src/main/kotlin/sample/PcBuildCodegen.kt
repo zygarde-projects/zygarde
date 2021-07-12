@@ -1,32 +1,35 @@
 package sample
 
+import sample.PcBuildCodegen.PcBuildSearchReq.SearchPcBuildReq
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
-import zygarde.codegen.meta.RegisterDto
-import zygarde.codegen.meta.RegisterDtos
+import zygarde.codegen.meta.CodegenDtoSimple
+import zygarde.codegen.meta.CodegenDtoWithSuperClass
 import zygarde.codegen.value.AutoIntIdValueProvider
 import zygarde.data.jpa.search.request.PagingAndSortingRequest
-import zygarde.generated.dto.PcBuildDtos
-import zygarde.generated.dto.PcBuildDtos.PcBuildDetailDto
 import zygarde.generated.model.meta.AbstractPcBuildCodegen
+import kotlin.reflect.KClass
 
-@RegisterDtos(
-  "PcBuild",
-  RegisterDto(
-    "PcBuildDto",
-    "PcBuildDetailDto",
-    "CreatePcBuildReq",
-    "UpdatePcBuildReq"
-  ),
-  RegisterDto(
-    "SearchPcBuildReq",
-    superClass = PagingAndSortingRequest::class
-  )
-)
 class PcBuildCodegen : AbstractPcBuildCodegen() {
+
+  enum class PcBuildDtos : CodegenDtoSimple {
+    PcBuildDto,
+    PcBuildDetailDto,
+  }
+
+  enum class PcBuildSearchReq(override val superClass: KClass<*>) : CodegenDtoWithSuperClass {
+    SearchPcBuildReq(PagingAndSortingRequest::class)
+  }
+
+  enum class PcBuildCrudReq : CodegenDtoSimple {
+    CreatePcBuildReq,
+    UpdatePcBuildReq,
+  }
+
   override fun codegen() {
     id {
-      mapToDtos(*PcBuildDtos.values()) {
+      comment = "id"
+      toDto(*PcBuildDtos.values()) {
         forceNull = ForceNull.NOT_NULL
         valueProvider = AutoIntIdValueProvider::class
         valueProviderParameterType = ValueProviderParameterType.OBJECT
@@ -34,17 +37,25 @@ class PcBuildCodegen : AbstractPcBuildCodegen() {
     }
 
     name {
-      mapToDtos(*PcBuildDtos.values())
+      comment = "名稱"
+      toDto(*PcBuildDtos.values())
+      applyFrom(*PcBuildCrudReq.values())
+      fieldFor(SearchPcBuildReq) { forceNull = ForceNull.NOT_NULL }
     }
 
     description {
-      mapToDtos(*PcBuildDtos.values()) { comment = "描述" }
+      comment = "描述"
+      toDto(*PcBuildDtos.values())
+      applyFrom(*PcBuildCrudReq.values())
     }
 
-    extraField<Double>("rating", true).mapToDtos(PcBuildDetailDto) {
+    extraField<Double>("rating", true).toDto(PcBuildDtos.PcBuildDetailDto) {
       comment = "評分"
     }
 
-    extraCollectionField<String>("tags").mapToDtos(PcBuildDetailDto)
+    extraCollectionField<String>("tags") {
+      toDto(PcBuildDtos.PcBuildDetailDto)
+      SearchPcBuildReq.fieldFrom(this)
+    }
   }
 }

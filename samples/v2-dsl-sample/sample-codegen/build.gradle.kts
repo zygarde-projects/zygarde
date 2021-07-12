@@ -7,7 +7,6 @@ dependencies {
   implementation(project(":v2-sample-model-meta"))
   implementation(project(":zygarde"))
   implementation(project(":zygarde-codegen-dsl"))
-  kapt(project(":zygarde-codegen"))
 }
 tasks.getByName("bintrayUpload").enabled = false
 tasks.getByName("bootJar").enabled = false
