@@ -49,6 +49,7 @@ class ZygardeApiGenerator(
     val apiDescription: String = "",
     val serviceName: String,
     val serviceMethod: String,
+    val servicePostProcessing: Boolean,
     val reqRef: TypeName?,
     val resRef: TypeName?
   )
@@ -81,6 +82,7 @@ class ZygardeApiGenerator(
             apiDescription = genApi.apiDescription,
             serviceName = serviceName,
             serviceMethod = serviceMethod,
+            servicePostProcessing = genApi.servicePostProcessing,
             reqRef = if (genApi.reqRef.isEmpty()) {
               safeGetTypeFromAnnotation { genApi.reqRefClass.asTypeName() }.kotlin(false)
                 .takeIf { it.toString() != "java.lang.Object" }
@@ -145,6 +147,24 @@ class ZygardeApiGenerator(
             }
             .build()
         )
+        if (apisSameMethod.any { it.servicePostProcessing }) {
+          serviceInterfaceBuilder.addFunction(
+            FunSpec.builder(methodName + "PostProcessing")
+              .addModifiers(KModifier.ABSTRACT)
+              .also { fb ->
+                api.pathVariable.forEach {
+                  fb.addParameter(it.value, it.type)
+                }
+                if (api.reqRef != null) {
+                  fb.addParameter("req", api.reqRef)
+                }
+                if (api.resRef != null) {
+                  fb.addParameter("result", api.resRef)
+                }
+              }
+              .build()
+          )
+        }
       }
       serviceFileBuilder.addType(serviceInterfaceBuilder.build())
         .build()
@@ -256,10 +276,26 @@ class ZygardeApiGenerator(
               if (api.resRef != null) {
                 fb.returns(api.resRef)
               }
-              fb.addStatement(
-                "return %M<%T>().${api.serviceMethod}(${params.joinToString(",")})",
+
+              val codeBlockArgs = mutableListOf<Any>(
                 beanFunc,
                 ClassName(servicePackage, api.serviceName)
+              )
+
+              val postProcessingStatement = if (api.servicePostProcessing) {
+                val paramsForPostProcessing = params.toMutableList().also {
+                  it.add("result")
+                }
+                codeBlockArgs.add(beanFunc)
+                codeBlockArgs.add(ClassName(servicePackage, api.serviceName))
+                ".also{ result -> %M<%T>().${api.serviceMethod}PostProcessing(${paramsForPostProcessing.joinToString(",")}) }"
+              } else {
+                ""
+              }
+
+              fb.addStatement(
+                "return %M<%T>().${api.serviceMethod}(${params.joinToString(",")})$postProcessingStatement",
+                *codeBlockArgs.toTypedArray()
               )
             }
             .build()

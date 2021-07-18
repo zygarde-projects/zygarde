@@ -52,27 +52,8 @@ class ZygardeEntityFieldGenerator(
     }
     elements.forEach {
       generateFields(it)
-      generateMetaFields(it)
       generateExtensionFunctions(elements, it)
     }
-  }
-
-  private fun generateMetaFields(entityElement: Element) {
-    val className = entityElement.simpleName.toString()
-    val pack = packageName(processingEnv.options.getOrDefault(ENTITY_PACKAGE_SEARCH, "entity.meta"))
-    val fileNameForFields = "${className}Meta"
-    val classBuilder = TypeSpec.objectBuilder(fileNameForFields)
-
-    entityElement.allFieldsIncludeSuper().forEach { field ->
-      classBuilder.addProperty(
-        field.buildMetaProperty(entityElement)
-      )
-    }
-
-    FileSpec.builder(pack, fileNameForFields)
-      .addType(classBuilder.build())
-      .build()
-      .writeTo(folderToGenerate())
   }
 
   private fun generateFields(element: Element) {

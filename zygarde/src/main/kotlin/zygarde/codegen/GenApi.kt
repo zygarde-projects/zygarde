@@ -12,6 +12,7 @@ annotation class GenApi(
   val api: String,
   val apiDescription: String = "",
   val service: String,
+  val servicePostProcessing: Boolean = false,
   val reqRef: String = "",
   val reqRefClass: KClass<*> = Any::class,
   val reqCollection: Boolean = false,

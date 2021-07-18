@@ -16,6 +16,7 @@ import zygarde.codegen.ZyApi
       api = "AuthorApi.createBook",
       apiDescription = "create a book to author",
       service = "AuthorService.createBook",
+      servicePostProcessing = true,
       reqRef = "BookCreateRequest",
       resRef = BookApiSpec.DTO_BOOK_DETAIL
     )
