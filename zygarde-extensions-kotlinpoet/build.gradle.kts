@@ -4,3 +4,4 @@ dependencies {
 }
 
 tasks.getByName("jar").enabled = true
+tasks.getByName("printCoverage").enabled = false

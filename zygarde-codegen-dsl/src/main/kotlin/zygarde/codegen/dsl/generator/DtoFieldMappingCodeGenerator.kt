@@ -195,7 +195,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
             val valueProvider = mapping.valueProvider
             if (valueProvider != null) {
               functionBuilder.addStatement(
-                "this.${modelFieldName} = %T().getValue(req.${dtoFieldName})",
+                "this.$modelFieldName = %T().getValue(req.$dtoFieldName)",
                 valueProvider
               )
             } else {
