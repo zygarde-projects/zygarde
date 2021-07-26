@@ -262,7 +262,7 @@ class ZygardeApiPropGenerator(
           "  ${it.dtoFieldName} = %T().getValue(this)"
         } else if (it.valueProvider != null) {
           codeBlockArgs.add(it.valueProvider)
-          "  ${it.dtoFieldName} = %T().getValue(this.${it.entityFieldName})"
+          "  ${it.dtoFieldName} = this.${it.entityFieldName}$q.let{ %T().getValue(it) } "
         } else if (it.dtoRef.isNotEmpty()) {
           codeBlockArgs.add(MemberName(dtoPackageName, "to${it.dtoRef}"))
           if (it.dtoRefCollection) {
@@ -298,8 +298,9 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
     dtoFieldDescriptions
       .forEach {
         if (it.valueProvider != null) {
+          val q = if (it.fieldType.isNullable) "?" else ""
           functionBuilder.addStatement(
-            "this.${it.entityFieldName} = %T().getValue(req.${it.dtoFieldName})",
+            "this.${it.entityFieldName} = req.${it.dtoFieldName}$q.let{ %T().getValue(it) }",
             it.valueProvider
           )
         } else {
