@@ -102,7 +102,14 @@ class ZygardeApiGenerator(
                 }
               }
             },
-            resRef = if (genApi.resRef.isEmpty()) null else ClassName(dtoPackage, genApi.resRef).let {
+            resRef = (
+              if (genApi.resRef.isEmpty()) {
+                safeGetTypeFromAnnotation { genApi.resRefClass.asTypeName() }.kotlin(false)
+                  .takeIf { it.toString() != "java.lang.Object" }
+              } else {
+                ClassName(dtoPackage, genApi.resRef)
+              }
+              )?.let {
               if (genApi.resCollection) {
                 Collection::class.generic(it)
               } else if (genApi.resPage) {

@@ -17,6 +17,7 @@ annotation class GenApi(
   val reqRefClass: KClass<*> = Any::class,
   val reqCollection: Boolean = false,
   val resRef: String = "",
+  val resRefClass: KClass<*> = Any::class,
   val resCollection: Boolean = false,
   val resPage: Boolean = false
 )
