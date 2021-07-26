@@ -55,8 +55,10 @@ abstract class DslCodegen<E : Any>(val modelClass: KClass<E>) {
   protected inline fun <reified F : Any> extraField(
     fieldName: String,
     nullable: Boolean = false,
+    dsl: (ModelMetaField<E, F>.() -> Unit) = {},
   ): ModelMetaField<E, F> {
     return ModelMetaField(modelClass, fieldName, F::class, nullable, true)
+      .also(dsl)
   }
 
   protected inline fun <reified F : Any> extraCollectionField(
