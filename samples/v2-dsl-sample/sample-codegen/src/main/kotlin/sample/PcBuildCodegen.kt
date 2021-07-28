@@ -57,5 +57,13 @@ class PcBuildCodegen : AbstractPcBuildCodegen() {
       toDto(PcBuildDtos.PcBuildDetailDto)
       SearchPcBuildReq.fieldFrom(this)
     }
+
+    PcBuildDtos.PcBuildDto.fieldRefDto(
+      fieldName = "image",
+      dtoRef = ImageCodegen.ImageModels.ImageDto,
+      nullable = true
+    ) {
+      comment = "Main Image of this build"
+    }
   }
 }

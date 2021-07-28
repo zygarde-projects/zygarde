@@ -21,8 +21,8 @@ sealed class DtoFieldMapping(
     override var modelField: ModelMetaField<*, *>,
     override var dto: CodegenDto,
   ) : DtoFieldMapping(
-    modelField,
-    dto,
+    modelField = modelField,
+    dto = dto,
   )
 
   data class ModelToDtoFieldMappingVo(

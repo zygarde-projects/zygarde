@@ -36,7 +36,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
         .addSuperinterface(Serializable::class)
       dto.superClass()?.let(dtoClassBuilder::superclass)
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
-      mappings.associateBy { it.modelField.fieldName }.forEach { fieldName, mapping ->
+      mappings.associateBy { it.modelField.fieldName }.forEach { (fieldName, mapping) ->
         val fieldType = mapping.fieldType()
         dtoConstructorBuilder.addParameter(
           ParameterSpec
@@ -135,6 +135,8 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
               }
 
               "  $dtoFieldName = %T().getValue($valueProviderParam)"
+            } else if (isExtraField) {
+              "  $dtoFieldName = extraValues.$modelFieldName"
             } else if (dtoRef != null) {
               codeBlockArgs.add(MemberName(modelExtensionPackageName, "to${dtoRef.name}"))
               if (mapping.refCollection) {
@@ -142,8 +144,6 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
               } else {
                 "  $dtoFieldName = this.$modelFieldName$q.%M()"
               }
-            } else if (isExtraField) {
-              "  $dtoFieldName = extraValues.$modelFieldName"
             } else {
               "  $dtoFieldName = this.$modelFieldName"
             }

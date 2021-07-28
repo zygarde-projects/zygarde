@@ -23,7 +23,7 @@ abstract class DslCodegen<E : Any>(val modelClass: KClass<E>) {
     dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit)? = null
   ) {
     dtos.forEach { dto ->
-      DtoFieldMapping.ModelToDtoFieldMappingVo(this, dto)
+      DtoFieldMapping.ModelToDtoFieldMappingVo(modelField = this, dto = dto)
         .also {
           dsl?.invoke(it)
         }
@@ -68,6 +68,25 @@ abstract class DslCodegen<E : Any>(val modelClass: KClass<E>) {
   ): ModelMetaField<E, Collection<*>> {
     return ModelMetaField(modelClass, fieldName, Collection::class, nullable, true, arrayOf(F::class))
       .also(dsl)
+  }
+
+  protected fun CodegenDto.fieldRefDto(
+    fieldName: String,
+    dtoRef: CodegenDto,
+    nullable: Boolean = false,
+    dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = {}
+  ): CodegenDto {
+    dtoFieldMappings.add(
+      DtoFieldMapping.ModelToDtoFieldMappingVo(
+        modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
+        dto = this
+      )
+        .also {
+          it.dtoRef = dtoRef
+        }
+        .also(dsl)
+    )
+    return this
   }
 
   /**
