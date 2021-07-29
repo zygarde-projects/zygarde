@@ -138,7 +138,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
             } else if (isExtraField) {
               "  $dtoFieldName = extraValues.$modelFieldName"
             } else if (dtoRef != null) {
-              codeBlockArgs.add(MemberName(modelExtensionPackageName, "to${dtoRef.name}"))
+              codeBlockArgs.add(MemberName("${modelExtensionPackageName}ToDtoExtensions", "to${dtoRef.name}"))
               if (mapping.refCollection) {
                 "  $dtoFieldName = this.$modelFieldName$q.map{it.%M()}"
               } else {
@@ -227,5 +227,6 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         ?: mapping.dtoRef?.let { ClassName(dtoPackageName, it.name) }
         ?: mapping.modelField.fieldClass.generic(*mapping.modelField.genericClasses)
       ).kotlin(fieldTypeNullable)
+      .let { if (mapping.refCollection) Collection::class.generic(it) else it }
   }
 }
