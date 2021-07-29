@@ -5,6 +5,8 @@ import zygarde.codegen.ApiPathVariable
 import zygarde.codegen.GenApi
 import zygarde.codegen.ZyApi
 
+data class CurrentUser(val id: Int)
+
 @ZyApi(
   [
     GenApi(
@@ -18,7 +20,8 @@ import zygarde.codegen.ZyApi
       service = "AuthorService.createBook",
       servicePostProcessing = true,
       reqRef = "BookCreateRequest",
-      resRef = BookApiSpec.DTO_BOOK_DETAIL
+      resRef = BookApiSpec.DTO_BOOK_DETAIL,
+      authenticationDetail = CurrentUser::class,
     )
   ]
 )

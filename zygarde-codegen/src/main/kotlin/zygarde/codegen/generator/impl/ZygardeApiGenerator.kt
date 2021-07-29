@@ -12,8 +12,6 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
-import javax.annotation.processing.ProcessingEnvironment
-import javax.lang.model.element.Element
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.cloud.openfeign.SpringQueryMap
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -24,11 +22,13 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import zygarde.data.api.PageDto
 import zygarde.codegen.ZyApi
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
+import zygarde.data.api.PageDto
+import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.Element
 
 class ZygardeApiGenerator(
   processingEnv: ProcessingEnvironment
@@ -51,7 +51,8 @@ class ZygardeApiGenerator(
     val serviceMethod: String,
     val servicePostProcessing: Boolean,
     val reqRef: TypeName?,
-    val resRef: TypeName?
+    val resRef: TypeName?,
+    val authenticationDetail: TypeName?,
   )
 
   private val dtoPackage = packageName("data.dto")
@@ -67,6 +68,44 @@ class ZygardeApiGenerator(
         zygardeApi.api.map { genApi ->
           val (apiName, apiOperation) = genApi.api.split(".").let { it[0] to it[1] }
           val (serviceName, serviceMethod) = genApi.service.split(".").let { it[0] to it[1] }
+          val reqRef = if (genApi.reqRef.isEmpty()) {
+            safeGetTypeFromAnnotation { genApi.reqRefClass.asTypeName() }.kotlin(false)
+              .takeIf { it.toString() != "java.lang.Object" }
+              ?.let {
+                if (genApi.reqCollection) {
+                  Collection::class.generic(it)
+                } else {
+                  it
+                }
+              }
+          } else {
+            ClassName(dtoPackage, genApi.reqRef).let {
+              if (genApi.reqCollection) {
+                Collection::class.generic(it)
+              } else {
+                it
+              }
+            }
+          }
+          val resRefTypeName = if (genApi.resRef.isEmpty()) {
+            safeGetTypeFromAnnotation { genApi.resRefClass.asTypeName() }.kotlin(false)
+              .takeIf { it.toString() != "java.lang.Object" }
+          } else {
+            ClassName(dtoPackage, genApi.resRef)
+          }
+          val resRef = resRefTypeName?.let {
+            when {
+              genApi.resCollection -> {
+                Collection::class.generic(it)
+              }
+              genApi.resPage -> {
+                PageDto::class.generic(it)
+              }
+              else -> {
+                it
+              }
+            }
+          }
           GenApiDescriptionVo(
             elem,
             method = genApi.method,
@@ -83,41 +122,10 @@ class ZygardeApiGenerator(
             serviceName = serviceName,
             serviceMethod = serviceMethod,
             servicePostProcessing = genApi.servicePostProcessing,
-            reqRef = if (genApi.reqRef.isEmpty()) {
-              safeGetTypeFromAnnotation { genApi.reqRefClass.asTypeName() }.kotlin(false)
-                .takeIf { it.toString() != "java.lang.Object" }
-                ?.let {
-                  if (genApi.reqCollection) {
-                    Collection::class.generic(it)
-                  } else {
-                    it
-                  }
-                }
-            } else {
-              ClassName(dtoPackage, genApi.reqRef).let {
-                if (genApi.reqCollection) {
-                  Collection::class.generic(it)
-                } else {
-                  it
-                }
-              }
-            },
-            resRef = (
-              if (genApi.resRef.isEmpty()) {
-                safeGetTypeFromAnnotation { genApi.resRefClass.asTypeName() }.kotlin(false)
-                  .takeIf { it.toString() != "java.lang.Object" }
-              } else {
-                ClassName(dtoPackage, genApi.resRef)
-              }
-              )?.let {
-              if (genApi.resCollection) {
-                Collection::class.generic(it)
-              } else if (genApi.resPage) {
-                PageDto::class.generic(it)
-              } else {
-                it
-              }
-            }
+            reqRef = reqRef,
+            resRef = resRef,
+            authenticationDetail = safeGetTypeFromAnnotation { genApi.authenticationDetail.asTypeName() }.kotlin(false)
+              .takeIf { it.toString() != "java.lang.Object" },
           )
         }
       } ?: emptyList()
@@ -148,6 +156,11 @@ class ZygardeApiGenerator(
               if (api.reqRef != null) {
                 fb.addParameter("req", api.reqRef)
               }
+              if (api.authenticationDetail != null) {
+                fb.addParameter(
+                  ParameterSpec("authenticationDetail", api.authenticationDetail)
+                )
+              }
               if (api.resRef != null) {
                 fb.returns(api.resRef)
               }
@@ -164,6 +177,11 @@ class ZygardeApiGenerator(
                 }
                 if (api.reqRef != null) {
                   fb.addParameter("req", api.reqRef)
+                }
+                if (api.authenticationDetail != null) {
+                  fb.addParameter(
+                    ParameterSpec("authenticationDetail", api.authenticationDetail)
+                  )
                 }
                 if (api.resRef != null) {
                   fb.addParameter("result", api.resRef)
@@ -265,23 +283,28 @@ class ZygardeApiGenerator(
           FunSpec.builder(api.apiOperation)
             .addModifiers(KModifier.OVERRIDE)
             .also { fb ->
-              val params = mutableListOf<String>()
+              val paramsToCallServiceInterface = mutableListOf<String>()
               api.pathVariable.forEach { pv ->
-                params.add(pv.value)
+                paramsToCallServiceInterface.add(pv.value)
                 fb.addParameter(
                   ParameterSpec.builder(pv.value, pv.type)
                     .build()
                 )
               }
               if (api.reqRef != null) {
-                params.add("req")
+                paramsToCallServiceInterface.add("req")
                 fb.addParameter(
                   ParameterSpec.builder("req", api.reqRef)
                     .build()
                 )
               }
+
               if (api.resRef != null) {
                 fb.returns(api.resRef)
+              }
+
+              if (api.authenticationDetail != null) {
+                paramsToCallServiceInterface.add("authenticationDetail")
               }
 
               val codeBlockArgs = mutableListOf<Any>(
@@ -290,7 +313,7 @@ class ZygardeApiGenerator(
               )
 
               val postProcessingStatement = if (api.servicePostProcessing) {
-                val paramsForPostProcessing = params.toMutableList().also {
+                val paramsForPostProcessing = paramsToCallServiceInterface.toMutableList().also {
                   it.add("result")
                 }
                 codeBlockArgs.add(beanFunc)
@@ -300,8 +323,16 @@ class ZygardeApiGenerator(
                 ""
               }
 
+              if (api.authenticationDetail != null) {
+                fb.addStatement(
+                  "val authenticationDetail = %M<%T>()",
+                  MemberName("zygarde.core.extension.SpringSecurityExtensions", "currentAuthenticationDetail"),
+                  api.authenticationDetail
+                )
+              }
+
               fb.addStatement(
-                "return %M<%T>().${api.serviceMethod}(${params.joinToString(",")})$postProcessingStatement",
+                "return %M<%T>().${api.serviceMethod}(${paramsToCallServiceInterface.joinToString(",")})$postProcessingStatement",
                 *codeBlockArgs.toTypedArray()
               )
             }

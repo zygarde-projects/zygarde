@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./gradlew clean build publish -Pversion=1.1.5
+./gradlew clean build publish -Pversion=1.1.6
