@@ -8,6 +8,7 @@ import zygarde.codegen.ZygardeKaptOptions.Companion.MODEL_META_GENERATE_PACKAGE
 import zygarde.codegen.dsl.DslCodegen
 import zygarde.codegen.extension.kotlinpoet.*
 import zygarde.codegen.generator.AbstractZygardeGenerator
+import zygarde.codegen.meta.Comment
 import zygarde.codegen.meta.ModelMetaField
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
@@ -62,9 +63,14 @@ class ZygardeModelMetaGenerator(
     modelElement: Element
   ): PropertySpec {
     val fieldType = modelElement.resolveFieldType(this)
+    val comment = this.getAnnotationsByType(Comment::class.java)
+      .map { it.comment }
+      .firstOrNull()
+      .orEmpty()
+    val fieldName = fieldName()
     return PropertySpec
       .builder(
-        fieldName(),
+        fieldName,
         ModelMetaField::class.asClassName().parameterizedBy(
           modelElement.typeName(),
           fieldType
@@ -74,11 +80,12 @@ class ZygardeModelMetaGenerator(
       .initializer(
         CodeBlock.builder()
           .addStatement(
-            """%T(%T::class,"${fieldName()}",%T::class,%L)""",
+            """%T(modelClass=%T::class,fieldName="$fieldName",fieldClass=%T::class,fieldNullable=%L,comment=%S)""",
             ModelMetaField::class.asClassName(),
             modelElement.typeName(),
             fieldType,
-            nullableTypeName().isNullable
+            nullableTypeName().isNullable,
+            comment,
           )
           .build()
       )
