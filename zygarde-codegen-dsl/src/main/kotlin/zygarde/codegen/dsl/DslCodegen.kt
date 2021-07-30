@@ -74,6 +74,25 @@ abstract class DslCodegen<E : Any>(val modelClass: KClass<E>) {
     fieldName: String,
     dtoRef: CodegenDto,
     nullable: Boolean = false,
+    dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}
+  ): CodegenDto {
+    dtoFieldMappings.add(
+      DtoFieldMapping.DtoFieldNoMapping(
+        modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
+        dto = this
+      )
+        .also {
+          it.dtoRef = dtoRef
+        }
+        .also(dsl)
+    )
+    return this
+  }
+
+  protected fun CodegenDto.fieldRefToDto(
+    fieldName: String,
+    dtoRef: CodegenDto,
+    nullable: Boolean = false,
     dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = {}
   ): CodegenDto {
     dtoFieldMappings.add(

@@ -58,7 +58,7 @@ class PcBuildCodegen : AbstractPcBuildCodegen() {
       SearchPcBuildReq.fieldFrom(this)
     }
 
-    PcBuildDtos.PcBuildDto.fieldRefDto(
+    PcBuildDtos.PcBuildDto.fieldRefToDto(
       fieldName = "image",
       dtoRef = ImageCodegen.ImageModels.ImageDto,
       nullable = true
