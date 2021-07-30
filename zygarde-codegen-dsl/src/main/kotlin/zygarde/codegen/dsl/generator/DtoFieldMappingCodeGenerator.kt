@@ -138,7 +138,13 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
             } else if (isExtraField) {
               "  $dtoFieldName = extraValues.$modelFieldName"
             } else if (dtoRef != null) {
-              codeBlockArgs.add(MemberName("${modelExtensionPackageName}ToDtoExtensions", "to${dtoRef.name}"))
+              val modelForToDtoExtensions = mapping.modelField.fieldClass.simpleName
+              codeBlockArgs.add(
+                MemberName(
+                  "$modelExtensionPackageName.${modelForToDtoExtensions}ToDtoExtensions",
+                  "to${dtoRef.name}"
+                )
+              )
               if (mapping.refCollection) {
                 "  $dtoFieldName = this.$modelFieldName$q.map{it.%M()}"
               } else {
