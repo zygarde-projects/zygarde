@@ -1,6 +1,16 @@
 package zygarde.codegen.dsl.generator
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
@@ -8,7 +18,10 @@ import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
+import zygarde.codegen.meta.Comment
 import java.io.Serializable
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.memberProperties
 
 class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapping>) {
 
@@ -34,14 +47,30 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
         .addModifiers(KModifier.DATA)
         .addAnnotation(ApiModel::class)
         .addSuperinterface(Serializable::class)
-      dto.superClass()?.let(dtoClassBuilder::superclass)
+      dto.superClass()?.also { superClass ->
+        if (superClass.java.isInterface) {
+          dtoClassBuilder.addSuperinterface(superClass)
+        } else {
+          dtoClassBuilder.superclass(superClass)
+        }
+      }
+
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
-      mappings.associateBy { it.modelField.fieldName }.forEach { (fieldName, mapping) ->
-        val fieldType = mapping.fieldType()
+      val fieldNameToInterfacePropertyMap = dto.superClass()?.takeIf { it.java.isInterface }?.memberProperties?.associateBy { it.name } ?: emptyMap()
+      val fieldNameToMappingMap = mappings.associateBy { it.modelField.fieldName }
+
+      listOf(fieldNameToInterfacePropertyMap.keys, fieldNameToMappingMap.keys).flatten().toSet().forEach { fieldName ->
+        val memberFromSuperInterface = fieldNameToInterfacePropertyMap[fieldName]
+        val mapping = fieldNameToMappingMap[fieldName]
+        val fieldType = memberFromSuperInterface?.returnType?.asTypeName() ?: mapping?.fieldType() ?: return@forEach
+        val comment = mapping?.comment ?: mapping?.modelField?.comment ?: memberFromSuperInterface?.findAnnotation<Comment>()?.comment
         dtoConstructorBuilder.addParameter(
           ParameterSpec
             .builder(fieldName, fieldType)
             .also {
+              if (memberFromSuperInterface != null) {
+                it.addModifiers(KModifier.OVERRIDE)
+              }
               if (fieldType.isNullable) {
                 it.defaultValue("null")
               }
@@ -54,7 +83,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
             .initializer(fieldName)
             .addAnnotation(
               AnnotationSpec.builder(ApiModelProperty::class)
-                .addMember("notes=%S", mapping.comment ?: mapping.modelField.comment)
+                .addMember("notes=%S", comment.orEmpty())
                 .addMember("required=%L", !fieldType.isNullable)
                 .build()
             ).build()
@@ -72,7 +101,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
   }
 
   private fun generateDtoExtraValue(): List<FileSpec> {
-    return dtoFieldMappings.filter { it.modelField.extra }.groupBy { it.dto }
+    return dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }.groupBy { it.dto }
       .map { e ->
         val dto = e.key
         val mappings = e.value
