@@ -29,6 +29,7 @@ import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.api.PageDto
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
+import javax.validation.Valid
 
 class ZygardeApiGenerator(
   processingEnv: ProcessingEnvironment
@@ -254,6 +255,9 @@ class ZygardeApiGenerator(
                       } else {
                         RequestBody::class
                       }
+                    )
+                    .addAnnotation(
+                      Valid::class
                     )
                     .build()
                 )

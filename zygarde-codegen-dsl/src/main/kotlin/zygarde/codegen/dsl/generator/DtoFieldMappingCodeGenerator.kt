@@ -87,7 +87,13 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
                 .addMember("notes=%S", comment.orEmpty())
                 .addMember("required=%L", !fieldType.isNullable)
                 .build()
-            ).build()
+            )
+            .also { p ->
+              mapping?.validations?.toSet()?.forEach {
+                p.addAnnotation(it.buildAnnotation())
+              }
+            }
+            .build()
         )
       }
 

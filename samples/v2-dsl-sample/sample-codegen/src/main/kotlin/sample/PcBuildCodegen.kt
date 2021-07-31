@@ -1,6 +1,7 @@
 package sample
 
 import sample.PcBuildCodegen.PcBuildSearchReq.SearchPcBuildReq
+import zygarde.codegen.dsl.model.internal.DtoFieldValidation
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDtoSimple
@@ -39,7 +40,9 @@ class PcBuildCodegen : AbstractPcBuildCodegen() {
     name {
       comment = "名稱"
       toDto(*PcBuildDtos.values())
-      applyFrom(*PcBuildCrudReq.values())
+      applyFrom(*PcBuildCrudReq.values()) {
+        validations.add(DtoFieldValidation.Regex("^[A-Z]{1,10}\$".toRegex(), "name should have length between 1 to 10"))
+      }
       fieldFor(SearchPcBuildReq) { forceNull = ForceNull.NOT_NULL }
     }
 

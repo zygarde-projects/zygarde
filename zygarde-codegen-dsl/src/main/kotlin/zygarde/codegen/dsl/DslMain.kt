@@ -22,7 +22,7 @@ fun main() {
     clz.newInstance() as DslCodegen<*>
   }
 
-  modelMappingCodegenList.forEach { it.execte() }
+  modelMappingCodegenList.forEach { it.execute() }
 
   val dtoFieldMappings = modelMappingCodegenList.flatMap { it.dtoFieldMappings }
 

@@ -9,7 +9,7 @@ abstract class DslCodegen<E : Any>(val modelClass: KClass<E>) {
 
   val dtoFieldMappings = mutableListOf<DtoFieldMapping>()
 
-  fun execte() {
+  fun execute() {
     codegen()
   }
 
