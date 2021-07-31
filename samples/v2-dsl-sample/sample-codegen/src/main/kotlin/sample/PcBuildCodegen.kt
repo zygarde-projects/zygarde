@@ -59,11 +59,18 @@ class PcBuildCodegen : AbstractPcBuildCodegen() {
     }
 
     PcBuildDtos.PcBuildDto.fieldRefToDto(
-      fieldName = "image",
+      fieldName = "mainImage",
       dtoRef = ImageCodegen.ImageModels.ImageDto,
       nullable = true
     ) {
       comment = "Main Image of this build"
+    }
+
+    PcBuildDtos.PcBuildDto.fieldRefToDtoCollection(
+      fieldName = "otherImages",
+      dtoRef = ImageCodegen.ImageModels.ImageDto,
+    ) {
+      comment = "other images"
     }
   }
 }

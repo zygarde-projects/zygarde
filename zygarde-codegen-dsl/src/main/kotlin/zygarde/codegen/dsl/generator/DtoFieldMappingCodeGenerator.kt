@@ -27,6 +27,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
 
   val dtoPackageName = "zygarde.codegen.data.dto"
   val modelExtensionPackageName = "zygarde.codegen.model.extensions"
+  var dtoToExtraToDtoMappingMap = dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }.groupBy { it.dto }
 
   fun generateFileSpec(): Collection<FileSpec> {
     return listOf(
@@ -101,7 +102,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
   }
 
   private fun generateDtoExtraValue(): List<FileSpec> {
-    return dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }.groupBy { it.dto }
+    return dtoToExtraToDtoMappingMap
       .map { e ->
         val dto = e.key
         val mappings = e.value
@@ -148,6 +149,14 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
 
         e.value.groupBy { it.dto }.forEach { (dto, mappingsByDto) ->
           val codeBlockArgs = mutableListOf<Any>(ClassName(dtoPackageName, dto.name))
+          val toDtoFuncParameters = mutableListOf<ParameterSpec>()
+
+          if (mappingsByDto.any { it.modelField.extra }) {
+            toDtoFuncParameters.add(
+              ParameterSpec("extraValues", ClassName(dtoPackageName, "${dto.name}ExtraValues"))
+            )
+          }
+
           val dtoFieldSetterStatements = mappingsByDto.map { mapping ->
             val dtoFieldName = mapping.modelField.fieldName
             val modelFieldName = mapping.modelField.fieldName
@@ -177,7 +186,17 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
               if (mapping.refCollection) {
                 "  $dtoFieldName = this.$modelFieldName$q.map{it.%M()}"
               } else {
-                "  $dtoFieldName = this.$modelFieldName$q.%M()"
+                if (dtoToExtraToDtoMappingMap[dtoRef] != null) {
+                  toDtoFuncParameters.add(
+                    ParameterSpec(
+                      "${modelFieldName}ExtraValues",
+                      ClassName(dtoPackageName, "${dtoRef.name}ExtraValues")
+                    )
+                  )
+                  "  $dtoFieldName = this.$modelFieldName$q.%M(${modelFieldName}ExtraValues)"
+                } else {
+                  "  $dtoFieldName = this.$modelFieldName$q.%M()"
+                }
               }
             } else {
               "  $dtoFieldName = this.$modelFieldName"
@@ -187,9 +206,9 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
           extensionClassBuilder.addFunction(
             FunSpec.builder("to${dto.name}")
               .receiver(modelClass)
-              .also {
-                if (mappingsByDto.any { it.modelField.extra }) {
-                  it.addParameter("extraValues", ClassName(dtoPackageName, "${dto.name}ExtraValues"))
+              .also { fb ->
+                toDtoFuncParameters.forEach {
+                  fb.addParameter(it)
                 }
               }
               .addStatement(
