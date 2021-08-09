@@ -13,8 +13,15 @@ sealed class DtoFieldValidation(
     override val message: String,
   ) : DtoFieldValidation(message) {
     override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(Pattern::class)
+      .useSiteTarget(AnnotationSpec.UseSiteTarget.FIELD)
       .addMember("regexp=%S", regexp.pattern)
       .addMember("message=%S", message)
       .build()
+  }
+
+  data class Email(
+    override val message: String,
+  ) : DtoFieldValidation(message) {
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Email::class).build()
   }
 }
