@@ -143,4 +143,26 @@ abstract class DslCodegen<E : Any>(val modelClass: KClass<E>) {
     }
     return this
   }
+
+  /**
+   * alternative way of ModelMetaField<E, *>.toDto
+   */
+  protected fun CodegenDto.modelToDto(
+    vararg modelFields: ModelMetaField<E, *>,
+    dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = {}
+  ): CodegenDto {
+    modelFields.forEach { it.toDto(this, dsl = dsl) }
+    return this
+  }
+
+  /**
+   * alternative way of ModelMetaField<E, *>.applyFrom
+   */
+  protected fun CodegenDto.dtoToModel(
+    vararg modelFields: ModelMetaField<E, *>,
+    dsl: (DtoFieldMapping.ModelApplyFromDtoFieldMappingVo.() -> Unit) = {}
+  ): CodegenDto {
+    modelFields.forEach { it.applyFrom(this, dsl = dsl) }
+    return this
+  }
 }
