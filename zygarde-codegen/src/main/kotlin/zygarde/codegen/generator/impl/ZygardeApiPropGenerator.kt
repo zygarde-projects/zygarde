@@ -3,7 +3,6 @@ package zygarde.codegen.generator.impl
 import com.squareup.kotlinpoet.*
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
-import zygarde.codegen.ZygardeKaptOptions
 import java.io.Serializable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
@@ -12,6 +11,7 @@ import zygarde.codegen.AdditionalDtoProps
 import zygarde.codegen.ApiProp
 import zygarde.codegen.DtoInherits
 import zygarde.codegen.SearchType
+import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.value.NoOpValueProvider
 import zygarde.codegen.extension.kotlinpoet.*
 import zygarde.codegen.generator.AbstractZygardeGenerator

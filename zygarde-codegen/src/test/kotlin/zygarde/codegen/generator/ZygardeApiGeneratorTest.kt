@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.processor.ZygardeApiProcessor
+import zygarde.codegen.processor.ZygardeJpaProcessor
 
 class ZygardeApiGeneratorTest {
 
@@ -23,7 +24,7 @@ class ZygardeApiGeneratorTest {
         ClassPathResource("codegen/entity/User.kt").file
       ).map { SourceFile.fromPath(it) }
       jvmTarget = JvmTarget.JVM_1_8.description
-      annotationProcessors = listOf(ZygardeApiProcessor())
+      annotationProcessors = listOf(ZygardeJpaProcessor(), ZygardeApiProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
       kaptArgs.put(ZygardeKaptOptions.BASE_PACKAGE, "foo.generated")

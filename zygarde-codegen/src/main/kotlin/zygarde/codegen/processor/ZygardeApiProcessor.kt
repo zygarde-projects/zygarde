@@ -1,16 +1,18 @@
 package zygarde.codegen.processor
 
 import com.google.auto.service.AutoService
-import javax.lang.model.SourceVersion
-import javax.lang.model.element.TypeElement
-import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZyApi
 import zygarde.codegen.ZyModel
+import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.generator.impl.ZygardeApiGenerator
 import zygarde.codegen.generator.impl.ZygardeApiPropGenerator
-import zygarde.codegen.generator.impl.ZygardeEntityFieldGenerator
-import javax.annotation.processing.*
-import javax.persistence.Entity
+import javax.annotation.processing.AbstractProcessor
+import javax.annotation.processing.Processor
+import javax.annotation.processing.RoundEnvironment
+import javax.annotation.processing.SupportedOptions
+import javax.annotation.processing.SupportedSourceVersion
+import javax.lang.model.SourceVersion
+import javax.lang.model.element.TypeElement
 
 @AutoService(Processor::class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -24,8 +26,6 @@ class ZygardeApiProcessor : AbstractProcessor() {
   override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
     val elementsAnnotatedWithZyModel = roundEnv.getElementsAnnotatedWith(ZyModel::class.java)
     val elementsAnnotatedWithZyApi = roundEnv.getElementsAnnotatedWith(ZyApi::class.java)
-    val elementsAnnotatedWithEntity = roundEnv.getElementsAnnotatedWith(Entity::class.java)
-    ZygardeEntityFieldGenerator(processingEnv).generateSearchFieldForEntityElements(elementsAnnotatedWithEntity)
     ZygardeApiPropGenerator(processingEnv).generateModelForZyModelElements(elementsAnnotatedWithZyModel)
     ZygardeApiGenerator(processingEnv).generateApi(elementsAnnotatedWithZyApi)
     return false

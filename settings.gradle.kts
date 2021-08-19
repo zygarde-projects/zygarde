@@ -1,8 +1,12 @@
 rootProject.name = "zygarde"
 
 include("zygarde")
+include("zygarde-core")
+include("zygarde-jpa")
 include("zygarde-codegen")
+include("zygarde-codegen-base")
 include("zygarde-codegen-dsl")
+include("zygarde-codegen-jpa")
 include("zygarde-extensions-kotlinpoet")
 include("zygarde-test")
 include("v2-sample-core")

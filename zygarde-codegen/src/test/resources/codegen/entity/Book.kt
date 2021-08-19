@@ -1,8 +1,5 @@
 package codegen.entity
 
-import codegen.entity.Author
-import codegen.entity.BookTagsValueProvider
-import codegen.entity.User
 import codegen.spec.AuthorApiSpec
 import codegen.spec.BookApiSpec.Companion.DTO_BOOK
 import codegen.spec.BookApiSpec.Companion.DTO_BOOK_DETAIL

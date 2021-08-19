@@ -3,6 +3,10 @@ apply(plugin = "io.spring.dependency-management")
 
 dependencies {
   implementation(project(":zygarde"))
+  implementation(project(":zygarde-core"))
+  implementation(project(":zygarde-jpa"))
+  implementation(project(":zygarde-codegen-jpa"))
+  implementation(project(":zygarde-codegen-base"))
   implementation(project(":zygarde-codegen-dsl"))
   implementation(project(":zygarde-extensions-kotlinpoet"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")

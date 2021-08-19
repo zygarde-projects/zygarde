@@ -3,6 +3,8 @@ apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
+  api(project(":zygarde-jpa"))
+  api(project(":zygarde-core"))
   api("org.springframework.boot:spring-boot-starter-data-jpa")
   api("org.springframework.boot:spring-boot-starter-json")
   api("org.springframework.boot:spring-boot-starter-web")
