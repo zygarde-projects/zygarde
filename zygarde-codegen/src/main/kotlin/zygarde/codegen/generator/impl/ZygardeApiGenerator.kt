@@ -330,7 +330,7 @@ class ZygardeApiGenerator(
                 }
                 codeBlockArgs.add(beanFunc)
                 codeBlockArgs.add(ClassName(servicePackage, api.serviceName))
-                ".also{ result -> %M<%T>().${api.serviceMethod}PostProcessing(${paramsForPostProcessing.joinToString(",")}) }"
+                "\r\n\t\t.also{ result -> %M<%T>().${api.serviceMethod}PostProcessing(${paramsForPostProcessing.joinToString(",")}) }"
               } else {
                 ""
               }
@@ -344,7 +344,7 @@ class ZygardeApiGenerator(
               }
 
               fb.addStatement(
-                "return %M<%T>().${api.serviceMethod}(${paramsToCallServiceInterface.joinToString(",")})$postProcessingStatement",
+                "return %M<%T>()\r\n\t\t.${api.serviceMethod}(${paramsToCallServiceInterface.joinToString(",")})$postProcessingStatement",
                 *codeBlockArgs.toTypedArray()
               )
             }
