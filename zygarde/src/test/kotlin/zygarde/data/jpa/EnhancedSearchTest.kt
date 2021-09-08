@@ -5,20 +5,34 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.jeasy.random.EasyRandom
 import org.jeasy.random.EasyRandomParameters
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.Sort
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import zygarde.data.jpa.dao.*
+import zygarde.data.jpa.dao.TestAuthorDao
+import zygarde.data.jpa.dao.TestAuthorGroupDao
+import zygarde.data.jpa.dao.TestBookDao
+import zygarde.data.jpa.dao.search
+import zygarde.data.jpa.dao.searchCount
+import zygarde.data.jpa.dao.searchOne
+import zygarde.data.jpa.dao.searchPage
 import zygarde.data.jpa.entity.Author
 import zygarde.data.jpa.entity.AuthorGroup
 import zygarde.data.jpa.entity.Book
 import zygarde.data.jpa.search.action.dateRange
 import zygarde.data.jpa.search.action.dateTimeRange
 import zygarde.data.jpa.search.action.impl.SearchableImpl
-import zygarde.data.jpa.search.request.*
+import zygarde.data.jpa.search.request.PagingAndSortingRequest
+import zygarde.data.jpa.search.request.PagingRequest
+import zygarde.data.jpa.search.request.SearchDateRange
+import zygarde.data.jpa.search.request.SearchDateTimeRange
+import zygarde.data.jpa.search.request.SearchKeyword
+import zygarde.data.jpa.search.request.SearchKeywordType
+import zygarde.data.jpa.search.request.SortField
+import zygarde.data.jpa.search.request.SortingRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -116,6 +130,9 @@ class EnhancedSearchTest {
       field(SearchableImpl<Book, Author>("author"))
         .field(SearchableImpl<Author, AuthorGroup>("authorGroup"))
         .field(SearchableImpl<AuthorGroup, String>("name")) eq "comic"
+      field(SearchableImpl<Book, Author>("author"))
+        .field(SearchableImpl<Author, AuthorGroup>("authorGroup"))
+        .field(SearchableImpl<AuthorGroup, String>("name")) contains "com"
     }.size shouldBe 500
     bookDao.search {
       field<Author>("author")

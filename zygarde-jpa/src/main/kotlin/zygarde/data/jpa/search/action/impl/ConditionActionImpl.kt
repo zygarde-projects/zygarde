@@ -131,11 +131,28 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
 
   protected fun Root<RootEntityType>.columnNameToPath(columnName: String): Path<FieldType> {
     val splited = columnName.split(".")
-    return splited.takeLast(splited.size - 1)
-      .fold(
-        this.get<FieldType>(splited.first()),
-        { path, column -> path.get(column) }
-      )
+    if (splited.size == 1) {
+      return this.get<FieldType>(splited.first())
+    }
+    var joinPath = splited[0]
+    var currentJoin = enhancedSearch.joinMap.getOrPut(joinPath) {
+      this.join(joinPath, JoinType.LEFT)
+    }
+    splited.forEachIndexed { idx, column ->
+      val isLast = idx == splited.size - 1
+      if (idx > 0 && !isLast) {
+        joinPath = joinPath + "." + column
+        currentJoin = enhancedSearch.joinMap.getOrPut(joinPath) {
+          currentJoin.join(column, JoinType.LEFT)
+        }
+      }
+    }
+    return currentJoin.get(splited.last())
+    // return splited.takeLast(splited.size - 1)
+    //   .fold(
+    //     this.get<FieldType>(splited.first()),
+    //     { path, column -> path.get(column) }
+    //   )
   }
 
   protected fun <T> applyNonNullAction(

@@ -10,6 +10,7 @@ import zygarde.data.jpa.search.action.impl.ConditionActionImpl
 import zygarde.data.jpa.search.action.impl.StringConditionActionImpl
 import javax.persistence.criteria.CriteriaBuilder
 import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.Join
 import javax.persistence.criteria.Order
 import javax.persistence.criteria.Predicate
 import javax.persistence.criteria.Root
@@ -19,7 +20,8 @@ class EnhancedSearchImpl<EntityType>(
   val root: Root<EntityType>,
   val query: CriteriaQuery<*>,
   val cb: CriteriaBuilder,
-  val orders: MutableList<Order> = mutableListOf()
+  val orders: MutableList<Order> = mutableListOf(),
+  val joinMap: MutableMap<String, Join<Any, Any>> = mutableMapOf(),
 ) : EnhancedSearch<EntityType> {
 
   override fun <FieldType> field(fieldName: String): ConditionAction<EntityType, EntityType, FieldType> {

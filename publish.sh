@@ -9,4 +9,4 @@
   :zygarde-extensions-kotlinpoet:build :zygarde-extensions-kotlinpoet:publish \
   :zygarde-jpa:build :zygarde-jpa:publish \
   :zygarde-test:build :zygarde-test:publish \
-  -Pversion=1.2.1
+  -Pversion=1.2.3
