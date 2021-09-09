@@ -319,4 +319,14 @@ class EnhancedSearchTest {
 
     page1.first() shouldBe page2.first()
   }
+
+  @Test
+  fun `should able to search concat fields`() {
+    bookDao.search {
+      concat(
+        stringField("name"),
+        field<Author>("author").field<AuthorGroup>("authorGroup").stringField("name")
+      ) contains "decom" // zygarde+comics => zygardecomics contains 'decom'
+    }.size shouldBeGreaterThan 0
+  }
 }

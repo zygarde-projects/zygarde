@@ -26,6 +26,8 @@ interface EnhancedSearch<EntityType> {
     searchable: Searchable<EntityType, FieldType>
   ): ComparableConditionAction<EntityType, EntityType, FieldType>
 
+  fun concat(vararg stringFields: StringConditionAction<EntityType, *>): StringConditionAction<EntityType, EntityType>
+
   fun field(searchable: Searchable<EntityType, String>): StringConditionAction<EntityType, EntityType>
 
   fun or(searchContent: EnhancedSearch<EntityType>.() -> Unit): EnhancedSearch<EntityType>

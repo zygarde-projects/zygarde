@@ -6,6 +6,7 @@ import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.action.impl.ComparableConditionActionImpl
+import zygarde.data.jpa.search.action.impl.ConcatStringConditionImpl
 import zygarde.data.jpa.search.action.impl.ConditionActionImpl
 import zygarde.data.jpa.search.action.impl.StringConditionActionImpl
 import javax.persistence.criteria.CriteriaBuilder
@@ -50,6 +51,10 @@ class EnhancedSearchImpl<EntityType>(
 
   override fun field(searchable: Searchable<EntityType, String>): StringConditionAction<EntityType, EntityType> {
     return StringConditionActionImpl(this, searchable.fieldName())
+  }
+
+  override fun concat(vararg stringFields: StringConditionAction<EntityType, *>): StringConditionAction<EntityType, EntityType> {
+    return ConcatStringConditionImpl(this, stringFields.toList())
   }
 
   override fun or(searchContent: (enhancedSearch: EnhancedSearch<EntityType>) -> Unit): EnhancedSearch<EntityType> {

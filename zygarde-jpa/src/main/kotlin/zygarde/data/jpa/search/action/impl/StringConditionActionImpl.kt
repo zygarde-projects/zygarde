@@ -6,7 +6,7 @@ import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import zygarde.data.jpa.search.request.SearchKeyword
 import zygarde.data.jpa.search.request.SearchKeywordType
 
-class StringConditionActionImpl<RootEntityType, EntityType>(
+open class StringConditionActionImpl<RootEntityType, EntityType>(
   enhancedSearch: EnhancedSearchImpl<RootEntityType>,
   columnName: String
 ) : ComparableConditionActionImpl<RootEntityType, EntityType, String>(enhancedSearch, columnName), StringConditionAction<RootEntityType, EntityType> {

@@ -6,6 +6,7 @@ import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
+import javax.persistence.criteria.Expression
 import javax.persistence.criteria.JoinType
 import javax.persistence.criteria.Path
 import javax.persistence.criteria.Predicate
@@ -129,6 +130,10 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     }
   }
 
+  override fun asExpression(): Expression<FieldType> {
+    return enhancedSearch.root.columnNameToPath(columnName)
+  }
+
   protected fun Root<RootEntityType>.columnNameToPath(columnName: String): Path<FieldType> {
     val splited = columnName.split(".")
     if (splited.size == 1) {
@@ -141,25 +146,20 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     splited.forEachIndexed { idx, column ->
       val isLast = idx == splited.size - 1
       if (idx > 0 && !isLast) {
-        joinPath = joinPath + "." + column
+        joinPath = "$joinPath.$column"
         currentJoin = enhancedSearch.joinMap.getOrPut(joinPath) {
           currentJoin.join(column, JoinType.LEFT)
         }
       }
     }
     return currentJoin.get(splited.last())
-    // return splited.takeLast(splited.size - 1)
-    //   .fold(
-    //     this.get<FieldType>(splited.first()),
-    //     { path, column -> path.get(column) }
-    //   )
   }
 
-  protected fun <T> applyNonNullAction(
+  protected open fun <T> applyNonNullAction(
     value: T?,
-    block: EnhancedSearchImpl<RootEntityType>.(path: Path<FieldType>, v: T) -> Predicate
+    block: EnhancedSearchImpl<RootEntityType>.(path: Expression<FieldType>, v: T) -> Predicate
   ) =
     enhancedSearch.apply {
-      value?.let { predicates.add(block.invoke(this, root.columnNameToPath(columnName), it)) }
+      value?.let { predicates.add(block.invoke(this, asExpression(), it)) }
     }
 }
