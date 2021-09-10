@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+BUILD_TIME=$(date +"%Y%m%d%H%M%S")
+VERSION=${RELEASE_VERSION:-"$BUILD_TIME"}
+
+echo "VERSION=$VERSION"
+
 ./gradlew clean \
   :zygarde:build :zygarde:publish \
   :zygarde-codegen:build :zygarde-codegen:publish \
@@ -9,4 +14,4 @@
   :zygarde-extensions-kotlinpoet:build :zygarde-extensions-kotlinpoet:publish \
   :zygarde-jpa:build :zygarde-jpa:publish \
   :zygarde-test:build :zygarde-test:publish \
-  -Pversion=1.2.4
+  -Pversion="$VERSION"

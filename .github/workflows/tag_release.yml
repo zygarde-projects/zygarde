@@ -1,0 +1,20 @@
+name: unit test
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: release
+        run: ./publish.sh
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name }}
