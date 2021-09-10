@@ -24,8 +24,10 @@ class ZygardeJpaProcessor : AbstractProcessor() {
 
   override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
     val elementsAnnotatedWithEntity = roundEnv.getElementsAnnotatedWith(Entity::class.java)
-    ZygardeEntityFieldGenerator(processingEnv).generateSearchFieldForEntityElements(elementsAnnotatedWithEntity)
-    ZygardeJpaDaoGenerator(processingEnv).generateDaoForEntityElements(elementsAnnotatedWithEntity)
+    val elementsAnnotatedWithZyModelEntity = roundEnv.getElementsAnnotatedWith(ZyModel::class.java)
+      .filter { elementsAnnotatedWithEntity.contains(it) }
+    ZygardeEntityFieldGenerator(processingEnv).generateSearchFieldForEntityElements(elementsAnnotatedWithZyModelEntity)
+    ZygardeJpaDaoGenerator(processingEnv).generateDaoForEntityElements(elementsAnnotatedWithZyModelEntity)
     return false
   }
 }
