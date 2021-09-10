@@ -8,11 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-#      - name: Set up JDK 8
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: 8
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
       - name: release
-        run: echo "$RELEASE_VERSION"
+        run: ./publish.sh
         env:
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
+          PUNI_NEXUS_DEPLOY_USER: ${{ secrets.PUNI_NEXUS_DEPLOY_USER }}
+          PUNI_NEXUS_DEPLOY_PWD: ${{ secrets.PUNI_NEXUS_DEPLOY_PWD }}
