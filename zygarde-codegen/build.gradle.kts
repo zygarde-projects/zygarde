@@ -14,7 +14,6 @@ dependencies {
   implementation("com.squareup:kotlinpoet:1.9.0")
   implementation("com.squareup:kotlinpoet-metadata:1.9.0")
   implementation("com.google.auto.service:auto-service:1.0")
-  implementation("io.swagger:swagger-annotations:1.6.0")
   kapt("com.google.auto.service:auto-service:1.0")
   testApi("com.github.tschuchortdev:kotlin-compile-testing:1.3.6")
   testApi("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.4.30")

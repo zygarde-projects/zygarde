@@ -1,8 +1,8 @@
 package zygarde.data.api
 
-import io.swagger.annotations.ApiModel
+import io.swagger.v3.oas.annotations.media.Schema
 
-@ApiModel
+@Schema
 open class PageDto<T>(
   val atPage: Int,
   val totalPages: Int,

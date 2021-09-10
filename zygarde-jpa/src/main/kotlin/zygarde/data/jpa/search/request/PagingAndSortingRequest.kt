@@ -1,19 +1,17 @@
 package zygarde.data.jpa.search.request
 
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 
-@ApiModel
 open class PagingAndSortingRequest {
-  @ApiModelProperty(notes = "分頁", required = true)
+  @Schema(description = "分頁", required = true)
   var paging: PagingRequest = PagingRequest()
 
-  @ApiModelProperty(notes = "排序", required = false)
+  @Schema(description = "排序", required = false)
   var sorting: SortingRequest? = null
 
-  @ApiModelProperty(notes = "排序(new)", required = false)
+  @Schema(description = "排序(new)", required = false)
   var sorts: List<SortField>? = null
 
   fun toPageRequest(): PageRequest {

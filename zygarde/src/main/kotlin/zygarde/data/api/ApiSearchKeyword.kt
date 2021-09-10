@@ -1,10 +1,10 @@
 package zygarde.data.api
 
-import io.swagger.annotations.ApiModel
+import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.data.jpa.search.request.SearchKeyword
 import zygarde.data.jpa.search.request.SearchKeywordType
 
-@ApiModel
+@Schema
 class ApiSearchKeyword(
   keyword: String? = null,
   type: SearchKeywordType = SearchKeywordType.STARTS_WITH
