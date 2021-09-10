@@ -10,8 +10,8 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.cloud.openfeign.SpringQueryMap
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -208,8 +208,8 @@ class ZygardeApiGenerator(
             .build()
         )
         .addAnnotation(
-          AnnotationSpec.builder(Api::class)
-            .addMember("tags=[%S]", apiName)
+          AnnotationSpec.builder(Tag::class)
+            .addMember("name=%S", apiName)
             .build()
         )
       apisSameApiName.forEach { api ->
@@ -231,8 +231,8 @@ class ZygardeApiGenerator(
                   .build()
               )
               fb.addAnnotation(
-                AnnotationSpec.builder(ApiOperation::class)
-                  .addMember("value=%S", "${api.apiOperation} ${api.apiDescription}")
+                AnnotationSpec.builder(Operation::class)
+                  .addMember("summary=%S", "${api.apiOperation} ${api.apiDescription}")
                   .build()
               )
               api.pathVariable.forEach { pv ->

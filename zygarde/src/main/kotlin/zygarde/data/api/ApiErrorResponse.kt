@@ -1,12 +1,12 @@
 package zygarde.data.api
 
-import io.swagger.annotations.ApiModel
+import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.core.exception.ErrorCode
 
 /**
  * @author leo
  */
-@ApiModel
+@Schema
 class ApiErrorResponse(
   val code: String,
   val name: String,

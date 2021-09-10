@@ -11,8 +11,7 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
+import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
@@ -46,7 +45,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
       val dtoFileBuilder = FileSpec.builder(dtoClassName.packageName, dtoClassName.simpleName)
       val dtoClassBuilder = TypeSpec.classBuilder(dtoClassName)
         .addModifiers(KModifier.DATA)
-        .addAnnotation(ApiModel::class)
+        .addAnnotation(Schema::class)
         .addSuperinterface(Serializable::class)
       dto.superClass()?.also { superClass ->
         if (superClass.java.isInterface) {
@@ -83,8 +82,8 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
             .builder(fieldName, fieldType)
             .initializer(fieldName)
             .addAnnotation(
-              AnnotationSpec.builder(ApiModelProperty::class)
-                .addMember("notes=%S", comment.orEmpty())
+              AnnotationSpec.builder(Schema::class)
+                .addMember("description=%S", comment.orEmpty())
                 .addMember("required=%L", !fieldType.isNullable)
                 .build()
             )

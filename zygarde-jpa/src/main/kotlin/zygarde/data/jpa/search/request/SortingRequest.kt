@@ -1,17 +1,16 @@
 package zygarde.data.jpa.search.request
 
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.domain.Sort
 
 /**
  * @author leo
  */
-@ApiModel
+@Schema
 data class SortingRequest(
-  @ApiModelProperty(notes = "排序方式")
+  @Schema(description = "排序方式")
   var sort: Sort.Direction = Sort.Direction.DESC,
-  @ApiModelProperty(notes = "排序欄位")
+  @Schema(description = "排序欄位")
   var sortFields: List<String> = emptyList()
 )
 

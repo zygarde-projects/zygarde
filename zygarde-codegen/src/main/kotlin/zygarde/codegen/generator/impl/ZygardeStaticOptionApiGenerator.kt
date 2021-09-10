@@ -2,10 +2,9 @@ package zygarde.codegen.generator.impl
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -48,7 +47,7 @@ class ZygardeStaticOptionApiGenerator(
     val fileSpec = FileSpec.builder(optionDtoPackage, optionDtoName)
     val staticOptionDtoBuilder = TypeSpec.classBuilder(optionDtoName)
       .addModifiers(KModifier.DATA)
-      .addAnnotation(ApiModel::class)
+      .addAnnotation(Schema::class)
     val constructorBuilder = FunSpec.constructorBuilder()
     elements.forEach { elem ->
       val staticOptionApi = elem.getAnnotation(StaticOptionApi::class.java)
@@ -65,8 +64,8 @@ class ZygardeStaticOptionApiGenerator(
         .builder(elem.fieldName(), propType)
         .initializer(elem.fieldName())
         .addAnnotation(
-          AnnotationSpec.builder(ApiModelProperty::class)
-            .addMember("notes=%S", staticOptionApi.comment)
+          AnnotationSpec.builder(Schema::class)
+            .addMember("description=%S", staticOptionApi.comment)
             .build()
         ).build().also { staticOptionDtoBuilder.addProperty(it) }
     }
@@ -87,8 +86,8 @@ class ZygardeStaticOptionApiGenerator(
           .build()
       )
       .addAnnotation(
-        AnnotationSpec.builder(Api::class)
-          .addMember("tags=[%S]", optionApiName)
+        AnnotationSpec.builder(Tag::class)
+          .addMember("name=%S", optionApiName)
           .build()
       )
       .addAnnotation(
@@ -105,8 +104,8 @@ class ZygardeStaticOptionApiGenerator(
           .addModifiers(KModifier.ABSTRACT)
           .addAnnotation(GetMapping::class)
           .addAnnotation(
-            AnnotationSpec.builder(ApiOperation::class)
-              .addMember("value=%S", "Get All Static Options")
+            AnnotationSpec.builder(Operation::class)
+              .addMember("summary=%S", "Get All Static Options")
               .build()
           )
           .returns(

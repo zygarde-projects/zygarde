@@ -13,8 +13,6 @@ dependencies {
   api("org.springframework.boot:spring-boot-starter-thymeleaf")
   api("org.springframework.boot:spring-boot-starter-security")
   api("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2")
-  api("io.swagger:swagger-annotations:1.6.0")
-  api("io.springfox:springfox-swagger2:2.9.2")
   api("io.jsonwebtoken:jjwt-api:0.11.0")
   api("io.jsonwebtoken:jjwt-impl:0.11.0")
   api("io.jsonwebtoken:jjwt-jackson:0.11.0")

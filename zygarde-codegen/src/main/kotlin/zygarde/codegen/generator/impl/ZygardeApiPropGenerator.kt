@@ -1,8 +1,7 @@
 package zygarde.codegen.generator.impl
 
 import com.squareup.kotlinpoet.*
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
+import io.swagger.v3.oas.annotations.media.Schema
 import java.io.Serializable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
@@ -130,7 +129,7 @@ class ZygardeApiPropGenerator(
       .forEach { (dtoName, dtoFieldDescriptions) ->
         val dtoBuilder = TypeSpec.classBuilder(dtoName)
           .addModifiers(KModifier.DATA)
-          .addAnnotation(ApiModel::class)
+          .addAnnotation(Schema::class)
           .addSuperinterface(Serializable::class)
 
         dtoInheritMap.get(dtoName)?.let(dtoBuilder::superclass)
@@ -171,8 +170,8 @@ class ZygardeApiPropGenerator(
             .builder(fieldName, fieldType)
             .initializer(fieldName)
             .addAnnotation(
-              AnnotationSpec.builder(ApiModelProperty::class)
-                .addMember("notes=%S", dto.comment)
+              AnnotationSpec.builder(Schema::class)
+                .addMember("description=%S", dto.comment)
                 .addMember("required=%L", !fieldType.isNullable)
                 .build()
             ).build().also { dtoBuilder.addProperty(it) }
