@@ -6,6 +6,7 @@ echo "VERSION=$VERSION"
 
 ./gradlew clean \
   :zygarde:build :zygarde:publish \
+  :zygarde-mvc:build :zygarde-mvc:publish \
   :zygarde-codegen:build :zygarde-codegen:publish \
   :zygarde-codegen-base:build :zygarde-codegen-base:publish \
   :zygarde-codegen-dsl:build :zygarde-codegen-dsl:publish \

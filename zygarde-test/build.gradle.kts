@@ -3,7 +3,7 @@ apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
-  implementation(project(":zygarde-web"))
+  implementation(project(":zygarde-webmvc"))
   api("io.kotest:kotest-assertions-shared-jvm:4.2.0")
   api("io.kotest:kotest-assertions-core-jvm:4.2.0")
   api("io.mockk:mockk:1.9.3")
