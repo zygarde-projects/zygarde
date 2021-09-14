@@ -4,7 +4,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
   kapt(project(":zygarde-codegen-jpa"))
-  implementation(project(":zygarde"))
+  implementation(project(":zygarde-jpa"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 }
 
