@@ -9,7 +9,7 @@ import zygarde.api.exception.ApiExceptionHandler
 import zygarde.json.JacksonCommon
 
 @Configuration
-class ZygardeSpringWebConfig {
+class ZygardeSpringWebmvcConfig {
 
   @Bean
   @ConditionalOnMissingBean

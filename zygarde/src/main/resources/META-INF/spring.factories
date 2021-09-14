@@ -1,6 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   zygarde.core.di.autoconfigure.DiConfig,\
   zygarde.core.autoconfigure.ZygardeSpringFixtureConfig,\
-  zygarde.core.autoconfigure.ZygardeSpringWebConfig,\
   zygarde.core.autoconfigure.ZygardeAutoConfigure,\
   zygarde.template.thymeleaf.ZygradeSpringThymeleafConfig
