@@ -4,7 +4,7 @@ apply(plugin = "io.spring.dependency-management")
 
 dependencies {
   implementation(project(":v2-sample-core"))
-  implementation(project(":zygarde-web"))
+  implementation(project(":zygarde-webmvc"))
 }
 tasks.getByName("bintrayUpload").enabled = false
 tasks.getByName("bootJar").enabled = false

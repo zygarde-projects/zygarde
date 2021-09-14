@@ -2,7 +2,7 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
-  implementation(project(":zygarde-web"))
+  implementation(project(":zygarde-webmvc"))
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-jpa"))
   implementation(project(":zygarde-codegen-jpa"))
