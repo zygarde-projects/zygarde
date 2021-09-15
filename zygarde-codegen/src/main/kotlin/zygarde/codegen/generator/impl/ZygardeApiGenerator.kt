@@ -297,18 +297,20 @@ class ZygardeApiGenerator(
               }
               if (api.reqRef != null) {
                 paramsToCallServiceInterface.add("req")
-                if (api.method == RequestMethod.POST || api.method == RequestMethod.PUT) {
-                  fb.addParameter(
-                    ParameterSpec.builder("req", api.reqRef)
-                      .addAnnotation(
-                        RequestBody::class
-                      )
-                      .addAnnotation(
-                        Valid::class
-                      )
-                      .build()
-                  )
-                }
+                fb.addParameter(
+                  ParameterSpec.builder("req", api.reqRef)
+                    .also {
+                      if (api.method == RequestMethod.POST || api.method == RequestMethod.PUT) {
+                        it.addAnnotation(
+                          RequestBody::class
+                        )
+                      }
+                    }
+                    .addAnnotation(
+                      Valid::class
+                    )
+                    .build()
+                )
               }
 
               if (api.resRef != null) {
