@@ -3,8 +3,8 @@ package zygarde.data.jpa.search.action.impl
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import zygarde.data.jpa.search.request.SearchKeyword
-import zygarde.data.jpa.search.request.SearchKeywordType
+import zygarde.data.search.SearchKeyword
+import zygarde.data.search.SearchKeywordType
 
 open class StringConditionActionImpl<RootEntityType, EntityType>(
   enhancedSearch: EnhancedSearchImpl<RootEntityType>,

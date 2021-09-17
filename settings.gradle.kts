@@ -2,14 +2,20 @@ rootProject.name = "zygarde"
 
 include("zygarde")
 include("zygarde-core")
+include("zygarde-extensions-kotlinpoet")
 include("zygarde-jpa")
+include("zygarde-model-mapping")
+include("zygarde-web")
+include("zygarde-webmvc")
+include("zygarde-test")
+
 include("zygarde-codegen")
 include("zygarde-codegen-base")
 include("zygarde-codegen-dsl")
 include("zygarde-codegen-jpa")
-include("zygarde-extensions-kotlinpoet")
-include("zygarde-test")
-include("zygarde-webmvc")
+include("zygarde-codegen-model-mapping")
+include("zygarde-codegen-webmvc")
+
 include("v2-sample-core")
 include("v2-sample-model-meta")
 include("v2-sample-codegen")

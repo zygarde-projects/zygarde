@@ -27,10 +27,10 @@ import zygarde.data.jpa.search.action.dateTimeRange
 import zygarde.data.jpa.search.action.impl.SearchableImpl
 import zygarde.data.jpa.search.request.PagingAndSortingRequest
 import zygarde.data.jpa.search.request.PagingRequest
-import zygarde.data.jpa.search.request.SearchDateRange
-import zygarde.data.jpa.search.request.SearchDateTimeRange
-import zygarde.data.jpa.search.request.SearchKeyword
-import zygarde.data.jpa.search.request.SearchKeywordType
+import zygarde.data.search.SearchDateRange
+import zygarde.data.search.SearchDateTimeRange
+import zygarde.data.search.SearchKeyword
+import zygarde.data.search.SearchKeywordType
 import zygarde.data.jpa.search.request.SortField
 import zygarde.data.jpa.search.request.SortingRequest
 import java.time.LocalDate

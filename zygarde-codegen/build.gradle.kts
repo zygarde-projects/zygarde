@@ -5,6 +5,8 @@ dependencies {
   implementation(project(":zygarde-webmvc"))
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-jpa"))
+  implementation(project(":zygarde-codegen-model-mapping"))
+  implementation(project(":zygarde-codegen-webmvc"))
   implementation(project(":zygarde-codegen-jpa"))
   implementation(project(":zygarde-codegen-base"))
   implementation(project(":zygarde-codegen-dsl"))

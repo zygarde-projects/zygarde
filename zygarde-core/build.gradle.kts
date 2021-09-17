@@ -4,6 +4,9 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
   api("io.swagger.core.v3:swagger-annotations:2.1.10")
+  implementation("org.springframework.boot:spring-boot-starter-logging")
+  api("com.fasterxml.jackson.module:jackson-module-kotlin")
+  api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
     exclude(group = "junit")
     exclude(group = "org.junit.vintage", module = "junit-vintage-engine")

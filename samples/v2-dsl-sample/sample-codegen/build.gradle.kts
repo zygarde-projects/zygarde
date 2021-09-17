@@ -6,6 +6,7 @@ dependencies {
   implementation(project(":v2-sample-core"))
   implementation(project(":v2-sample-model-meta"))
   implementation(project(":zygarde"))
+  implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-codegen-dsl"))
 }
 tasks.getByName("bintrayUpload").enabled = false

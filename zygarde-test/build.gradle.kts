@@ -4,6 +4,9 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
   implementation(project(":zygarde-webmvc"))
+  api("io.jsonwebtoken:jjwt-api:0.11.0")
+  api("io.jsonwebtoken:jjwt-impl:0.11.0")
+  api("io.jsonwebtoken:jjwt-jackson:0.11.0")
   api("io.kotest:kotest-assertions-shared-jvm:4.2.0")
   api("io.kotest:kotest-assertions-core-jvm:4.2.0")
   api("io.mockk:mockk:1.9.3")

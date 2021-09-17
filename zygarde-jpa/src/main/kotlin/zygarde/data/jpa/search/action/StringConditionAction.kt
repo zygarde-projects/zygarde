@@ -1,7 +1,7 @@
 package zygarde.data.jpa.search.action
 
 import zygarde.data.jpa.search.EnhancedSearch
-import zygarde.data.jpa.search.request.SearchKeyword
+import zygarde.data.search.SearchKeyword
 
 interface StringConditionAction<RootEntityType, EntityType> : ComparableConditionAction<RootEntityType, EntityType, String> {
   infix fun keyword(value: SearchKeyword?): EnhancedSearch<RootEntityType>

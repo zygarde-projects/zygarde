@@ -3,6 +3,7 @@ apply(plugin = "io.spring.dependency-management")
 
 dependencies {
   implementation(project(":zygarde"))
+  implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-codegen-base"))
   implementation(project(":zygarde-extensions-kotlinpoet"))
   implementation("com.squareup:kotlinpoet:1.9.0")

@@ -5,14 +5,15 @@ VERSION=${RELEASE_VERSION:-"$BUILD_TIME"}
 echo "VERSION=$VERSION"
 
 ./gradlew clean \
-  :zygarde:build :zygarde:publish \
+  :zygarde-core:build :zygarde-core:publish \
+  :zygarde-web:build :zygarde-web:publish \
   :zygarde-webmvc:build :zygarde-webmvc:publish \
   :zygarde-codegen:build :zygarde-codegen:publish \
   :zygarde-codegen-base:build :zygarde-codegen-base:publish \
   :zygarde-codegen-dsl:build :zygarde-codegen-dsl:publish \
   :zygarde-codegen-jpa:build :zygarde-codegen-jpa:publish \
-  :zygarde-core:build :zygarde-core:publish \
   :zygarde-extensions-kotlinpoet:build :zygarde-extensions-kotlinpoet:publish \
   :zygarde-jpa:build :zygarde-jpa:publish \
   :zygarde-test:build :zygarde-test:publish \
+  :zygarde:build :zygarde:publish \
   -Pversion="$VERSION"

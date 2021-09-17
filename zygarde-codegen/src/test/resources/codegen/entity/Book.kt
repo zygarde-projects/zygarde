@@ -12,7 +12,7 @@ import zygarde.codegen.value.ToJsonStringValueProvider
 import zygarde.data.api.ApiSearchKeyword
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.search.request.PagingAndSortingRequest
-import zygarde.data.jpa.search.request.SearchDateTimeRange
+import zygarde.data.search.SearchDateTimeRange
 import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.Lob

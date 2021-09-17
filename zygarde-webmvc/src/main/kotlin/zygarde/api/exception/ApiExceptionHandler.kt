@@ -10,11 +10,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import zygarde.api.ApiErrorCode
+import zygarde.api.tracing.ApiTracingContext
 import zygarde.core.exception.BusinessException
 import zygarde.core.extension.general.fallbackWhenNull
+import zygarde.json.toJsonString
 import zygarde.core.log.Loggable
 import zygarde.data.api.ApiErrorResponse
-import zygarde.json.toJsonString
 import javax.servlet.http.HttpServletRequest
 
 /**
@@ -25,6 +26,9 @@ class ApiExceptionHandler : Loggable {
 
   @Autowired
   private lateinit var messageSource: MessageSource
+
+  @Autowired
+  private lateinit var apiTracingContext: ApiTracingContext
 
   @Autowired
   private lateinit var exceptionToBusinessExceptionMappers: List<ExceptionToBusinessExceptionMapper<*>>
@@ -59,7 +63,7 @@ class ApiExceptionHandler : Loggable {
 
   @ExceptionHandler(BusinessException::class)
   fun handleBusinessException(e: BusinessException, req: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
-    logThrowable(e, req)
+    logBusinessException(e)
     val code = e.code
     val res = ApiErrorResponse(
       errorCode = code,
@@ -75,7 +79,7 @@ class ApiExceptionHandler : Loggable {
       handleThrowableInternal(cause, req) { handleThrowable(it, req) }
     } else {
       handleThrowableInternal(t, req) {
-        logThrowable(t, req)
+        logUnknownException(t, req)
         ResponseEntity(
           ApiErrorResponse(
             errorCode = ApiErrorCode.SERVER_ERROR,
@@ -103,11 +107,16 @@ class ApiExceptionHandler : Loggable {
     }
   }
 
-  private fun HttpServletRequest.getHeadersAsString(): String {
-    return headerNames.toList().map { it to getHeaders(it).toList() }.toMap().toJsonString()
+  private fun logUnknownException(t: Throwable, req: HttpServletRequest) {
+    LOGGER.error("uri='${req.requestURI}' headers=${apiTracingContext.getTracingData().requestHeaders} message='${t.message}'", t)
   }
 
-  private fun logThrowable(t: Throwable, req: HttpServletRequest) {
-    LOGGER.error("uri='${req.requestURI}' headers=${req.getHeadersAsString()} message='${t.message}'", t)
+  private fun logBusinessException(e: BusinessException) {
+    val tracingData = apiTracingContext.getTracingData()
+    LOGGER.info(
+      """${tracingData.apiId} ${e.code} ${e.message}
+${tracingData.data.toJsonString()}""".trimMargin(),
+      e
+    )
   }
 }
