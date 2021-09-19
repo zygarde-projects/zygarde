@@ -9,8 +9,8 @@ dependencies {
   implementation(project(":zygarde-webmvc"))
   implementation("org.springframework.boot:spring-boot-starter-validation")
 }
-tasks.getByName("bintrayUpload").enabled = false
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true
 tasks.getByName("printCoverage").enabled = false
+tasks.getByName("publish").enabled = false
 tasks.getByName("ktlintMainSourceSetCheck").enabled = false

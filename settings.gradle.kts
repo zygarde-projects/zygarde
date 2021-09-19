@@ -1,20 +1,23 @@
 rootProject.name = "zygarde"
 
-include("zygarde")
-include("zygarde-core")
-include("zygarde-extensions-kotlinpoet")
-include("zygarde-jpa")
-include("zygarde-model-mapping")
-include("zygarde-web")
-include("zygarde-webmvc")
-include("zygarde-test")
+fun registerModules(path: String) {
+  File(rootProject.projectDir, path)
+    .listFiles { f -> f.isDirectory && f.name.startsWith("zygarde-") }
+    ?.forEach { f ->
+      include(f.name)
+      project(":${f.name}").projectDir = f
+    }
+}
 
-include("zygarde-codegen")
-include("zygarde-codegen-base")
-include("zygarde-codegen-dsl")
-include("zygarde-codegen-jpa")
-include("zygarde-codegen-model-mapping")
-include("zygarde-codegen-webmvc")
+registerModules("modules-core")
+registerModules("modules-jpa")
+registerModules("modules-web")
+registerModules("modules-model-mapping")
+registerModules("modules-codegen-support")
+registerModules("modules-test-support")
+registerModules("modules-bom")
+
+include("zygarde")
 
 include("v2-sample-core")
 include("v2-sample-model-meta")

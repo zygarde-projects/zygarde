@@ -9,10 +9,10 @@ dependencies {
   implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-codegen-dsl"))
 }
-tasks.getByName("bintrayUpload").enabled = false
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true
 tasks.getByName("printCoverage").enabled = false
+tasks.getByName("publish").enabled = false
 
 tasks.getByName("run").dependsOn ":v2-sample-core:kaptkotlin"
 

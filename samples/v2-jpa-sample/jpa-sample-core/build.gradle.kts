@@ -3,12 +3,12 @@ apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
-  kapt(project(":zygarde-codegen-jpa"))
+  kapt(project(":zygarde-jpa-codegen"))
   implementation(project(":zygarde-jpa"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 }
 
-tasks.getByName("bintrayUpload").enabled = false
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true
 tasks.getByName("printCoverage").enabled = false
+tasks.getByName("publish").enabled = false
