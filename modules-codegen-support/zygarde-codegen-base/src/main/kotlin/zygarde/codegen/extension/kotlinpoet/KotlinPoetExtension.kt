@@ -1,17 +1,11 @@
 package zygarde.codegen.extension.kotlinpoet
 
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
-import org.jetbrains.annotations.Nullable
-import javax.annotation.processing.ProcessingEnvironment
-import javax.lang.model.element.Element
-import javax.lang.model.element.ElementKind
-import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
 import kotlin.reflect.KClass
 

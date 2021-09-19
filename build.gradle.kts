@@ -13,7 +13,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.3.1"
   id("de.jansauer.printcoverage") version "2.0.0"
   id("org.springframework.boot") version "2.3.1.RELEASE"
-  id("io.spring.dependency-management") version "1.0.8.RELEASE"
+  id("io.spring.dependency-management") version "1.0.11.RELEASE"
   kotlin("jvm") version "1.5.31"
   kotlin("plugin.spring") version "1.5.31"
   kotlin("kapt") version "1.5.31"
@@ -156,6 +156,27 @@ subprojects {
         from(components["java"])
         artifact(sourceJar)
         artifact(dokkaJar)
+
+        // XXX merge dependencyMangement in generated pom.xml
+        // https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/257
+        pom.withXml {
+          val root = asNode()
+          val nodes = root["dependencyManagement"] as groovy.util.NodeList
+          if (nodes.size > 1) {
+            val lastDependencyManagement = nodes.last() as groovy.util.Node
+            val lastNodeDependencies = (lastDependencyManagement.get("dependencies") as groovy.util.NodeList).get(0) as groovy.util.Node
+            nodes.take(nodes.size - 1).forEach { n ->
+              if (n is groovy.util.Node) {
+                val dependencies = (n.get("dependencies") as groovy.util.NodeList).getAt("dependency")
+                dependencies.forEach { d ->
+                  val dNode = d as groovy.util.Node
+                  lastNodeDependencies.append(dNode)
+                }
+                root.remove(n)
+              }
+            }
+          }
+        }
       }
     }
   }
