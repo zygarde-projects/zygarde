@@ -11,7 +11,7 @@ object ElementExtensions {
 
   fun Element.name() = simpleName.toString()
 
-  fun Element.fieldName() = simpleName.toString().decapitalize()
+  fun Element.fieldName() = simpleName.toString().replaceFirstChar { it.lowercase() }
 
   fun Element.isNullable() = this.getAnnotation(Nullable::class.java) != null
 

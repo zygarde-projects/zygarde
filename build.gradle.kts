@@ -1,6 +1,5 @@
 buildscript {
   repositories {
-    jcenter()
     mavenCentral()
     maven("https://plugins.gradle.org/m2/")
     maven("https://repo.spring.io/plugins-release")
@@ -8,11 +7,11 @@ buildscript {
 }
 
 plugins {
-  id("org.jlleitschuh.gradle.ktlint") version "9.3.0"
+  id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
   id("org.jetbrains.dokka") version "0.10.1"
-  id("io.gitlab.arturbosch.detekt") version "1.3.1"
+  id("io.gitlab.arturbosch.detekt") version "1.18.1"
   id("de.jansauer.printcoverage") version "2.0.0"
-  id("org.springframework.boot") version "2.3.1.RELEASE"
+  id("org.springframework.boot") version "2.3.12.RELEASE"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
   kotlin("jvm") version "1.5.31"
   kotlin("plugin.spring") version "1.5.31"
@@ -22,9 +21,14 @@ plugins {
   application
 }
 
+fun Project.isBomProject() = this.name.startsWith("zygarde-bom")
+
 allprojects {
   group = "puni"
-  apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+  if (!isBomProject()) {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+  }
 
   repositories {
     mavenCentral()
@@ -32,29 +36,34 @@ allprojects {
     maven("https://jitpack.io")
   }
 
-  ktlint {
-    enableExperimentalRules.set(true)
-    version.set("0.38.0")
-  }
+  // ktlint {
+  //   enableExperimentalRules.set(true)
+  //   version.set("0.38.0")
+  // }
 }
 
 subprojects {
-  apply(plugin = "org.gradle.maven-publish")
+  val isPublishingProject = name.startsWith("zygarde-")
+  if (isPublishingProject) {
+    apply(plugin = "org.jetbrains.dokka")
+    apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "org.gradle.maven-publish")
 
-  publishing {
-    repositories {
-      maven {
-        name = "Nexus"
-        url = uri("https://nexus.puni.tw/repository/maven-releases")
-        credentials {
-          username = System.getenv("PUNI_NEXUS_DEPLOY_USER")
-          password = System.getenv("PUNI_NEXUS_DEPLOY_PWD")
+    publishing {
+      repositories {
+        maven {
+          name = "Nexus"
+          url = uri("https://nexus.puni.tw/repository/maven-releases")
+          credentials {
+            username = System.getenv("PUNI_NEXUS_DEPLOY_USER")
+            password = System.getenv("PUNI_NEXUS_DEPLOY_PWD")
+          }
         }
       }
     }
   }
 
-  if (name.startsWith("zygarde-bom")) {
+  if (isBomProject()) {
     apply(plugin = "java-platform")
     publishing {
       publications {
@@ -71,8 +80,6 @@ subprojects {
   apply(plugin = "kotlin")
   apply(plugin = "kotlin-kapt")
   apply(plugin = "org.jetbrains.kotlin.jvm")
-  apply(plugin = "org.jetbrains.dokka")
-  apply(plugin = "io.gitlab.arturbosch.detekt")
   apply(plugin = "org.gradle.jacoco")
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
@@ -125,54 +132,56 @@ subprojects {
     }
   }
 
-  tasks.dokka {
-    outputFormat = "html"
-    outputDirectory = "$buildDir/javadoc"
-  }
-
-  val dokkaJar by tasks.creating(Jar::class) {
-    group = JavaBasePlugin.DOCUMENTATION_GROUP
-    description = "Assembles Kotlin docs with Dokka"
-    archiveClassifier.set("javadoc")
-    from(tasks.dokka)
-  }
-
-  val sourceJar by tasks.creating(Jar::class) {
-    group = JavaBasePlugin.DOCUMENTATION_GROUP
-    description = "Source"
-    archiveClassifier.set("sources")
-    from(sourceSets.getByName("main").allSource)
-  }
-
-  tasks.detekt {
-    detekt {
-      input = files("src/*/kotlin")
+  if (isPublishingProject) {
+    tasks.dokka {
+      outputFormat = "html"
+      outputDirectory = "$buildDir/javadoc"
     }
-  }
 
-  publishing {
-    publications {
-      create<MavenPublication>("default") {
-        from(components["java"])
-        artifact(sourceJar)
-        artifact(dokkaJar)
+    val dokkaJar by tasks.creating(Jar::class) {
+      group = JavaBasePlugin.DOCUMENTATION_GROUP
+      description = "Assembles Kotlin docs with Dokka"
+      archiveClassifier.set("javadoc")
+      from(tasks.dokka)
+    }
 
-        // XXX merge dependencyMangement in generated pom.xml
-        // https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/257
-        pom.withXml {
-          val root = asNode()
-          val nodes = root["dependencyManagement"] as groovy.util.NodeList
-          if (nodes.size > 1) {
-            val lastDependencyManagement = nodes.last() as groovy.util.Node
-            val lastNodeDependencies = (lastDependencyManagement.get("dependencies") as groovy.util.NodeList).get(0) as groovy.util.Node
-            nodes.take(nodes.size - 1).forEach { n ->
-              if (n is groovy.util.Node) {
-                val dependencies = (n.get("dependencies") as groovy.util.NodeList).getAt("dependency")
-                dependencies.forEach { d ->
-                  val dNode = d as groovy.util.Node
-                  lastNodeDependencies.append(dNode)
+    val sourceJar by tasks.creating(Jar::class) {
+      group = JavaBasePlugin.DOCUMENTATION_GROUP
+      description = "Source"
+      archiveClassifier.set("sources")
+      from(sourceSets.getByName("main").allSource)
+    }
+
+    tasks.detekt {
+      detekt {
+        input = files("src/*/kotlin")
+      }
+    }
+
+    publishing {
+      publications {
+        create<MavenPublication>("default") {
+          from(components["java"])
+          artifact(sourceJar)
+          artifact(dokkaJar)
+
+          // XXX merge dependencyMangement in generated pom.xml
+          // https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/257
+          pom.withXml {
+            val root = asNode()
+            val nodes = root["dependencyManagement"] as groovy.util.NodeList
+            if (nodes.size > 1) {
+              val lastDependencyManagement = nodes.last() as groovy.util.Node
+              val lastNodeDependencies = (lastDependencyManagement.get("dependencies") as groovy.util.NodeList).get(0) as groovy.util.Node
+              nodes.take(nodes.size - 1).forEach { n ->
+                if (n is groovy.util.Node) {
+                  val dependencies = (n.get("dependencies") as groovy.util.NodeList).getAt("dependency")
+                  dependencies.forEach { d ->
+                    val dNode = d as groovy.util.Node
+                    lastNodeDependencies.append(dNode)
+                  }
+                  root.remove(n)
                 }
-                root.remove(n)
               }
             }
           }

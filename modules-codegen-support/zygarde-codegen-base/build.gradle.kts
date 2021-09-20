@@ -16,6 +16,12 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions {
+    freeCompilerArgs = freeCompilerArgs + "-Xopt-in=com.squareup.kotlinpoet.DelicateKotlinPoetApi"
+  }
+}
+
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("printCoverage").enabled = false
 tasks.getByName("jar").enabled = true
