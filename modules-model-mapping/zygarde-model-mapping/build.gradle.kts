@@ -17,7 +17,7 @@ dependencies {
     exclude(group = "junit")
     exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
   }
-  testApi(project(":zygarde-test")) {
+  testImplementation(project(":zygarde-test")) {
     exclude(group = "junit")
     exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
   }

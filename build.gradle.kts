@@ -8,7 +8,7 @@ buildscript {
 
 plugins {
   id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
-  id("org.jetbrains.dokka") version "0.10.1"
+  id("org.jetbrains.dokka") version "1.5.30"
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
   id("de.jansauer.printcoverage") version "2.0.0"
   id("org.springframework.boot") version "2.3.12.RELEASE"
@@ -22,9 +22,10 @@ plugins {
 }
 
 fun Project.isBomProject() = this.name.startsWith("zygarde-bom")
+fun Project.isPublishingProject() = this.name.startsWith("zygarde")
 
 allprojects {
-  group = "puni"
+  group = "zygarde"
 
   if (!isBomProject()) {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -32,22 +33,15 @@ allprojects {
 
   repositories {
     mavenCentral()
-    jcenter()
     maven("https://jitpack.io")
   }
-
-  // ktlint {
-  //   enableExperimentalRules.set(true)
-  //   version.set("0.38.0")
-  // }
 }
 
 subprojects {
-  val isPublishingProject = name.startsWith("zygarde-")
-  if (isPublishingProject) {
+  if (isPublishingProject()) {
+    apply(plugin = "org.gradle.maven-publish")
     apply(plugin = "org.jetbrains.dokka")
     apply(plugin = "io.gitlab.arturbosch.detekt")
-    apply(plugin = "org.gradle.maven-publish")
 
     publishing {
       repositories {
@@ -103,9 +97,20 @@ subprojects {
   dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation("io.kotest:kotest-assertions-shared-jvm:4.2.0")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.2.0")
-    testImplementation("io.mockk:mockk:1.9.3")
+    testImplementation("io.kotest:kotest-assertions-shared-jvm:4.6.3")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:4.6.3")
+    testImplementation("io.mockk:mockk:1.12.0")
+  }
+
+  configurations.all {
+    resolutionStrategy {
+      eachDependency {
+        when (requested.module.name) {
+          "kotlinx-coroutines-core" -> useVersion("1.5.1")
+          "kotlinx-coroutines-jdk8" -> useVersion("1.5.1")
+        }
+      }
+    }
   }
 
   task("housekeeping", Delete::class) {
@@ -126,23 +131,20 @@ subprojects {
 
   tasks.withType<JacocoReport> {
     reports {
-      html.isEnabled = true
-      xml.isEnabled = true
-      csv.isEnabled = false
+      html.required.set(true)
+      xml.required.set(true)
+      csv.required.set(false)
     }
   }
 
-  if (isPublishingProject) {
-    tasks.dokka {
-      outputFormat = "html"
-      outputDirectory = "$buildDir/javadoc"
-    }
+  if (isPublishingProject()) {
+    val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
 
     val dokkaJar by tasks.creating(Jar::class) {
       group = JavaBasePlugin.DOCUMENTATION_GROUP
       description = "Assembles Kotlin docs with Dokka"
       archiveClassifier.set("javadoc")
-      from(tasks.dokka)
+      from(dokkaHtml.outputDirectory)
     }
 
     val sourceJar by tasks.creating(Jar::class) {
@@ -154,7 +156,7 @@ subprojects {
 
     tasks.detekt {
       detekt {
-        input = files("src/*/kotlin")
+        source = files("src/*/kotlin")
       }
     }
 
@@ -215,8 +217,8 @@ task("covAll", JacocoReport::class) {
       .toTypedArray()
   )
   reports {
-    html.isEnabled = true
-    xml.isEnabled = true
+    html.required.set(true)
+    xml.required.set(true)
   }
 
   dependsOn(
@@ -231,15 +233,6 @@ task("lint") {
 tasks.getByName("publish").enabled = false
 tasks.getByName("printCoverage").enabled = false
 tasks.getByName("bootJar").enabled = false
-
-tasks.dokka {
-  outputFormat = "html"
-  outputDirectory = "$buildDir/javadoc"
-  subProjects = subprojects.map { it.name }
-  configuration {
-    moduleName = "doc"
-  }
-}
 
 task("collectJacocoSourcePath", Exec::class) {
   val paths = subProjectsForJacoco
