@@ -138,13 +138,13 @@ subprojects {
   }
 
   if (isPublishingProject()) {
-    val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+    val dokkaJavadoc by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
 
     val dokkaJar by tasks.creating(Jar::class) {
       group = JavaBasePlugin.DOCUMENTATION_GROUP
       description = "Assembles Kotlin docs with Dokka"
       archiveClassifier.set("javadoc")
-      from(dokkaHtml.outputDirectory)
+      from(dokkaJavadoc.outputDirectory)
     }
 
     val sourceJar by tasks.creating(Jar::class) {
