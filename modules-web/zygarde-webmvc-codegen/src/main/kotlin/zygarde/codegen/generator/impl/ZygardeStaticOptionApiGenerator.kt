@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 import zygarde.codegen.StaticOptionApi
 import zygarde.codegen.ZygardeKaptOptions.Companion.API_STATIC_OPTION_PACKAGE
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
+import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.option.OptionDto
 import zygarde.data.option.OptionEnum
@@ -65,7 +66,7 @@ class ZygardeStaticOptionApiGenerator(
         .builder(elem.fieldName(), propType)
         .defaultValue(
           CodeBlock.builder()
-            .addStatement("%T.values().map{ it.toOptionDto() }", elem.asType())
+            .addStatement("%T.values().map{ it.toOptionDto() }", elem.asType().kotlinTypeName(false))
             .build()
         )
         .build().also { constructorBuilder.addParameter(it) }

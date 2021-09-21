@@ -11,19 +11,11 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asClassName
-import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.ZygardeKaptOptions.Companion.ENTITY_PACKAGE_SEARCH
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allFieldsIncludeSuper
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allSuperTypes
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.nullableTypeName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
-import zygarde.codegen.meta.ModelMetaField
-import zygarde.data.jpa.entity.AutoIntIdEntity
-import zygarde.data.jpa.entity.AutoLongIdEntity
-import zygarde.data.jpa.entity.SequenceIntIdEntity
-import zygarde.data.jpa.entity.SequenceLongIdEntity
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
@@ -149,7 +141,7 @@ class ZygardeEntityFieldGenerator(
         fieldName(),
         Searchable::class.asClassName().parameterizedBy(
           entityElement.typeName(),
-          entityElement.resolveFieldType(this)
+          entityElement.resolveFieldType(this).copy(nullable = false)
         ),
         KModifier.PUBLIC
       )
@@ -159,57 +151,6 @@ class ZygardeEntityFieldGenerator(
           .build()
       )
       .build()
-  }
-
-  private fun Element.buildMetaProperty(
-    entityElement: Element
-  ): PropertySpec {
-    val fieldType = entityElement.resolveFieldType(this)
-    return PropertySpec
-      .builder(
-        fieldName(),
-        ModelMetaField::class.asClassName().parameterizedBy(
-          entityElement.typeName(),
-          fieldType
-        ),
-        KModifier.PUBLIC
-      )
-      .initializer(
-        CodeBlock.builder()
-          .addStatement(
-            """%T(%T::class,"${fieldName()}",%T::class,%L)""",
-            ModelMetaField::class.asClassName(),
-            entityElement.typeName(),
-            fieldType,
-            nullableTypeName().isNullable
-          )
-          .build()
-      )
-      .build()
-  }
-
-  private fun Element.resolveFieldType(fieldElement: Element): TypeName {
-    val fieldTypeName = fieldElement.typeName()
-    return if (fieldTypeName.toString() == "T") {
-      val allSuperTypes = this.allSuperTypes(processingEnv)
-      val isIdDefinedLong = allSuperTypes.any {
-        it.typeName() == AutoLongIdEntity::class.asTypeName() || it.typeName() == SequenceLongIdEntity::class.asTypeName()
-      }
-      if (isIdDefinedLong) {
-        Long::class.asTypeName()
-      } else {
-        val isIdDefinedInt = allSuperTypes.any {
-          it.typeName() == AutoIntIdEntity::class.asTypeName() || it.typeName() == SequenceIntIdEntity::class.asTypeName()
-        }
-        if (isIdDefinedInt) {
-          Int::class.asTypeName()
-        } else {
-          throw IllegalArgumentException("cannot resolve field type for $this $fieldTypeName")
-        }
-      }
-    } else {
-      fieldTypeName
-    }
   }
 
   private fun Element.buildRelateTypeConditionAction(rootEntityElement: Element, currentEntityElement: Element): FunSpec {
@@ -244,6 +185,7 @@ class ZygardeEntityFieldGenerator(
   }
 
   private fun Element.toConditionAction(rootEntityTypeName: TypeName, currentEntityTypeName: TypeName, fieldType: TypeName): TypeName {
+    val nonNullableFieldType = fieldType.copy(nullable = false)
     return if (isComparable()) {
       if (this.typeName().toString() == "kotlin.String") {
         StringConditionAction::class.asClassName().parameterizedBy(
@@ -254,14 +196,14 @@ class ZygardeEntityFieldGenerator(
         ComparableConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,
           currentEntityTypeName,
-          fieldType
+          nonNullableFieldType,
         )
       }
     } else {
       ConditionAction::class.asClassName().parameterizedBy(
         rootEntityTypeName,
         currentEntityTypeName,
-        fieldType
+        nonNullableFieldType,
       )
     }
   }

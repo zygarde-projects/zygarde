@@ -15,9 +15,9 @@ import org.springframework.stereotype.Component
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_COMBINE
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_PACKAGE
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_SUFFIX
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allSuperTypes
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.resolveGenericFieldTypeMap
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
@@ -25,10 +25,6 @@ import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.core.exception.CommonErrorCode
 import zygarde.core.extension.exception.errWhenNull
-import zygarde.data.jpa.entity.AutoIntIdEntity
-import zygarde.data.jpa.entity.AutoLongIdEntity
-import zygarde.data.jpa.entity.SequenceIntIdEntity
-import zygarde.data.jpa.entity.SequenceLongIdEntity
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.persistence.Id
@@ -99,23 +95,15 @@ class ZygardeJpaDaoGenerator(
     if (idClassAnnotation != null) {
       return safeGetTypeFromAnnotation { idClassAnnotation.value.asTypeName() }.kotlin(canBeNullable = false)
     }
-    val allSuperTypes = this.allSuperTypes(processingEnv)
-    if (allSuperTypes.any { it.typeName() == AutoLongIdEntity::class.asTypeName() }) {
-      return Long::class.asTypeName()
-    } else if (allSuperTypes.any { it.typeName() == AutoIntIdEntity::class.asTypeName() }) {
-      return Int::class.asTypeName()
-    } else if (allSuperTypes.any { it.typeName() == SequenceLongIdEntity::class.asTypeName() }) {
-      return Long::class.asTypeName()
-    } else if (allSuperTypes.any { it.typeName() == SequenceIntIdEntity::class.asTypeName() }) {
-      return Int::class.asTypeName()
-    }
-
     val allFieldsIncludeSuper = this.allFieldsIncludeSuper()
     val idElement = allFieldsIncludeSuper
       .find { it.getAnnotation(Id::class.java) != null }
       .errWhenNull(CommonErrorCode.ERROR, "no id class found for entity ${this.simpleName}")
-    return idElement
-      .asType()
-      .kotlinTypeName(false)
+    val genericFieldTypeMap = this.resolveGenericFieldTypeMap(processingEnv)
+    val idTypeMirror = idElement.asType()
+    val idFieldLocation = "${idElement.enclosingElement}_$idTypeMirror"
+    return genericFieldTypeMap.getOrElse(idFieldLocation) {
+      idTypeMirror.kotlinTypeName(false)
+    }
   }
 }

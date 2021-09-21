@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
+import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 
 object ElementExtensions {
@@ -56,6 +57,37 @@ object ElementExtensions {
     return listOf(superElements, this.enclosedElements)
       .flatten()
       .filter { it.kind == ElementKind.FIELD }
+  }
+
+  /**
+   * AutoIdEntity<T>
+   * AutoIntIdEntity : AutoIdEntity<Int>
+   * AutoIdEntity_T -> Int
+   */
+  fun Element.resolveGenericFieldTypeMap(processingEnv: ProcessingEnvironment): MutableMap<String, TypeName> {
+    val superTypes = this.allSuperTypes(processingEnv)
+    val allTypeArgs = superTypes.associate { st ->
+      val stTypeMirror = st.asType()
+      st.toString() to if (stTypeMirror is DeclaredType) {
+        stTypeMirror.typeArguments.map { ta -> ta.toString() }
+      } else emptyList()
+    }
+    val genericTypeMap = mutableMapOf<String, TypeName>()
+    superTypes.forEach { superType ->
+      if (superType is TypeElement) {
+        listOf(superType.interfaces, listOf(superType.superclass)).flatten().forEach { superClassOrInterface ->
+          val matchedValues = "(.*)<(.*)>".toRegex().find(superClassOrInterface.toString())?.groupValues ?: emptyList()
+          if (matchedValues.size > 1) {
+            val superClassName = matchedValues[1]
+            val typeArgList = allTypeArgs.getOrDefault(superClassName, emptyList())
+            typeArgList.forEachIndexed { idx, typeArg ->
+              genericTypeMap["${superClassName}_$typeArg"] = matchedValues[idx + 2].toClassName().kotlin(false)
+            }
+          }
+        }
+      }
+    }
+    return genericTypeMap
   }
 
   private fun Element.typeName(canBeNullable: Boolean = true): TypeName {

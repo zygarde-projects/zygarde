@@ -1,23 +1,26 @@
 package zygarde.codegen.generator.impl
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import org.springframework.util.FileSystemUtils
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.MODEL_META_GENERATE_PACKAGE
 import zygarde.codegen.dsl.DslCodegen
-import zygarde.codegen.extension.kotlinpoet.*
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allSuperTypes
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.nullableTypeName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
+import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.codegen.meta.Comment
 import zygarde.codegen.meta.ModelMetaField
-import zygarde.data.jpa.entity.AutoIntIdEntity
-import zygarde.data.jpa.entity.AutoLongIdEntity
-import zygarde.data.jpa.entity.SequenceIntIdEntity
-import zygarde.data.jpa.entity.SequenceLongIdEntity
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 
@@ -72,12 +75,13 @@ class ZygardeModelMetaGenerator(
       .firstOrNull()
       .orEmpty()
     val fieldName = fieldName()
+    val nonNullFieldType = fieldType.copy(nullable = false)
     return PropertySpec
       .builder(
         fieldName,
         ModelMetaField::class.asClassName().parameterizedBy(
           modelElement.typeName(),
-          fieldType
+          nonNullFieldType,
         ),
         KModifier.PROTECTED
       )
@@ -87,8 +91,8 @@ class ZygardeModelMetaGenerator(
             """%T(modelClass=%T::class,fieldName="$fieldName",fieldClass=%T::class,fieldNullable=%L,comment=%S)""",
             ModelMetaField::class.asClassName(),
             modelElement.typeName(),
-            fieldType,
-            nullableTypeName().isNullable,
+            nonNullFieldType,
+            fieldType.isNullable,
             comment,
           )
           .build()
@@ -101,6 +105,7 @@ class ZygardeModelMetaGenerator(
   ): FunSpec {
     val fieldType = modelElement.resolveFieldType(this)
     val fieldName = fieldName()
+    val nonNullFieldType = fieldType.copy(nullable = false)
     return FunSpec.builder(fieldName)
       .addParameter(
         ParameterSpec(
@@ -108,7 +113,7 @@ class ZygardeModelMetaGenerator(
           LambdaTypeName.get(
             receiver = ModelMetaField::class.asClassName().parameterizedBy(
               modelElement.typeName(),
-              fieldType
+              nonNullFieldType,
             ),
             returnType = Unit::class.asTypeName()
           )
@@ -116,29 +121,5 @@ class ZygardeModelMetaGenerator(
       )
       .addCode("dsl.invoke($fieldName)")
       .build()
-  }
-
-  private fun Element.resolveFieldType(fieldElement: Element): TypeName {
-    val fieldTypeName = fieldElement.typeName()
-    return if (fieldTypeName.toString() == "T") {
-      val allSuperTypes = this.allSuperTypes(processingEnv)
-      val isIdDefinedLong = allSuperTypes.any {
-        it.typeName() == AutoLongIdEntity::class.asTypeName() || it.typeName() == SequenceLongIdEntity::class.asTypeName()
-      }
-      if (isIdDefinedLong) {
-        Long::class.asTypeName()
-      } else {
-        val isIdDefinedInt = allSuperTypes.any {
-          it.typeName() == AutoIntIdEntity::class.asTypeName() || it.typeName() == SequenceIntIdEntity::class.asTypeName()
-        }
-        if (isIdDefinedInt) {
-          Int::class.asTypeName()
-        } else {
-          throw IllegalArgumentException("cannot resolve field type for $this $fieldTypeName")
-        }
-      }
-    } else {
-      fieldTypeName
-    }
   }
 }

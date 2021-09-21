@@ -1,11 +1,13 @@
 package zygarde.codegen.generator
 
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.BASE_PACKAGE
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allFieldsIncludeSuper
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allSuperTypes
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.nullableTypeName
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.resolveGenericFieldTypeMap
+import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
@@ -21,7 +23,7 @@ abstract class AbstractZygardeGenerator(
     return try {
       block.invoke()
     } catch (e: MirroredTypeException) {
-      e.typeMirror.asTypeName()
+      e.typeMirror.kotlinTypeName(false)
     }
   }
 
@@ -38,5 +40,14 @@ abstract class AbstractZygardeGenerator(
     kaptOptionForFolderToGenerate: String = ZygardeKaptOptions.KAPT_KOTLIN_GENERATED_OPTION_NAME
   ): File {
     return File("${processingEnv.options[kaptOptionForFolderToGenerate]}").also { it.mkdirs() }
+  }
+
+  protected fun Element.resolveFieldType(fieldElement: Element): TypeName {
+    val genericFieldTypeMap = this.resolveGenericFieldTypeMap(processingEnv)
+    val fieldTypeMirror = fieldElement.asType()
+    val fieldLocation = "${fieldElement.enclosingElement}_$fieldTypeMirror"
+    return genericFieldTypeMap.getOrElse(fieldLocation) {
+      fieldElement.nullableTypeName()
+    }
   }
 }

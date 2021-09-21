@@ -5,6 +5,7 @@ dependencies {
   implementation(platform(project(":zygarde-bom-codegen")))
   implementation("com.squareup:kotlinpoet")
   implementation("com.squareup:kotlinpoet-metadata")
+  implementation("com.squareup:kotlinpoet-metadata-specs")
   implementation("com.google.auto.service:auto-service")
 
   kapt(platform(project(":zygarde-bom-codegen")))
@@ -16,11 +17,11 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  kotlinOptions {
-    freeCompilerArgs = freeCompilerArgs + "-Xopt-in=com.squareup.kotlinpoet.DelicateKotlinPoetApi"
-  }
-}
+// tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+//   kotlinOptions {
+//     freeCompilerArgs = freeCompilerArgs + "-Xopt-in=com.squareup.kotlinpoet.DelicateKotlinPoetApi"
+//   }
+// }
 
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("printCoverage").enabled = false

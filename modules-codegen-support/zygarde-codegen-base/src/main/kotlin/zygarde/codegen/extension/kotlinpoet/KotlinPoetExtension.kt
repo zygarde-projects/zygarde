@@ -6,6 +6,8 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import javax.lang.model.type.DeclaredType
+import javax.lang.model.type.PrimitiveType
 import javax.lang.model.type.TypeMirror
 import kotlin.reflect.KClass
 
@@ -46,7 +48,27 @@ fun TypeName.kotlin(canBeNullable: Boolean = true): TypeName {
 }
 
 fun TypeMirror.kotlinTypeName(canBeNullable: Boolean = true): TypeName {
-  return asTypeName().kotlin(canBeNullable)
+  val qualifiedName = toString().replaceFirst("? extends ", "")
+  if (this is PrimitiveType) {
+    return when (qualifiedName.lowercase()) {
+      "byte" -> Short::class.asTypeName()
+      "short" -> Short::class.asTypeName()
+      "int" -> Int::class.asTypeName()
+      "long" -> Long::class.asTypeName()
+      "float" -> Float::class.asTypeName()
+      "double" -> Double::class.asTypeName()
+      "boolean" -> Boolean::class.asTypeName()
+      "string" -> String::class.asTypeName()
+      else -> throw IllegalArgumentException("unable to resolve $qualifiedName")
+    }.kotlin(canBeNullable)
+  } else if (this is DeclaredType) {
+    if (this.typeArguments.isNotEmpty()) {
+      return this.asElement().toString().toClassName().parameterizedBy(
+        *this.typeArguments.map { it.kotlinTypeName(false) }.toTypedArray()
+      )
+    }
+  }
+  return qualifiedName.toClassName().kotlin(canBeNullable)
 }
 
 fun KClass<*>.generic(vararg genericClasses: KClass<*>): TypeName {
