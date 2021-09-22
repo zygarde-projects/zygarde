@@ -111,6 +111,8 @@ subprojects {
         }
       }
     }
+    exclude(group = "junit")
+    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
   }
 
   task("housekeeping", Delete::class) {

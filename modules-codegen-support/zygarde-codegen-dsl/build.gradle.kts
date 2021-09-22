@@ -2,9 +2,9 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
-  implementation(project(":zygarde"))
   implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-codegen-base"))
+  implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("io.github.classgraph:classgraph:4.8.21")
   testImplementation("commons-io:commons-io:2.2")
 

@@ -5,23 +5,9 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 dependencies {
   api(project(":zygarde-jpa"))
   api(project(":zygarde-core"))
-  api("org.springframework.boot:spring-boot-starter-data-jpa")
-  api("org.springframework.boot:spring-boot-starter-json")
-  api("org.springframework.boot:spring-boot-starter-validation")
-  api("org.springframework.boot:spring-boot-starter-mail")
-  api("org.springframework.boot:spring-boot-starter-thymeleaf")
-  api("org.springframework.boot:spring-boot-starter-security")
-  testImplementation("com.h2database:h2")
-  testImplementation("org.jeasy:easy-random-core:4.2.0")
-  testImplementation("org.springframework.boot:spring-boot-starter-test") {
-    exclude(group = "junit")
-    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
-  }
-  testImplementation(project(":zygarde-test")) {
-    exclude(group = "junit")
-    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
-  }
-  kapt("org.springframework.boot:spring-boot-configuration-processor")
+  api(project(":zygarde-jackson"))
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation(project(":zygarde-test"))
 }
 
 tasks.getByName("printCoverage").enabled = false

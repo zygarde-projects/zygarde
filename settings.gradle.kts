@@ -17,8 +17,6 @@ registerModules("modules-codegen-support")
 registerModules("modules-test-support")
 registerModules("modules-bom")
 
-include("zygarde")
-
 include("v2-sample-core")
 include("v2-sample-model-meta")
 include("v2-sample-codegen")

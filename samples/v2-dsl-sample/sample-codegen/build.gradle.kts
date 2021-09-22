@@ -5,7 +5,6 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
   implementation(project(":v2-sample-core"))
   implementation(project(":v2-sample-model-meta"))
-  implementation(project(":zygarde"))
   implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-codegen-dsl"))
 }

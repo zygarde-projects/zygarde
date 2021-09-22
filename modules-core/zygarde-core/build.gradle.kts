@@ -1,19 +1,15 @@
 apply(plugin = "org.springframework.boot")
-apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
-  api("io.swagger.core.v3:swagger-annotations:2.1.10")
+  implementation("org.springframework.boot:spring-boot-starter")
   implementation("org.springframework.boot:spring-boot-starter-logging")
-  api("com.fasterxml.jackson.module:jackson-module-kotlin")
-  api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-  testImplementation("org.springframework.boot:spring-boot-starter-test") {
-    exclude(group = "junit")
-    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
-  }
+  api(project(":zygarde-error-handling"))
+  api("io.swagger.core.v3:swagger-annotations:2.1.10")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation(project(":zygarde-test-error-handling"))
   kapt("org.springframework.boot:spring-boot-configuration-processor")
 }
 
 tasks.getByName("bootJar").enabled = false
-tasks.getByName("printCoverage").enabled = false
 tasks.getByName("jar").enabled = true

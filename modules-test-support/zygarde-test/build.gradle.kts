@@ -3,16 +3,11 @@ apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
-  implementation(project(":zygarde-webmvc"))
-  implementation("io.jsonwebtoken:jjwt-api:0.11.0")
-  implementation("io.jsonwebtoken:jjwt-impl:0.11.0")
-  implementation("io.jsonwebtoken:jjwt-jackson:0.11.0")
+  api(project(":zygarde-test-error-handling"))
   api("io.kotest:kotest-assertions-shared-jvm:4.6.3")
   api("io.kotest:kotest-assertions-core-jvm:4.6.3")
   api("io.mockk:mockk:1.12.0")
   implementation("org.springframework.boot:spring-boot-starter-test")
-  implementation("org.springframework.security:spring-security-test")
-  implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 }
 
 tasks.getByName("bootJar").enabled = false

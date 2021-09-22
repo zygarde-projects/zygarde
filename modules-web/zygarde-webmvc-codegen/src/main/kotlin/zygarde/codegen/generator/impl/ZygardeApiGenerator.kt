@@ -61,7 +61,7 @@ class ZygardeApiGenerator(
   private val apiPackage = packageName("api")
   private val apiImplPackage = packageName("api.impl")
 
-  private val beanFunc = MemberName("zygarde.core.di", "bean")
+  private val beanFunc = MemberName("zygarde.core.di.DiServiceContext", "bean")
 
   fun generateApi(elements: Collection<Element>) {
     val apis = elements.flatMap { elem ->
@@ -340,7 +340,7 @@ class ZygardeApiGenerator(
               if (api.authenticationDetail != null) {
                 fb.addStatement(
                   "val authenticationDetail = %M<%T>()",
-                  MemberName("zygarde.core.extension.SpringSecurityExtensions", "currentAuthenticationDetail"),
+                  MemberName("zygarde.security.extension.SpringSecurityExtensions", "currentAuthenticationDetail"),
                   api.authenticationDetail
                 )
               }
