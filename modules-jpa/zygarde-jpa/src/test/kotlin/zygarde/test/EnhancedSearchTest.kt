@@ -6,12 +6,16 @@ import io.kotest.matchers.shouldNotBe
 import org.jeasy.random.EasyRandom
 import org.jeasy.random.EasyRandomParameters
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.Sort
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import zygarde.data.jpa.dao.remove
 import zygarde.data.jpa.dao.search
 import zygarde.data.jpa.dao.searchCount
 import zygarde.data.jpa.dao.searchOne
@@ -21,12 +25,12 @@ import zygarde.data.jpa.search.action.dateTimeRange
 import zygarde.data.jpa.search.action.impl.SearchableImpl
 import zygarde.data.jpa.search.request.PagingAndSortingRequest
 import zygarde.data.jpa.search.request.PagingRequest
+import zygarde.data.jpa.search.request.SortField
+import zygarde.data.jpa.search.request.SortingRequest
 import zygarde.data.search.SearchDateRange
 import zygarde.data.search.SearchDateTimeRange
 import zygarde.data.search.SearchKeyword
 import zygarde.data.search.SearchKeywordType
-import zygarde.data.jpa.search.request.SortField
-import zygarde.data.jpa.search.request.SortingRequest
 import zygarde.test.dao.TestAuthorDao
 import zygarde.test.dao.TestAuthorGroupDao
 import zygarde.test.dao.TestBookDao
@@ -38,6 +42,7 @@ import java.time.LocalDateTime
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [ZygardeJpaTestApplication::class])
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @DirtiesContext
 class EnhancedSearchTest {
 
@@ -87,6 +92,7 @@ class EnhancedSearchTest {
     }
   }
 
+  @Order(100)
   @Test
   fun `should able to search book by name`() {
     bookDao.search {
@@ -95,6 +101,7 @@ class EnhancedSearchTest {
     }.size shouldBe 20
   }
 
+  @Order(200)
   @Test
   fun `should able to search book page by name`() {
     bookDao.searchPage(PagingAndSortingRequest()) {
@@ -103,6 +110,7 @@ class EnhancedSearchTest {
     }.totalPages shouldBe 2
   }
 
+  @Order(300)
   @Test
   fun `should ignore search condition`() {
     bookDao.search { stringField("name") inList null }.size shouldBe 1000
@@ -118,12 +126,14 @@ class EnhancedSearchTest {
     bookDao.search { field<Author>("author").field<LocalDate>(SearchableImpl("registerDate")) eq null }.size shouldBe 1000
   }
 
+  @Order(400)
   @Test
   fun `should serach for not in and not eq`() {
     bookDao.search { stringField("name") notEq "zygarde" }.size shouldBeGreaterThan 0
     bookDao.search { stringField("name") notInList listOf("zygarde") }.size shouldBeGreaterThan 0
   }
 
+  @Order(500)
   @Test
   fun `should able to search book by authorGroup name`() {
     bookDao.search {
@@ -141,6 +151,7 @@ class EnhancedSearchTest {
     }.size shouldBe 500
   }
 
+  @Order(600)
   @Test
   fun `should able to search with limit`() {
     bookDao.search(
@@ -151,6 +162,7 @@ class EnhancedSearchTest {
     ).size shouldBe 10
   }
 
+  @Order(700)
   @Test
   fun `should able to search with order`() {
     bookDao.search(
@@ -167,6 +179,7 @@ class EnhancedSearchTest {
     ).first().price shouldNotBe 100
   }
 
+  @Order(800)
   @Test
   fun `should able to perform isNull search`() {
     bookDao.search {
@@ -174,6 +187,7 @@ class EnhancedSearchTest {
     }.size shouldBe 0
   }
 
+  @Order(900)
   @Test
   fun `should able to perform string search`() {
     bookDao.search {
@@ -190,6 +204,7 @@ class EnhancedSearchTest {
     }.size shouldBeGreaterThan 0
   }
 
+  @Order(1000)
   @Test
   fun `should able to perform comparable search`() {
     bookDao.search {
@@ -208,6 +223,7 @@ class EnhancedSearchTest {
     }.size shouldBeGreaterThan 0
   }
 
+  @Order(1100)
   @Test
   fun `should able to in search with large list`() {
     bookDao.search {
@@ -215,6 +231,7 @@ class EnhancedSearchTest {
     }.size shouldBe 0
   }
 
+  @Order(1200)
   @Test
   fun `should able to not in search with large list`() {
     bookDao.search {
@@ -222,6 +239,7 @@ class EnhancedSearchTest {
     }.size shouldBeGreaterThan 0
   }
 
+  @Order(1300)
   @Test
   fun `should able to count book`() {
     bookDao.searchCount {
@@ -232,6 +250,7 @@ class EnhancedSearchTest {
     } shouldBe 20L
   }
 
+  @Order(1400)
   @Test
   fun `should able to search one`() {
     bookDao.searchOne {
@@ -242,6 +261,7 @@ class EnhancedSearchTest {
     } shouldBe null
   }
 
+  @Order(1500)
   @Test
   fun `should able to search page`() {
     bookDao.searchPage(
@@ -283,6 +303,7 @@ class EnhancedSearchTest {
     bookDao.searchPage(PagingAndSortingRequest().also { it.sorting = SortingRequest() }) {}.totalPages shouldBe 100
   }
 
+  @Order(1600)
   @Test
   fun `should able to search page with multiple sorts`() {
     val page1 = bookDao.searchPage(
@@ -320,6 +341,7 @@ class EnhancedSearchTest {
     page1.first() shouldBe page2.first()
   }
 
+  @Order(1700)
   @Test
   fun `should able to search concat fields`() {
     bookDao.search {
@@ -328,5 +350,17 @@ class EnhancedSearchTest {
         field<Author>("author").field<AuthorGroup>("authorGroup").stringField("name")
       ) contains "decom" // zygarde+comics => zygardecomics contains 'decom'
     }.size shouldBeGreaterThan 0
+  }
+
+  @Order(9000)
+  @Test
+  fun `should able to delete`() {
+    bookDao.remove {
+      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+    }
+
+    bookDao.search {
+      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+    }.size shouldBe 0
   }
 }

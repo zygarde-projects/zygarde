@@ -1,6 +1,6 @@
 package zygarde.test.dao
 
-import zygarde.data.jpa.dao.BaseDao
+import zygarde.data.jpa.dao.ZygardeEnhancedDao
 import zygarde.test.entity.Book
 
-interface TestBookDao : BaseDao<Book, Long>
+interface TestBookDao : ZygardeEnhancedDao<Book, Long>

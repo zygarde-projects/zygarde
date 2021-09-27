@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Component
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_COMBINE
+import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_ENHANCED_IMPL
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_PACKAGE
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_SUFFIX
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
@@ -25,6 +26,7 @@ import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.core.exception.CommonErrorCode
 import zygarde.core.extension.exception.errWhenNull
+import zygarde.data.jpa.dao.ZygardeEnhancedDao
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.persistence.Id
@@ -33,6 +35,10 @@ import javax.persistence.IdClass
 class ZygardeJpaDaoGenerator(
   processingEnv: ProcessingEnvironment
 ) : AbstractZygardeGenerator(processingEnv) {
+
+  private val useDaoEnhancedImpl by lazy {
+    processingEnv.options.getOrDefault(DAO_ENHANCED_IMPL, "false") == "true"
+  }
 
   fun generateDaoForEntityElements(elements: Collection<Element>) {
     if (elements.isEmpty()) {
@@ -45,12 +51,20 @@ class ZygardeJpaDaoGenerator(
         FileSpec.builder(daoPackage, daoName)
           .addType(
             TypeSpec.interfaceBuilder(daoName)
-              .addSuperinterface(
-                JpaRepository::class.generic(element.typeName(), element.findIdClass())
-              )
-              .addSuperinterface(
-                JpaSpecificationExecutor::class.generic(element.typeName())
-              )
+              .also { interfaceBuilder ->
+                if (useDaoEnhancedImpl) {
+                  interfaceBuilder.addSuperinterface(
+                    ZygardeEnhancedDao::class.generic(element.typeName(), element.findIdClass())
+                  )
+                } else {
+                  interfaceBuilder.addSuperinterface(
+                    JpaRepository::class.generic(element.typeName(), element.findIdClass())
+                  )
+                    .addSuperinterface(
+                      JpaSpecificationExecutor::class.generic(element.typeName())
+                    )
+                }
+              }
               .build()
           )
           .build()
