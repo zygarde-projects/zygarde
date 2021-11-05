@@ -12,8 +12,8 @@ import zygarde.data.jpa.search.request.asSort
 import javax.persistence.criteria.Predicate
 
 private fun <T> buildSpec(searchContent: EnhancedSearch<T>.() -> Unit): Specification<T> {
-  val predicates = mutableListOf<Predicate>()
   return Specification<T> { root, query, cb ->
+    val predicates = mutableListOf<Predicate>()
     val enhancedSearchImpl = EnhancedSearchImpl(predicates, root, query, cb)
     searchContent.invoke(enhancedSearchImpl)
     if (enhancedSearchImpl.orders.isNotEmpty()) {
