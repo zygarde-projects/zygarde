@@ -71,6 +71,18 @@ fun TypeMirror.kotlinTypeName(canBeNullable: Boolean = true): TypeName {
   return qualifiedName.toClassName().kotlin(canBeNullable)
 }
 
+fun TypeName.generic(vararg typeName: TypeName): TypeName {
+  return if (this is ClassName) {
+    if (typeName.isNotEmpty()) {
+      this.parameterizedBy(*typeName)
+    } else {
+      this
+    }
+  } else {
+    throw UnsupportedOperationException("generic only supported by ClassName")
+  }
+}
+
 fun KClass<*>.generic(vararg genericClasses: KClass<*>): TypeName {
   val className = asClassName()
   if (genericClasses.isNotEmpty()) {

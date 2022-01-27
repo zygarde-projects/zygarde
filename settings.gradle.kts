@@ -21,7 +21,7 @@ include("v2-sample-core")
 include("v2-sample-model-meta")
 include("v2-sample-codegen")
 include("v2-sample-codegen-generated")
-include("v2-jpa-sample-core")
+include("todo-legacy")
 
 project(":v2-sample-core").setProjectDir(
   File("samples/v2-dsl-sample/sample-core")
@@ -35,6 +35,6 @@ project(":v2-sample-codegen").setProjectDir(
 project(":v2-sample-codegen-generated").setProjectDir(
   File("samples/v2-dsl-sample/sample-codegen-generated")
 )
-project(":v2-jpa-sample-core").setProjectDir(
-  File("samples/v2-jpa-sample/jpa-sample-core")
+project(":todo-legacy").setProjectDir(
+  File("samples/todo-legacy")
 )
