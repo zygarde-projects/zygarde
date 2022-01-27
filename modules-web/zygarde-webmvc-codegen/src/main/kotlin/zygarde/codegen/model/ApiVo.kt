@@ -6,5 +6,6 @@ data class ApiVo(
   var serviceInterfacePackage: String,
   var apiName: String,
   var basePath: String? = null,
-  var functions: List<ApiFunctionVo>,
+  var functions: MutableList<ApiFunctionVo> = mutableListOf(),
+  var separateFeign: Boolean = true,
 )

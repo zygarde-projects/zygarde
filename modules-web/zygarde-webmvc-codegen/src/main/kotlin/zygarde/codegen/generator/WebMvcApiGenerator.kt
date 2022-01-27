@@ -28,7 +28,7 @@ import java.util.LinkedList
 import javax.validation.Valid
 
 class WebMvcApiGenerator(
-  val apis: List<ApiVo>
+  val apis: Collection<ApiVo>
 ) {
   private val apiInterfaceFileSpecBuilderMap = mutableMapOf<String, FileSpec.Builder>()
   private val apiInterfaceBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
@@ -70,22 +70,29 @@ class WebMvcApiGenerator(
     apiInterfaceFileSpecBuilderMap.getOrPut(apiName) {
       FileSpec.builder(apiPackage, apiName)
     }
+
+    val feignClientAnnotation = AnnotationSpec.builder(FeignClient::class)
+      .addMember("name=%S", apiName)
+      .build()
+
     val apiInterfaceBuilder = apiInterfaceBuilderMap.getOrPut(apiName) {
       TypeSpec.interfaceBuilder(apiName)
     }
     val feignApiName = "${apiName}Feign"
-    feignApiInterfaceFileSpecBuilderMap.getOrPut(feignApiName) {
-      FileSpec.builder(apiPackage, apiName)
+
+    if (separateFeign) {
+      feignApiInterfaceFileSpecBuilderMap.getOrPut(feignApiName) {
+        FileSpec.builder(apiPackage, apiName)
+      }
+    } else {
+      apiInterfaceBuilder.addAnnotation(feignClientAnnotation)
     }
 
     val feignApiInterfaceBuilder = feignApiInterfaceBuilderMap.getOrPut(feignApiName) {
+
       TypeSpec.interfaceBuilder(feignApiName)
         .addSuperinterface(ClassName(apiPackage, apiName))
-        .addAnnotation(
-          AnnotationSpec.builder(FeignClient::class)
-            .addMember("name=%S", apiName)
-            .build()
-        )
+        .addAnnotation(feignClientAnnotation)
     }
 
     val apiImplName = "${apiName}Controller"
@@ -109,7 +116,7 @@ class WebMvcApiGenerator(
     }
 
     functions.forEach { func ->
-      val serviceInterfaceName = (func.serviceName ?: apiName) + "Service"
+      val serviceInterfaceName = func.serviceName ?: (apiName + "Service")
       serviceInterfaceFileSpecBuilderMap.getOrPut(serviceInterfaceName) {
         FileSpec.builder(serviceInterfacePackage, serviceInterfaceName)
       }
@@ -118,9 +125,6 @@ class WebMvcApiGenerator(
       }
       val apiFunctionName = func.functionName
       val serviceFunctionName = func.serviceFunctionName ?: func.functionName
-
-      val apiFuncBuilder = FunSpec.builder(apiFunctionName)
-        .addModifiers(KModifier.ABSTRACT)
 
       val methodAnnotation = AnnotationSpec
         .builder(
@@ -138,11 +142,18 @@ class WebMvcApiGenerator(
         }
         .build()
 
+      val apiFuncBuilder = FunSpec.builder(apiFunctionName)
+        .addModifiers(KModifier.ABSTRACT)
+      if (!separateFeign) {
+        apiFuncBuilder.addAnnotation(methodAnnotation)
+      }
+
       val feignApiFuncBuilder = FunSpec.builder(apiFunctionName)
         .addModifiers(KModifier.ABSTRACT)
         .addAnnotation(methodAnnotation)
 
       val webMvcFuncBuilder = FunSpec.builder(apiFunctionName)
+        .addModifiers(KModifier.OVERRIDE)
         .addAnnotation(methodAnnotation)
         .addAnnotation(
           AnnotationSpec.builder(Operation::class)
@@ -163,19 +174,25 @@ class WebMvcApiGenerator(
       val paramsToCallServiceInterface = mutableListOf<String>()
 
       func.pathVariables.forEach { (pathVariableName, pathVariableType) ->
-        apiFuncBuilder.addParameter(
-          ParameterSpec.builder(pathVariableName, pathVariableType).build()
-        )
 
         val pathVariableAnnotation = AnnotationSpec.builder(PathVariable::class)
           .addMember("value=%S", pathVariableName)
           .build()
 
-        feignApiFuncBuilder.addParameter(
-          ParameterSpec.builder(pathVariableName, pathVariableType)
-            .addAnnotation(pathVariableAnnotation)
-            .build()
-        )
+        val apiInterfacePathVariableParamBuilder = ParameterSpec.builder(pathVariableName, pathVariableType)
+        if (separateFeign) {
+          feignApiFuncBuilder.addParameter(
+            ParameterSpec.builder(pathVariableName, pathVariableType)
+              .addAnnotation(pathVariableAnnotation)
+              .build()
+          )
+        } else {
+          apiInterfacePathVariableParamBuilder.addAnnotation(pathVariableAnnotation)
+        }
+
+        apiFuncBuilder.addParameter(apiInterfacePathVariableParamBuilder.build())
+
+
         webMvcFuncBuilder.addParameter(
           ParameterSpec.builder(pathVariableName, pathVariableType)
             .addAnnotation(pathVariableAnnotation)
@@ -193,19 +210,25 @@ class WebMvcApiGenerator(
       func.requestType
         ?.generic(*func.requestTypeGenericArguments.toTypedArray())
         ?.also { reqType ->
-          apiFuncBuilder.addParameter(
-            ParameterSpec.builder(func.requestName, reqType).build()
-          )
-          feignApiFuncBuilder.addParameter(
-            ParameterSpec.builder(func.requestName, reqType)
-              .addAnnotation(
-                when (func.method) {
-                  RequestMethod.POST, RequestMethod.PUT -> RequestBody::class
-                  else -> SpringQueryMap::class
-                }
-              )
-              .build()
-          )
+          val apiInterfaceRequestBodyParamBuilder = ParameterSpec.builder(func.requestName, reqType)
+
+          val requestBodyParamAnnoationClass = when (func.method) {
+            RequestMethod.POST, RequestMethod.PUT -> RequestBody::class
+            else -> SpringQueryMap::class
+          }
+          if (separateFeign) {
+            feignApiFuncBuilder.addParameter(
+              ParameterSpec.builder(func.requestName, reqType)
+                .addAnnotation(
+                  requestBodyParamAnnoationClass
+                )
+                .build()
+            )
+          } else {
+            apiInterfaceRequestBodyParamBuilder.addAnnotation(requestBodyParamAnnoationClass)
+          }
+
+          apiFuncBuilder.addParameter(apiInterfaceRequestBodyParamBuilder.build())
           webMvcFuncBuilder.addParameter(
             ParameterSpec.builder(func.requestName, reqType)
               .also { paramSpec ->
