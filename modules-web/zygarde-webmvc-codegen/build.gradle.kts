@@ -5,6 +5,7 @@ dependencies {
   implementation(project(":zygarde-webmvc"))
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-codegen-base"))
+  implementation(project(":zygarde-web-codegen"))
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")

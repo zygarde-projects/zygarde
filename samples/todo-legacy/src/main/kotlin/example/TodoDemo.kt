@@ -69,7 +69,7 @@ class MyTodoService(@Autowired val todoDao: TodoDao) : TodoService {
   }
 
   override fun updateTodo(todoId: Int, req: UpdateToDoReq): TodoDto {
-    return todoDao.getOne(todoId).applyFromUpdateToDoReq(req).let(todoDao::save).toTodoDto()
+    return todoDao.getById(todoId).applyFromUpdateToDoReq(req).let(todoDao::save).toTodoDto()
   }
 
   override fun listTodo(): Collection<TodoDto> {

@@ -2,7 +2,7 @@ rootProject.name = "zygarde"
 
 fun registerModules(path: String) {
   File(rootProject.projectDir, path)
-    .listFiles { f -> f.isDirectory && f.name.startsWith("zygarde-") }
+    .listFiles { f -> f.isDirectory && File(f, "build.gradle.kts").exists() }
     ?.forEach { f ->
       include(f.name)
       project(":${f.name}").projectDir = f
@@ -17,24 +17,5 @@ registerModules("modules-codegen-support")
 registerModules("modules-test-support")
 registerModules("modules-bom")
 
-include("v2-sample-core")
-include("v2-sample-model-meta")
-include("v2-sample-codegen")
-include("v2-sample-codegen-generated")
-include("todo-legacy")
-
-project(":v2-sample-core").setProjectDir(
-  File("samples/v2-dsl-sample/sample-core")
-)
-project(":v2-sample-model-meta").setProjectDir(
-  File("samples/v2-dsl-sample/sample-model-meta")
-)
-project(":v2-sample-codegen").setProjectDir(
-  File("samples/v2-dsl-sample/sample-codegen")
-)
-project(":v2-sample-codegen-generated").setProjectDir(
-  File("samples/v2-dsl-sample/sample-codegen-generated")
-)
-project(":todo-legacy").setProjectDir(
-  File("samples/todo-legacy")
-)
+registerModules("samples")
+registerModules("samples/todo-multimodule-dsl")

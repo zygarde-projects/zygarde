@@ -6,7 +6,6 @@ import feign.Util
 import feign.slf4j.Slf4jLogger
 import io.jsonwebtoken.Jwt
 import io.jsonwebtoken.Jwts
-import zygarde.core.extension.general.fallbackWhenNull
 import zygarde.json.toJsonString
 
 class TestFeignLogger(clazz: Class<*>) : Slf4jLogger(clazz) {
@@ -28,8 +27,8 @@ class TestFeignLogger(clazz: Class<*>) : Slf4jLogger(clazz) {
       request.httpMethod().name,
       request.url(),
       tokenContent.takeIf { it.isNotEmpty() }?.let { "\r\ntoken: $it" }.orEmpty(),
-      if (request.requestBody().asBytes() != null) {
-        "\r\n${request.requestBody().asString().fallbackWhenNull("Binary data")}"
+      if (request.body() != null) {
+        "\r\n${if (request.isBinary) "Binary data" else String(request.body())}"
       } else {
         ""
       }

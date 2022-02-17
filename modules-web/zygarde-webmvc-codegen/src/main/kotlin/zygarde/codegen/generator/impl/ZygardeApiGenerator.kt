@@ -8,8 +8,8 @@ import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.codegen.generator.WebMvcApiGenerator
-import zygarde.codegen.model.ApiFunctionVo
-import zygarde.codegen.model.ApiVo
+import zygarde.codegen.model.ApiFunctionToGenerateVo
+import zygarde.codegen.model.ApiToGenerateVo
 import zygarde.data.api.PageDto
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
@@ -29,7 +29,7 @@ class ZygardeApiGenerator(
   private val apiImplPackage = packageName("api.impl")
 
   fun generateApi(elements: Collection<Element>) {
-    val apiVoMap = mutableMapOf<String, ApiVo>()
+    val apiVoMap = mutableMapOf<String, ApiToGenerateVo>()
     elements.forEach { elem ->
       elem.getAnnotation(ZyApi::class.java)?.let { zygardeApi ->
         zygardeApi.api.forEach { genApi ->
@@ -67,7 +67,7 @@ class ZygardeApiGenerator(
             .kotlin(false)
             .takeIf { it.toString() != "java.lang.Object" }
 
-          val apiFunctionVo = ApiFunctionVo(
+          val apiFunctionVo = ApiFunctionToGenerateVo(
             method = genApi.method,
             functionName = apiOperation,
             description = genApi.apiDescription,
@@ -97,7 +97,7 @@ class ZygardeApiGenerator(
           )
 
           val apiVo = apiVoMap.getOrPut(apiName) {
-            ApiVo(
+            ApiToGenerateVo(
               apiInterfacePackage = apiPackage,
               controllerPackage = apiImplPackage,
               serviceInterfacePackage = servicePackage,
@@ -115,7 +115,7 @@ class ZygardeApiGenerator(
 
     val result = WebMvcApiGenerator(apiVoMap.values).generateApis()
     result.apiInterfaces.forEach { it.writeTo(folderToGenerate()) }
-    result.webMvcControllers.forEach { it.writeTo(folderToGenerate()) }
+    result.controllers.forEach { it.writeTo(folderToGenerate()) }
     result.serviceInterfaces.forEach { it.writeTo(folderToGenerate()) }
   }
 }
