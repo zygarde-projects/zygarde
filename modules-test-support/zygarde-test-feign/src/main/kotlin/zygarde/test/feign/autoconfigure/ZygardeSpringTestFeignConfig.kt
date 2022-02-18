@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import zygarde.core.log.Loggable
 import zygarde.test.feign.TestFeignLogger
 import zygarde.test.feign.TestUserRequestInterceptor
+import java.util.concurrent.TimeUnit
 
 @Configuration
 class ZygardeSpringTestFeignConfig(
@@ -57,7 +58,7 @@ class ZygardeSpringTestFeignConfig(
   @ConditionalOnMissingBean
   @Bean
   fun options(): Request.Options {
-    return Request.Options(30000, 30000)
+    return Request.Options(30000, TimeUnit.MILLISECONDS, 30000, TimeUnit.MILLISECONDS, false)
   }
 
   @ConditionalOnMissingBean
