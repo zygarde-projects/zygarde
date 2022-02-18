@@ -43,8 +43,14 @@ class ZygardeEntityFieldGenerator(
       return
     }
     elements.forEach {
-      generateFields(it)
-      generateExtensionFunctions(elements, it)
+      try {
+        generateFields(it)
+        generateExtensionFunctions(elements, it)
+      } catch (e: IllegalArgumentException) {
+        throw e
+      } catch (t: Throwable) {
+        throw RuntimeException("error generating search field for entity $it", t)
+      }
     }
   }
 

@@ -1,6 +1,8 @@
 package codegen.jpa
 
 import zygarde.codegen.ZyModel
+import zygarde.data.jpa.entity.AuditedAutoIntIdEntity
+import zygarde.data.jpa.entity.AuditedSequenceIntIdEntity
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
 import zygarde.data.jpa.entity.SequenceIntIdEntity
@@ -23,6 +25,14 @@ class AutoIntIdBook : AutoIntIdEntity()
 @ZyModel
 @Entity
 class AutoLongIdBook : AutoLongIdEntity()
+
+@ZyModel
+@Entity
+class AuditedAutoIntIdBook : AuditedAutoIntIdEntity()
+
+@ZyModel
+@Entity
+class SequenceAutoIntIdBook : AuditedSequenceIntIdEntity()
 
 data class BookId(val isbn: String, val country: String) : Serializable
 

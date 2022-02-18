@@ -72,6 +72,7 @@ object ElementExtensions {
         stTypeMirror.typeArguments.map { ta -> ta.toString() }
       } else emptyList()
     }
+
     val genericTypeMap = mutableMapOf<String, TypeName>()
     superTypes.forEach { superType ->
       if (superType is TypeElement) {
@@ -81,7 +82,17 @@ object ElementExtensions {
             val superClassName = matchedValues[1]
             val typeArgList = allTypeArgs.getOrDefault(superClassName, emptyList())
             typeArgList.forEachIndexed { idx, typeArg ->
-              genericTypeMap["${superClassName}_$typeArg"] = matchedValues[idx + 2].toClassName().kotlin(false)
+              val typeClassName = matchedValues[idx + 2]
+              val genericTypePath = "${superClassName}_$typeArg"
+              if (typeArg == typeClassName) {
+                val resolvedBySuperType = genericTypeMap[superType.toString() + "_" + typeArg]
+                if (resolvedBySuperType != null) {
+                  genericTypeMap[genericTypePath] = resolvedBySuperType
+                }
+              } else {
+                val resolvedGenericType = typeClassName.toClassName().kotlin(false)
+                genericTypeMap[genericTypePath] = resolvedGenericType
+              }
             }
           }
         }

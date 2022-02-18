@@ -28,6 +28,8 @@ class ZygardeJpaDaoGeneratorTest {
     generatedFileNames shouldContain "SimpleBookDao.kt"
     generatedFileNames shouldContain "AutoIntIdBookDao.kt"
     generatedFileNames shouldContain "AutoLongIdBookDao.kt"
+    generatedFileNames shouldContain "AuditedAutoIntIdBookDao.kt"
+    generatedFileNames shouldContain "SequenceAutoIntIdBookDao.kt"
     generatedFileNames shouldContain "IdClassBookDao.kt"
     generatedFileNames shouldContain "Dao.kt"
   }

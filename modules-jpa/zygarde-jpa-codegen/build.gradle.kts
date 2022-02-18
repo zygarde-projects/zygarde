@@ -19,6 +19,7 @@ dependencies {
   testImplementation("com.github.tschuchortdev:kotlin-compile-testing")
   testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation(project(":zygarde-jpa-envers"))
 }
 
 tasks.getByName("bootJar").enabled = false
