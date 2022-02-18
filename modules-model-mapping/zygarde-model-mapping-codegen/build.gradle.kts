@@ -5,7 +5,7 @@ dependencies {
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-codegen-base"))
-  implementation(project(":zygarde-codegen-dsl"))
+  implementation(project(":zygarde-model-mapping-codegen-dsl"))
 
   implementation(platform(project(":zygarde-bom-codegen")))
   implementation("com.squareup:kotlinpoet")

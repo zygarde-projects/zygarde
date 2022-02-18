@@ -4,7 +4,7 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
   api(project(":zygarde-jpa"))
   implementation(project(":zygarde-codegen-base"))
-  implementation(project(":zygarde-codegen-dsl"))
+  implementation(project(":zygarde-model-mapping-codegen-dsl"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
   implementation(platform(project(":zygarde-bom-codegen")))

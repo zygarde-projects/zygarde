@@ -4,10 +4,10 @@ import example.Todo
 import kotlin.Int
 import kotlin.String
 import kotlin.Unit
-import zygarde.codegen.dsl.DslCodegen
+import zygarde.codegen.dsl.ModelMappingDslCodegen
 import zygarde.codegen.meta.ModelMetaField
 
-public abstract class AbstractTodoCodegen : DslCodegen<Todo>(Todo::class) {
+public abstract class AbstractTodoCodegen : ModelMappingDslCodegen<Todo>(Todo::class) {
   protected val id: ModelMetaField<Todo, Int> =
       ModelMetaField(modelClass=Todo::class,fieldName="id",fieldClass=Int::class,fieldNullable=false,comment="")
 

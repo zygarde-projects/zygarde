@@ -4,7 +4,7 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
   implementation(project(":todo-src-core"))
   implementation(project(":zygarde-jpa"))
-  implementation(project(":zygarde-codegen-dsl"))
+  implementation(project(":zygarde-model-mapping-codegen-dsl"))
 }
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true

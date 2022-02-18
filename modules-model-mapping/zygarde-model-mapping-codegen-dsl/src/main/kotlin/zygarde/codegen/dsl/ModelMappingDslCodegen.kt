@@ -5,7 +5,7 @@ import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.meta.ModelMetaField
 import kotlin.reflect.KClass
 
-abstract class DslCodegen<E : Any>(val modelClass: KClass<E>) {
+abstract class ModelMappingDslCodegen<E : Any>(val modelClass: KClass<E>) {
 
   val dtoFieldMappings = mutableListOf<DtoFieldMapping>()
 

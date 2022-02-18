@@ -12,14 +12,14 @@ fun main() {
     .scan()
     .allClasses
     .filter {
-      it.extendsSuperclass(DslCodegen::class.java.canonicalName)
+      it.extendsSuperclass(ModelMappingDslCodegen::class.java.canonicalName)
     }
     .filter {
       !it.isAbstract
     }
 
   val modelMappingCodegenList = classes.loadClasses().map { clz ->
-    clz.newInstance() as DslCodegen<*>
+    clz.newInstance() as ModelMappingDslCodegen<*>
   }
 
   modelMappingCodegenList.forEach { it.execute() }
