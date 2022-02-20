@@ -231,6 +231,9 @@ task("covAll", JacocoReport::class) {
 task("lint") {
   dependsOn("ktlintFormat")
 }
+task("lintc") {
+  dependsOn("ktlintCheck")
+}
 
 tasks.getByName("publish").enabled = false
 tasks.getByName("printCoverage").enabled = false

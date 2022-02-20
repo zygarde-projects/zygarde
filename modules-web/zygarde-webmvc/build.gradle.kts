@@ -9,6 +9,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation(project(":zygarde-test"))
   kapt("org.springframework.boot:spring-boot-configuration-processor")
+  annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 }
 
 tasks.getByName("bootJar").enabled = false

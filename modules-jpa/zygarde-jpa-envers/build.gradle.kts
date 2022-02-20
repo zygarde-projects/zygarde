@@ -5,6 +5,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 dependencies {
   api(project(":zygarde-jpa"))
   api("org.springframework.boot:spring-boot-starter-data-jpa")
+  api("org.springframework.security:spring-security-core")
   api("org.hibernate:hibernate-envers")
   testImplementation("com.h2database:h2")
   testImplementation(project(":zygarde-test"))
