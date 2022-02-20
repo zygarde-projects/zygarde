@@ -1,8 +1,11 @@
 package zygarde.codegen.dsl
 
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
+import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.meta.ModelMetaField
+import zygarde.codegen.value.AutoIntIdValueProvider
+import zygarde.codegen.value.AutoLongIdValueProvider
 import kotlin.reflect.KClass
 
 abstract class ModelMappingDslCodegen<E : Any>(val modelClass: KClass<E>) {
@@ -14,6 +17,20 @@ abstract class ModelMappingDslCodegen<E : Any>(val modelClass: KClass<E>) {
   }
 
   protected abstract fun codegen()
+
+  protected fun ModelMetaField<E, Int>.toDtoWithAutoIntIdProvider(vararg dtos: CodegenDto) {
+    this.toDto(*dtos) {
+      valueProvider = AutoIntIdValueProvider::class
+      valueProviderParameterType = ValueProviderParameterType.OBJECT
+    }
+  }
+
+  protected fun ModelMetaField<E, Long>.toDtoWithAutoLongIdProvider(vararg dtos: CodegenDto) {
+    this.toDto(*dtos) {
+      valueProvider = AutoLongIdValueProvider::class
+      valueProviderParameterType = ValueProviderParameterType.OBJECT
+    }
+  }
 
   /**
    * Mapping field to Dto, and also generate extension function 'toXXXDto' for Model
