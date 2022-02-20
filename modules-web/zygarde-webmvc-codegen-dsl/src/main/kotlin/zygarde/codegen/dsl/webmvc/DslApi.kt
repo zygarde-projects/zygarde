@@ -38,7 +38,7 @@ class DslApi(
 
   @JvmName("postWithReified")
   inline fun <reified REQ, reified RES> post(functionName: String, path: String, crossinline dsl: (DslApiFunction.() -> Unit)) {
-    buildForMethodReified(functionName, path, RequestMethod.GET, REQ::class, emptyList(), RES::class, emptyList(), dsl)
+    buildForMethodReified(functionName, path, RequestMethod.POST, REQ::class, emptyList(), RES::class, emptyList(), dsl)
   }
 
   @JvmName("putWithReified")
