@@ -4,20 +4,16 @@ import feign.Request
 import feign.Response
 import feign.Util
 import feign.slf4j.Slf4jLogger
-import io.jsonwebtoken.Jwt
-import io.jsonwebtoken.Jwts
 import zygarde.json.toJsonString
+import zygarde.jwt.BaseJwtService
 
 class TestFeignLogger(clazz: Class<*>) : Slf4jLogger(clazz) {
-  private val jwtParser = Jwts.parserBuilder().build()
+  private val jwtService = BaseJwtService()
 
   override fun logRequest(configKey: String?, logLevel: Level?, request: Request) {
     val token = request.headers()["Authorization"]?.firstOrNull()
     val tokenContent = if (token != null) {
-      val splitToken = token.split(".")
-      val unsignedToken = splitToken[0] + "." + splitToken[1] + "."
-      val jwt: Jwt<*, *> = jwtParser.parse(unsignedToken)
-      jwt.body.toJsonString()
+      jwtService.parseWithoutKey(token).body.toJsonString()
     } else {
       ""
     }
