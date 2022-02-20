@@ -24,8 +24,8 @@ import kotlin.reflect.full.memberProperties
 
 class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapping>) {
 
-  val dtoPackageName = "zygarde.codegen.data.dto"
-  val modelExtensionPackageName = "zygarde.codegen.model.extensions"
+  val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")
+  val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
   var dtoToExtraToDtoMappingMap = dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }.groupBy { it.dto }
 
   fun generateFileSpec(): Collection<FileSpec> {

@@ -26,7 +26,7 @@ fun main() {
 
   val dtoFieldMappings = modelMappingCodegenList.flatMap { it.dtoFieldMappings }
 
-  val codegenTarget = System.getProperty("zygarde.codegen.target")
+  val codegenTarget = System.getProperty("zygarde.codegen.dsl.model-mapping.write-to")
     ?.let {
       File(it).also { f ->
         FileSystemUtils.deleteRecursively(f)
