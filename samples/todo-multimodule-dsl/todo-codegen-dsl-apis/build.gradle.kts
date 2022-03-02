@@ -3,7 +3,7 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
-  implementation(project(":todo-dsl-generated-model-mapping"))
+  implementation(project(":todo-dsl-generated-dto"))
   implementation(project(":zygarde-webmvc-codegen-dsl"))
 }
 tasks.getByName("bootJar").enabled = false

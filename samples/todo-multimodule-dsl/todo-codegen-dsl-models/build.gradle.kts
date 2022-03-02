@@ -17,6 +17,7 @@ tasks.getByName("run").dependsOn ":todo-src-core:kaptkotlin"
 configure<JavaApplication> {
   mainClass.set("zygarde.codegen.dsl.ModelMappingDslMainKt")
   applicationDefaultJvmArgs = listOf(
-    "-Dzygarde.codegen.dsl.model-mapping.write-to=${project(":todo-dsl-generated-model-mapping").file("src/main/kotlin").absolutePath}"
+    "-Dzygarde.codegen.dsl.model-mapping.write-to=${project(":todo-dsl-generated-model-mapping").file("src/main/kotlin").absolutePath}",
+    "-Dzygarde.codegen.dsl.dto.write-to=${project(":todo-dsl-generated-dto").file("src/main/kotlin").absolutePath}"
   )
 }

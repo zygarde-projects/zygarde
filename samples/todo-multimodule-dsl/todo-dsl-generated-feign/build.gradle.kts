@@ -3,7 +3,7 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
-  implementation(project(":todo-dsl-generated-model-mapping"))
+  implementation(project(":todo-dsl-generated-dto"))
   implementation(project(":todo-dsl-generated-api-interface"))
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 }

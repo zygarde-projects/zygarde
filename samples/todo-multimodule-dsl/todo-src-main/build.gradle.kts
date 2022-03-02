@@ -9,6 +9,7 @@ dependencies {
   implementation(project(":todo-src-core"))
   implementation(project(":todo-dsl-generated-api-interface"))
   implementation(project(":todo-dsl-generated-controller"))
+  implementation(project(":todo-dsl-generated-dto"))
   implementation(project(":todo-dsl-generated-model-mapping"))
   implementation(project(":todo-dsl-generated-service-interface"))
   implementation("org.springframework.boot:spring-boot-starter-web")

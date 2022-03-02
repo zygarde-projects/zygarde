@@ -5,7 +5,7 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-di"))
-  implementation(project(":todo-dsl-generated-model-mapping"))
+  implementation(project(":todo-dsl-generated-dto"))
   implementation(project(":todo-dsl-generated-api-interface"))
   implementation(project(":todo-dsl-generated-service-interface"))
   implementation("org.springframework.boot:spring-boot-starter-web")

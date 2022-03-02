@@ -1,9 +1,27 @@
 package zygarde.codegen.dsl
 
+import com.squareup.kotlinpoet.FileSpec
 import io.github.classgraph.ClassGraph
 import org.springframework.util.FileSystemUtils
 import zygarde.codegen.dsl.generator.DtoFieldMappingCodeGenerator
 import java.io.File
+
+private fun List<FileSpec>.writeSpecToFileOrSysOut(propertyName: String) {
+  val target = System.getProperty(propertyName)
+    ?.let {
+      File(it).also { f ->
+        FileSystemUtils.deleteRecursively(f)
+        f.mkdirs()
+      }
+    }
+  forEach { fileSpec ->
+    if (target != null) {
+      fileSpec.writeTo(target)
+    } else {
+      fileSpec.writeTo(System.out)
+    }
+  }
+}
 
 fun main() {
   val classes = ClassGraph()
@@ -26,21 +44,9 @@ fun main() {
 
   val dtoFieldMappings = modelMappingCodegenList.flatMap { it.dtoFieldMappings }
 
-  val codegenTarget = System.getProperty("zygarde.codegen.dsl.model-mapping.write-to")
-    ?.let {
-      File(it).also { f ->
-        FileSystemUtils.deleteRecursively(f)
-        f.mkdirs()
-      }
-    }
-
-  DtoFieldMappingCodeGenerator(dtoFieldMappings)
+  val result = DtoFieldMappingCodeGenerator(dtoFieldMappings)
     .generateFileSpec()
-    .forEach {
-      if (codegenTarget != null) {
-        it.writeTo(codegenTarget)
-      } else {
-        it.writeTo(System.out)
-      }
-    }
+
+  result.dtoFileSpecs.writeSpecToFileOrSysOut("zygarde.codegen.dsl.dto.write-to")
+  result.modelMappingFileSpecs.writeSpecToFileOrSysOut("zygarde.codegen.dsl.model-mapping.write-to")
 }

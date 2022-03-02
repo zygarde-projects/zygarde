@@ -28,13 +28,15 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
   var dtoToExtraToDtoMappingMap = dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }.groupBy { it.dto }
 
-  fun generateFileSpec(): Collection<FileSpec> {
-    return listOf(
-      generateDtos(),
-      generateDtoExtraValue(),
-      generateMapToDtoExtension(),
-      generateApplyFromDtoExtension(),
-    ).flatten()
+  fun generateFileSpec(): DtoFieldMappingGenerateResult {
+    return DtoFieldMappingGenerateResult(
+      dtoFileSpecs = generateDtos(),
+      modelMappingFileSpecs = listOf(
+        generateDtoExtraValue(),
+        generateMapToDtoExtension(),
+        generateApplyFromDtoExtension(),
+      ).flatten()
+    )
   }
 
   private fun generateDtos(): List<FileSpec> {
