@@ -4,6 +4,7 @@ import example.Todo
 import kotlin.Int
 import kotlin.String
 import kotlin.Unit
+import kotlin.collections.Collection
 import zygarde.codegen.dsl.ModelMappingDslCodegen
 import zygarde.codegen.meta.ModelMetaField
 
@@ -16,11 +17,17 @@ public abstract class AbstractTodoCodegen : ModelMappingDslCodegen<Todo>(Todo::c
       ModelMetaField(modelClass=Todo::class,fieldName="description",fieldClass=String::class,fieldNullable=false,comment="")
 
 
+  public val allFields: Collection<ModelMetaField<Todo, *>> = listOf(id,description)
+
   public fun id(dsl: ModelMetaField<Todo, Int>.() -> Unit): Unit {
     dsl.invoke(id)
   }
 
   public fun description(dsl: ModelMetaField<Todo, String>.() -> Unit): Unit {
     dsl.invoke(description)
+  }
+
+  public fun mapAllFields(dsl: ModelMetaField<Todo, *>.() -> Unit): Unit {
+    allFields.forEach{ dsl.invoke(it) }
   }
 }

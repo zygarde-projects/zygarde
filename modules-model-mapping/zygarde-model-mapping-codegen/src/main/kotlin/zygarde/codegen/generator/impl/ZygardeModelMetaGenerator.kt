@@ -9,6 +9,7 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import org.springframework.util.FileSystemUtils
@@ -51,7 +52,8 @@ class ZygardeModelMetaGenerator(
       .superclass(ModelMappingDslCodegen::class.generic(modelElement.typeName()))
       .addSuperclassConstructorParameter("%T::class", modelElement.typeName())
 
-    modelElement.allFieldsIncludeSuper().forEach { field ->
+    val allFieldsIncludeSuper = modelElement.allFieldsIncludeSuper()
+    allFieldsIncludeSuper.forEach { field ->
       classBuilder.addProperty(
         field.buildMetaProperty(modelElement)
       )
@@ -59,6 +61,44 @@ class ZygardeModelMetaGenerator(
         field.buildMetaDslFn(modelElement)
       )
     }
+
+    val allFieldNames = allFieldsIncludeSuper.map { it.fieldName() }
+
+    classBuilder.addProperty(
+      PropertySpec
+        .builder(
+          "allFields",
+          Collection::class.generic(
+            ModelMetaField::class.generic(
+              modelElement.typeName(),
+              TypeVariableName("*")
+            )
+          )
+        )
+        .initializer(
+          "listOf(${allFieldNames.joinToString(",")})"
+        )
+        .build()
+    )
+
+    classBuilder.addFunction(
+      FunSpec
+        .builder("mapAllFields")
+        .addParameter(
+          ParameterSpec(
+            "dsl",
+            LambdaTypeName.get(
+              receiver = ModelMetaField::class.asClassName().parameterizedBy(
+                modelElement.typeName(),
+                TypeVariableName("*"),
+              ),
+              returnType = Unit::class.asTypeName()
+            )
+          )
+        )
+        .addCode("allFields.forEach{ dsl.invoke(it) }")
+        .build()
+    )
 
     FileSpec.builder(pack, fileNameForFields)
       .addType(classBuilder.build())
