@@ -13,6 +13,7 @@ class DslApi(
   private val basePath: String? = null,
 ) {
 
+  var feignUrlProperty: String? = null
   private val functions: MutableList<ApiFunctionToGenerateVo> = mutableListOf()
 
   fun get(functionName: String, path: String, dsl: (DslApiFunction.() -> Unit)) {
@@ -94,6 +95,7 @@ class DslApi(
       basePath = basePath,
       functions = functions,
       separateFeign = true,
+      feignUrlProperty = feignUrlProperty,
     )
   }
 

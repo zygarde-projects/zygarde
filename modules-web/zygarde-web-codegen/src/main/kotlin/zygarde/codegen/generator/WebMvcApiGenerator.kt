@@ -72,6 +72,14 @@ class WebMvcApiGenerator(
 
     val feignClientAnnotation = AnnotationSpec.builder(FeignClient::class)
       .addMember("name=%S", apiName)
+      .also { feignClientAnnotationBuilder ->
+        if (feignUrlProperty != null) {
+          feignClientAnnotationBuilder.addMember(
+            "url=%S",
+            "\${$feignUrlProperty}"
+          )
+        }
+      }
       .build()
 
     val apiInterfaceBuilder = apiInterfaceBuilderMap.getOrPut(apiName) {
