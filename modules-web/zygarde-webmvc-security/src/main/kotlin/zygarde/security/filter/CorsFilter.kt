@@ -1,8 +1,6 @@
 package zygarde.security.filter
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.filter.GenericFilterBean
-import zygarde.security.ApiRole
 import javax.servlet.FilterChain
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
@@ -13,10 +11,12 @@ import javax.servlet.http.HttpServletResponse
  * @author leo
  */
 class CorsFilter(
-  @Autowired val apiRoles: List<ApiRole>,
+  allowHeaders: List<String> = emptyList(),
+  exposeHeaders: List<String> = emptyList(),
 ) : GenericFilterBean() {
 
-  private val authHeaders by lazy { apiRoles.map { it.authHeader() }.joinToString(", ") }
+  private val allowHeadersFlatted = allowHeaders.toSet().joinToString(", ")
+  private val exposeHeadersFlatted = exposeHeaders.toSet().joinToString(", ")
 
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     val req = request as HttpServletRequest
@@ -25,8 +25,8 @@ class CorsFilter(
     res.setHeader("Access-Control-Allow-Credentials", "true")
     res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
     res.setHeader("Access-Control-Max-Age", "3600")
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, $authHeaders")
-    res.setHeader("Access-Control-Expose-Headers", authHeaders)
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, $allowHeadersFlatted")
+    res.setHeader("Access-Control-Expose-Headers", exposeHeadersFlatted)
     if (req.method == "OPTIONS") {
       res.status = 200
     } else {
