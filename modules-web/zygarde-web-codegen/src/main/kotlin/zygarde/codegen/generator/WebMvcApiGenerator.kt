@@ -137,9 +137,24 @@ class WebMvcApiGenerator(
           }
         )
         .also { annSpec ->
-          if (func.path.isNotEmpty()) {
-            annSpec.addMember("value=[%S]", basePath.orEmpty() + func.path)
-          }
+          val path = listOf(
+            basePath.orEmpty().let {
+              if (it.endsWith("/")) {
+                it.substring(0, it.length - 1)
+              } else {
+                it
+              }
+            },
+            func.path.let {
+              if (it.startsWith("/")) {
+                it.substring(1)
+              } else {
+                it
+              }
+            }
+          ).filter { it.isNotEmpty() }.joinToString("/")
+
+          annSpec.addMember("value=[%S]", path)
         }
         .build()
 
