@@ -7,4 +7,5 @@ data class Item(
   var id: String,
   var price: Double?,
   var amount: Int,
+  var tagList: Set<String>,
 )

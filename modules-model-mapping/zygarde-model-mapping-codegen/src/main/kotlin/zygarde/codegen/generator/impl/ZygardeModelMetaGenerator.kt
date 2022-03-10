@@ -6,6 +6,7 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -19,6 +20,7 @@ import zygarde.codegen.dsl.ModelMappingDslCodegen
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.extension.kotlinpoet.generic
+import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.codegen.meta.Comment
 import zygarde.codegen.meta.ModelMetaField
@@ -42,6 +44,8 @@ class ZygardeModelMetaGenerator(
       generateMetaFields(it)
     }
   }
+
+  private val starType = TypeVariableName("*")
 
   private fun generateMetaFields(modelElement: Element) {
     val className = modelElement.simpleName.toString()
@@ -71,7 +75,7 @@ class ZygardeModelMetaGenerator(
           Collection::class.generic(
             ModelMetaField::class.generic(
               modelElement.typeName(),
-              TypeVariableName("*")
+              starType
             )
           )
         )
@@ -90,7 +94,7 @@ class ZygardeModelMetaGenerator(
             LambdaTypeName.get(
               receiver = ModelMetaField::class.asClassName().parameterizedBy(
                 modelElement.typeName(),
-                TypeVariableName("*"),
+                starType,
               ),
               returnType = Unit::class.asTypeName()
             )
@@ -116,24 +120,47 @@ class ZygardeModelMetaGenerator(
       .orEmpty()
     val fieldName = fieldName()
     val nonNullFieldType = fieldType.copy(nullable = false)
+    val rawFieldType = if (nonNullFieldType is ParameterizedTypeName) {
+      nonNullFieldType.rawType.kotlin(false)
+    } else {
+      nonNullFieldType
+    }
+    val genericTypeArguments = if (nonNullFieldType is ParameterizedTypeName) {
+      nonNullFieldType.typeArguments
+    } else {
+      emptyList()
+    }
+    val statmentArgs = mutableListOf(
+      ModelMetaField::class.asClassName(),
+      modelElement.typeName(),
+      rawFieldType,
+      fieldType.isNullable,
+      comment,
+    )
+    for (genericTypeArgument in genericTypeArguments) {
+      statmentArgs.add(genericTypeArgument)
+    }
     return PropertySpec
       .builder(
         fieldName,
         ModelMetaField::class.asClassName().parameterizedBy(
           modelElement.typeName(),
-          nonNullFieldType,
+          rawFieldType.generic(*genericTypeArguments.map { starType }.toTypedArray()),
         ),
         KModifier.PROTECTED
       )
       .initializer(
         CodeBlock.builder()
           .addStatement(
-            """%T(modelClass=%T::class,fieldName="$fieldName",fieldClass=%T::class,fieldNullable=%L,comment=%S)""",
-            ModelMetaField::class.asClassName(),
-            modelElement.typeName(),
-            nonNullFieldType,
-            fieldType.isNullable,
-            comment,
+            """%T(
+  modelClass=%T::class,
+  fieldName="$fieldName",
+  fieldClass=%T::class,
+  fieldNullable=%L,
+  comment=%S,
+  genericClasses=arrayOf(${genericTypeArguments.joinToString(",") { "%T::class" }})
+)""",
+            *statmentArgs.toTypedArray()
           )
           .build()
       )
@@ -146,6 +173,16 @@ class ZygardeModelMetaGenerator(
     val fieldType = modelElement.resolveFieldType(this)
     val fieldName = fieldName()
     val nonNullFieldType = fieldType.copy(nullable = false)
+    val rawFieldType = if (nonNullFieldType is ParameterizedTypeName) {
+      nonNullFieldType.rawType.kotlin(false)
+    } else {
+      nonNullFieldType
+    }
+    val genericTypeArguments = if (nonNullFieldType is ParameterizedTypeName) {
+      nonNullFieldType.typeArguments
+    } else {
+      emptyList()
+    }
     return FunSpec.builder(fieldName)
       .addParameter(
         ParameterSpec(
@@ -153,7 +190,7 @@ class ZygardeModelMetaGenerator(
           LambdaTypeName.get(
             receiver = ModelMetaField::class.asClassName().parameterizedBy(
               modelElement.typeName(),
-              nonNullFieldType,
+              rawFieldType.generic(*genericTypeArguments.map { starType }.toTypedArray()),
             ),
             returnType = Unit::class.asTypeName()
           )

@@ -25,6 +25,8 @@ class ZygardeModelMetaProcessorTest {
       kaptArgs.put(ZygardeKaptOptions.MODEL_META_GENERATE_TARGET, tempDirectory.absolutePath)
     }.compile()
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
-    File(tempDirectory, "zygarde/generated/model/meta/AbstractItemCodegen.kt").exists() shouldBe true
+    val generatedFile = File(tempDirectory, "zygarde/generated/model/meta/AbstractItemCodegen.kt")
+    generatedFile.exists() shouldBe true
+    println(generatedFile.readText())
   }
 }
