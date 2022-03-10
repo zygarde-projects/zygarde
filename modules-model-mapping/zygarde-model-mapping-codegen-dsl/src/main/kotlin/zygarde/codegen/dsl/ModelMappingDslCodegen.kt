@@ -182,4 +182,8 @@ abstract class ModelMappingDslCodegen<E : Any>(val modelClass: KClass<E>) {
     modelFields.forEach { it.applyFrom(this, dsl = dsl) }
     return this
   }
+
+  protected fun mapFields(vararg fields: ModelMetaField<E, *>, dsl: ModelMetaField<E, *>.() -> Unit) {
+    fields.forEach { dsl.invoke(it) }
+  }
 }

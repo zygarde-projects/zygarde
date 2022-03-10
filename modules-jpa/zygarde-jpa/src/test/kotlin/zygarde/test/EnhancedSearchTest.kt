@@ -12,9 +12,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.domain.Sort
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import zygarde.data.api.PagingAndSortingRequest
+import zygarde.data.api.PagingRequest
+import zygarde.data.api.SortDirection
+import zygarde.data.api.SortField
 import zygarde.data.jpa.dao.remove
 import zygarde.data.jpa.dao.search
 import zygarde.data.jpa.dao.searchCount
@@ -23,10 +26,6 @@ import zygarde.data.jpa.dao.searchPage
 import zygarde.data.jpa.search.action.dateRange
 import zygarde.data.jpa.search.action.dateTimeRange
 import zygarde.data.jpa.search.action.impl.SearchableImpl
-import zygarde.data.jpa.search.request.PagingAndSortingRequest
-import zygarde.data.jpa.search.request.PagingRequest
-import zygarde.data.jpa.search.request.SortField
-import zygarde.data.jpa.search.request.SortingRequest
 import zygarde.data.search.SearchDateRange
 import zygarde.data.search.SearchDateTimeRange
 import zygarde.data.search.SearchKeyword
@@ -271,10 +270,7 @@ class EnhancedSearchTest {
             it.page = 1
             it.pageSize = 10
           }
-          it.sorting = SortingRequest().also {
-            it.sortFields = listOf("id")
-            it.sort = Sort.Direction.DESC
-          }
+          it.sorts = listOf(SortField(SortDirection.DESC, "id"))
         }
     ) {
       field(SearchableImpl<Book, LocalDate>("releaseDate")) dateRange SearchDateRange(
@@ -300,7 +296,7 @@ class EnhancedSearchTest {
     }.totalPages shouldBe 100
 
     bookDao.searchPage(PagingAndSortingRequest().also { it.paging = PagingRequest() }) {}.totalPages shouldBe 100
-    bookDao.searchPage(PagingAndSortingRequest().also { it.sorting = SortingRequest() }) {}.totalPages shouldBe 100
+    bookDao.searchPage(PagingAndSortingRequest().also { it.sorts = emptyList() }) {}.totalPages shouldBe 100
   }
 
   @Order(1600)
@@ -313,12 +309,9 @@ class EnhancedSearchTest {
             it.page = 1
             it.pageSize = 10
           }
-          it.sorting = SortingRequest().also {
-            it.sortFields = listOf("id")
-            it.sort = Sort.Direction.DESC
-          }
           it.sorts = listOf(
-            SortField(Sort.Direction.ASC, "name")
+            SortField(SortDirection.DESC, "id"),
+            SortField(SortDirection.ASC, "name"),
           )
         }
     ) {}
@@ -330,10 +323,9 @@ class EnhancedSearchTest {
             it.page = 1
             it.pageSize = 10
           }
-          it.sorting = null
           it.sorts = listOf(
-            SortField(Sort.Direction.DESC, "id"),
-            SortField(Sort.Direction.ASC, "name")
+            SortField(SortDirection.DESC, "id"),
+            SortField(SortDirection.ASC, "name")
           )
         }
     ) {}

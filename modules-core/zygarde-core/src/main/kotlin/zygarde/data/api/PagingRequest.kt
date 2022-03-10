@@ -1,4 +1,4 @@
-package zygarde.data.jpa.search.request
+package zygarde.data.api
 
 import io.swagger.v3.oas.annotations.media.Schema
 

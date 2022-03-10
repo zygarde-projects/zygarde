@@ -4,11 +4,12 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import zygarde.data.api.PagingAndSortingRequest
+import zygarde.data.api.SortField
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import zygarde.data.jpa.search.request.PagingAndSortingRequest
-import zygarde.data.jpa.search.request.SortingRequest
-import zygarde.data.jpa.search.request.asSort
+import zygarde.data.jpa.search.request.toSpringDataPageRequest
+import zygarde.data.jpa.search.request.toSpringDataSort
 import javax.persistence.criteria.Predicate
 
 private fun <T> buildSpec(searchContent: EnhancedSearch<T>.() -> Unit): Specification<T> {
@@ -27,8 +28,8 @@ fun <T> JpaSpecificationExecutor<T>.search(searchContent: EnhancedSearch<T>.() -
   return findAll(buildSpec(searchContent))
 }
 
-fun <T> JpaSpecificationExecutor<T>.search(sorting: SortingRequest?, searchContent: EnhancedSearch<T>.() -> Unit): List<T> {
-  return sorting?.let { findAll(buildSpec(searchContent), it.asSort()) } ?: search(searchContent)
+fun <T> JpaSpecificationExecutor<T>.search(sorts: List<SortField>?, searchContent: EnhancedSearch<T>.() -> Unit): List<T> {
+  return sorts?.let { findAll(buildSpec(searchContent), it.toSpringDataSort()) } ?: search(searchContent)
 }
 
 /**
@@ -50,7 +51,7 @@ fun <T> JpaSpecificationExecutor<T>.searchPage(
   req: PagingAndSortingRequest,
   searchContent: EnhancedSearch<T>.() -> Unit
 ): Page<T> {
-  return findAll(buildSpec(searchContent), req.toPageRequest())
+  return findAll(buildSpec(searchContent), req.toSpringDataPageRequest())
 }
 
 fun <T> ZygardeEnhancedDao<T, *>.remove(searchContent: EnhancedSearch<T>.() -> Unit) {
