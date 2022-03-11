@@ -72,7 +72,7 @@ class ZygardeModelMetaGenerator(
       PropertySpec
         .builder(
           "allFields",
-          Collection::class.generic(
+          Array::class.generic(
             ModelMetaField::class.generic(
               modelElement.typeName(),
               starType
@@ -80,27 +80,8 @@ class ZygardeModelMetaGenerator(
           )
         )
         .initializer(
-          "listOf(${allFieldNames.joinToString(",")})"
+          "arrayOf(${allFieldNames.joinToString(",")})"
         )
-        .build()
-    )
-
-    classBuilder.addFunction(
-      FunSpec
-        .builder("mapAllFields")
-        .addParameter(
-          ParameterSpec(
-            "dsl",
-            LambdaTypeName.get(
-              receiver = ModelMetaField::class.asClassName().parameterizedBy(
-                modelElement.typeName(),
-                starType,
-              ),
-              returnType = Unit::class.asTypeName()
-            )
-          )
-        )
-        .addCode("allFields.forEach{ dsl.invoke(it) }")
         .build()
     )
 
