@@ -15,15 +15,15 @@ abstract class ModelMappingDslCodegen<E : Any>(val modelClass: KClass<E>) {
 
   protected abstract fun codegen()
 
-  protected fun mapToDto(dto: CodegenDto, dsl: ModelMappingToDtoDsl<E>.() -> Unit) {
-    dsl.invoke(ModelMappingToDtoDsl(modelClass, dtoFieldMappings, dto))
+  protected fun dto(dto: CodegenDto, dsl: ModelToDtoDsl<E>.() -> Unit) {
+    dsl.invoke(ModelToDtoDsl(modelClass, dtoFieldMappings, dto))
   }
 
-  protected fun applyFromDto(dto: CodegenDto, dsl: DtoApplyToModelDsl<E>.() -> Unit) {
+  protected fun req(dto: CodegenDto, dsl: DtoApplyToModelDsl<E>.() -> Unit) {
     dsl.invoke(DtoApplyToModelDsl(modelClass, dtoFieldMappings, dto))
   }
 
-  protected inline fun <reified F : Any> extraField(
+  protected inline fun <reified F : Any> custom(
     fieldName: String,
     nullable: Boolean = false,
     dsl: (ModelMetaField<E, F>.() -> Unit) = {},
@@ -32,7 +32,7 @@ abstract class ModelMappingDslCodegen<E : Any>(val modelClass: KClass<E>) {
       .also(dsl)
   }
 
-  protected inline fun <reified F : Any> extraCollectionField(
+  protected inline fun <reified F : Any> collection(
     fieldName: String,
     nullable: Boolean = false,
     dsl: (ModelMetaField<E, Collection<*>>.() -> Unit) = {},

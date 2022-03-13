@@ -10,13 +10,16 @@ import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.codegen.value.ValueProvider
 import kotlin.reflect.KClass
 
-class ModelMappingToDtoDsl<E : Any>(
+class ModelToDtoDsl<E : Any>(
   val modelClass: KClass<E>,
-  private val dtoFieldMappings: MutableList<DtoFieldMapping>,
-  private val dto: CodegenDto,
+  val dtoFieldMappings: MutableList<DtoFieldMapping>,
+  val dto: CodegenDto,
 ) {
 
-  fun fromModel(vararg fields: ModelMetaField<E, *>, dsl: (ModelToDtoFieldMappingVo.() -> Unit) = { }) {
+  /**
+   * add a field to Dto and also generate extension function {Model}.toDto
+   */
+  fun from(vararg fields: ModelMetaField<E, *>, dsl: (ModelToDtoFieldMappingVo.() -> Unit) = { }) {
     fields.forEach { f ->
       ModelToDtoFieldMappingVo(modelField = f, dto = dto)
         .also(dsl)
@@ -24,7 +27,15 @@ class ModelMappingToDtoDsl<E : Any>(
     }
   }
 
-  fun extra(
+  fun fromAutoIntId(vararg fields: ModelMetaField<E, Int>) {
+    fromObjectProvider<AutoIntIdValueProvider>(*fields)
+  }
+
+  fun fromAutoLongId(vararg fields: ModelMetaField<E, Long>) {
+    fromObjectProvider<AutoLongIdValueProvider>(*fields)
+  }
+
+  fun ref(
     fieldName: String,
     dtoRef: CodegenDto,
     nullable: Boolean = false,
@@ -42,7 +53,7 @@ class ModelMappingToDtoDsl<E : Any>(
     )
   }
 
-  fun extraCollection(
+  fun refCollection(
     fieldName: String,
     dtoRef: CodegenDto,
     nullable: Boolean = false,
@@ -61,18 +72,10 @@ class ModelMappingToDtoDsl<E : Any>(
     )
   }
 
-  fun fromAutoIntId(vararg fields: ModelMetaField<E, Int>) {
-    fromObjectProvider<AutoIntIdValueProvider>(*fields)
-  }
-
-  fun fromAutoLongId(vararg fields: ModelMetaField<E, Long>) {
-    fromObjectProvider<AutoLongIdValueProvider>(*fields)
-  }
-
   inline fun <reified P : ValueProvider<*, *>> fromObjectProvider(
     vararg fields: ModelMetaField<E, *>,
   ) {
-    fromModel(*fields) {
+    from(*fields) {
       valueProvider = P::class
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }
@@ -81,7 +84,7 @@ class ModelMappingToDtoDsl<E : Any>(
   inline fun <reified P : ValueProvider<*, *>> fromFieldProvider(
     vararg fields: ModelMetaField<E, *>,
   ) {
-    fromModel(*fields) {
+    from(*fields) {
       valueProvider = P::class
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }

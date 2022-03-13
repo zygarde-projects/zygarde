@@ -10,5 +10,6 @@ enum class ApiErrorCode(
 ) : ErrorCode {
   BAD_REQUEST("400", "Bad request", HttpStatus.BAD_REQUEST),
   UNAUTHORIZED("401", "Unauthorized", HttpStatus.UNAUTHORIZED),
+  NOT_FOUND("404", "Not found", HttpStatus.NOT_FOUND),
   SERVER_ERROR("500", "Server error", HttpStatus.INTERNAL_SERVER_ERROR)
 }

@@ -12,16 +12,17 @@ class TodoModelDslCodegen : AbstractTodoCodegen() {
   }
 
   override fun codegen() {
-    mapToDto(TodoDtos.TodoDto) {
+    dto(TodoDtos.TodoDto) {
       fromAutoIntId(id)
-      fromModel(description)
+      from(description)
     }
 
-    applyFromDto(TodoDtos.CreateTodoReq) {
-      toModel(description)
+    req(TodoDtos.CreateTodoReq) {
+      applyTo(description)
     }
-    applyFromDto(TodoDtos.UpdateTodoReq) {
-      toModel(description)
+
+    req(TodoDtos.UpdateTodoReq) {
+      applyTo(description)
     }
   }
 }

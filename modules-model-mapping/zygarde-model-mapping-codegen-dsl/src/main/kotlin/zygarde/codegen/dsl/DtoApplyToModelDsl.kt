@@ -1,19 +1,21 @@
 package zygarde.codegen.dsl
 
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
-import zygarde.codegen.dsl.model.internal.DtoFieldMapping.DtoFieldNoMapping
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping.ModelApplyFromDtoFieldMappingVo
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.meta.ModelMetaField
 import kotlin.reflect.KClass
 
 class DtoApplyToModelDsl<E : Any>(
-  private val modelClass: KClass<E>,
-  private val dtoFieldMappings: MutableList<DtoFieldMapping>,
-  private val dto: CodegenDto,
+  val modelClass: KClass<E>,
+  val dtoFieldMappings: MutableList<DtoFieldMapping>,
+  val dto: CodegenDto,
 ) {
 
-  fun toModel(vararg fields: ModelMetaField<E, *>, dsl: (ModelApplyFromDtoFieldMappingVo.() -> Unit) = {}) {
+  /**
+   * generate a field in Dto and also generate extension function for Model.applyFrom for this Dto
+   */
+  fun applyTo(vararg fields: ModelMetaField<E, *>, dsl: (ModelApplyFromDtoFieldMappingVo.() -> Unit) = {}) {
     fields.forEach { f ->
       ModelApplyFromDtoFieldMappingVo(f, dto)
         .also(dsl)
@@ -21,23 +23,35 @@ class DtoApplyToModelDsl<E : Any>(
     }
   }
 
-  fun extra(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldNoMapping.() -> Unit) = {}) {
+  fun field(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     fields.forEach { f ->
       dtoFieldMappings.add(
-        DtoFieldNoMapping(f, dto)
+        DtoFieldMapping.DtoFieldNoMapping(f, dto)
           .also(dsl)
       )
     }
   }
 
-  fun extra(
+  fun fieldCollection(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+    fields.forEach { f ->
+      dtoFieldMappings.add(
+        DtoFieldMapping.DtoFieldNoMapping(f, dto)
+          .also(dsl)
+          .also {
+            it.refCollection = true
+          }
+      )
+    }
+  }
+
+  fun ref(
     fieldName: String,
     dtoRef: CodegenDto,
     nullable: Boolean = false,
-    dsl: (DtoFieldNoMapping.() -> Unit) = {}
+    dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}
   ) {
     dtoFieldMappings.add(
-      DtoFieldNoMapping(
+      DtoFieldMapping.DtoFieldNoMapping(
         modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
         dto = dto
       )
@@ -48,14 +62,14 @@ class DtoApplyToModelDsl<E : Any>(
     )
   }
 
-  fun extraCollection(
+  fun refCollection(
     fieldName: String,
     dtoRef: CodegenDto,
     nullable: Boolean = false,
-    dsl: (DtoFieldNoMapping.() -> Unit) = {}
+    dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}
   ) {
     dtoFieldMappings.add(
-      DtoFieldNoMapping(
+      DtoFieldMapping.DtoFieldNoMapping(
         modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
         dto = dto
       )
