@@ -1,6 +1,6 @@
 package zygarde.api.exception.mapper
 
-import zygarde.api.ApiErrorCode
+import zygarde.core.exception.ApiErrorCode
 import zygarde.api.exception.ExceptionToBusinessExceptionMapper
 import zygarde.core.exception.BusinessException
 

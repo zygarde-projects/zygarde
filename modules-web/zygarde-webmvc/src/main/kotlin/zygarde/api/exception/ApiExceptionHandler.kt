@@ -9,13 +9,14 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import zygarde.api.ApiErrorCode
+import zygarde.core.exception.ApiErrorCode
 import zygarde.api.tracing.ApiTracingContext
 import zygarde.core.exception.BusinessException
+import zygarde.core.exception.HttpErrorCode
 import zygarde.core.extension.general.fallbackWhenNull
-import zygarde.json.toJsonString
 import zygarde.core.log.Loggable
 import zygarde.data.api.ApiErrorResponse
+import zygarde.json.toJsonString
 import javax.servlet.http.HttpServletRequest
 
 /**
@@ -69,7 +70,10 @@ class ApiExceptionHandler : Loggable {
       errorCode = code,
       messages = listOfNotNull(e.message, e.cause?.message)
     )
-    return ResponseEntity(res, if (code is ApiErrorCode) code.httpStatus else HttpStatus.EXPECTATION_FAILED)
+    return ResponseEntity(
+      res,
+      if (code is HttpErrorCode) HttpStatus.resolve(code.httpStatus) ?: HttpStatus.EXPECTATION_FAILED else HttpStatus.EXPECTATION_FAILED
+    )
   }
 
   @ExceptionHandler(Throwable::class)

@@ -3,7 +3,7 @@ package zygarde.security.filter
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
-import zygarde.api.ApiErrorCode
+import zygarde.core.exception.ApiErrorCode
 import zygarde.core.exception.BusinessException
 import zygarde.security.ApiRole
 import javax.servlet.FilterChain

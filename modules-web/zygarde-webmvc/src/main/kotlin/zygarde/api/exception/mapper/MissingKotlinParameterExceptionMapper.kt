@@ -2,8 +2,8 @@ package zygarde.api.exception.mapper
 
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import org.springframework.stereotype.Component
+import zygarde.core.exception.ApiErrorCode
 import zygarde.api.exception.ExceptionToBusinessExceptionMapper
-import zygarde.api.ApiErrorCode
 import zygarde.core.exception.BusinessException
 
 @Component
