@@ -287,7 +287,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         ?.generic(*mapping.modelField.genericClasses)
         ?: mapping.dtoRef?.let { ClassName(dtoPackageName, it.name) }
         ?: mapping.modelField.fieldClass.generic(*mapping.modelField.genericClasses)
-      ).kotlin(fieldTypeNullable)
-      .let { if (mapping.refCollection) Collection::class.generic(it) else it }
+      ).kotlin(!mapping.refCollection && fieldTypeNullable)
+      .let { if (mapping.refCollection) Collection::class.generic(it).kotlin(fieldTypeNullable) else it }
   }
 }
