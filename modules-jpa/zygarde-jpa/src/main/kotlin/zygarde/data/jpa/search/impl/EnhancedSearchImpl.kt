@@ -101,20 +101,20 @@ class EnhancedSearchImpl<EntityType>(
     if (from == null || to == null) return
     or {
       it.and {
-        it.dateFieldStartFn() lte from
-        it.dateFieldEndFn() gte from
+        this.dateFieldStartFn() lte from
+        this.dateFieldEndFn() gte from
       }
       it.and {
-        it.dateFieldStartFn() lte to
-        it.dateFieldEndFn() gte to
+        this.dateFieldStartFn() lte to
+        this.dateFieldEndFn() gte to
       }
       it.and {
-        it.dateFieldStartFn() lte from
-        it.dateFieldEndFn() gte to
+        this.dateFieldStartFn() lte from
+        this.dateFieldEndFn() gte to
       }
       it.and {
-        it.dateFieldStartFn() gte from
-        it.dateFieldEndFn() lte to
+        this.dateFieldStartFn() gte from
+        this.dateFieldEndFn() lte to
       }
     }
   }
