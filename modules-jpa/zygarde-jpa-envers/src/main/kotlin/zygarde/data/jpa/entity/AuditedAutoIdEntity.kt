@@ -4,21 +4,25 @@ import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedBy
 import org.springframework.data.annotation.LastModifiedDate
+import zygarde.data.jpa.audit.AuditInfoContainer
 import java.io.Serializable
 import java.time.LocalDateTime
 import javax.persistence.MappedSuperclass
 
 @MappedSuperclass
-abstract class AuditedAutoIdEntity<T : Serializable> : AutoIdEntity<T>() {
+abstract class AuditedAutoIdEntity<T : Serializable> : AutoIdEntity<T>(), AuditInfoContainer {
+
+  override fun auditContainerKey(): String = "${this::javaClass.name}:$id"
+
   @CreatedDate
-  open var createdAt: LocalDateTime = LocalDateTime.now()
+  override var createdAt: LocalDateTime = LocalDateTime.now()
 
   @LastModifiedDate
-  open var updatedAt: LocalDateTime? = null
+  override var updatedAt: LocalDateTime? = null
 
   @CreatedBy
-  open var createdBy: String? = null
+  override var createdBy: String? = null
 
   @LastModifiedBy
-  open var updatedBy: String? = null
+  override var updatedBy: String? = null
 }

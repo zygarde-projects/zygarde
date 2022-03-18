@@ -5,21 +5,23 @@ import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedBy
 import org.springframework.data.annotation.LastModifiedDate
+import zygarde.data.jpa.audit.AuditInfoContainer
 import java.time.LocalDateTime
 import javax.persistence.MappedSuperclass
 
 @Audited
 @MappedSuperclass
-abstract class AuditedEntity {
+abstract class AuditedEntity : AuditInfoContainer {
+
   @CreatedDate
-  open var createdAt: LocalDateTime = LocalDateTime.now()
+  override var createdAt: LocalDateTime = LocalDateTime.now()
 
   @LastModifiedDate
-  open var updatedAt: LocalDateTime? = null
+  override var updatedAt: LocalDateTime? = null
 
   @CreatedBy
-  open var createdBy: String? = null
+  override var createdBy: String? = null
 
   @LastModifiedBy
-  open var updatedBy: String? = null
+  override var updatedBy: String? = null
 }
