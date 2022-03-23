@@ -23,9 +23,11 @@ import zygarde.data.jpa.dao.search
 import zygarde.data.jpa.dao.searchCount
 import zygarde.data.jpa.dao.searchOne
 import zygarde.data.jpa.dao.searchPage
+import zygarde.data.jpa.entity.getId
 import zygarde.data.jpa.search.action.dateRange
 import zygarde.data.jpa.search.action.dateTimeRange
 import zygarde.data.jpa.search.action.impl.SearchableImpl
+import zygarde.data.jpa.search.crossJoin
 import zygarde.data.search.SearchDateRange
 import zygarde.data.search.SearchDateTimeRange
 import zygarde.data.search.SearchKeyword
@@ -66,8 +68,8 @@ class EnhancedSearchTest {
     )
     listOf("literature", "comic").forEach { groupName ->
       groupDao.save(AuthorGroup(name = groupName)).also { g ->
-        repeat(10) {
-          authorDao.save(Author(name = easyRandom.nextObject(String::class.java), authorGroup = g)).also { a ->
+        repeat(10) { authorIdx ->
+          authorDao.save(Author(name = "Author$authorIdx", authorGroup = g)).also { a ->
             repeat(50) {
               bookDao.save(
                 Book(
@@ -81,7 +83,8 @@ class EnhancedSearchTest {
                     100
                   } else {
                     101 + (Math.random() * 300).toInt()
-                  }
+                  },
+                  aId = a.getId()
                 )
               )
             }
@@ -342,6 +345,17 @@ class EnhancedSearchTest {
         field<Author>("author").field<AuthorGroup>("authorGroup").stringField("name")
       ) contains "decom" // zygarde+comics => zygardecomics contains 'decom'
     }.size shouldBeGreaterThan 0
+  }
+
+  @Order(1800)
+  @Test
+  fun `cross join test`() {
+    bookDao.search {
+      crossJoin<Author> {
+        it.field<Int>("id") eq field("aId")
+        it.stringField("name") eq "Author1"
+      }
+    }.size shouldBe 100
   }
 
   @Order(9000)

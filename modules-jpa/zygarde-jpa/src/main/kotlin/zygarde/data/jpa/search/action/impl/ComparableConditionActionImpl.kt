@@ -27,19 +27,19 @@ open class ComparableConditionActionImpl<RootEntityType, EntityType, FieldType :
     cb.lessThanOrEqualTo(path, v)
   }
 
-  override fun gt(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+  override fun gt(anotherAction: ConditionAction<*, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
     cb.greaterThan(l, r)
   }
 
-  override fun gte(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+  override fun gte(anotherAction: ConditionAction<*, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
     cb.greaterThanOrEqualTo(l, r)
   }
 
-  override fun lt(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+  override fun lt(anotherAction: ConditionAction<*, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
     cb.lessThan(l, r)
   }
 
-  override fun lte(anotherAction: ConditionAction<RootEntityType, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+  override fun lte(anotherAction: ConditionAction<*, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
     cb.lessThanOrEqualTo(l, r)
   }
 }

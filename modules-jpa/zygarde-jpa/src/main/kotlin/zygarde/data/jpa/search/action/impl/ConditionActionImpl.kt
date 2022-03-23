@@ -91,11 +91,11 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
       }
     }
 
-  override fun eq(anotherAction: ConditionAction<RootEntityType, *, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+  override fun eq(anotherAction: ConditionAction<*, *, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
     cb.equal(l, r)
   }
 
-  override fun notEq(anotherAction: ConditionAction<RootEntityType, *, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
+  override fun notEq(anotherAction: ConditionAction<*, *, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
     cb.notEqual(l, r)
   }
 
@@ -114,8 +114,8 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     enhancedSearch.apply { orders.add(cb.desc(root.columnNameToPath(columnName))) }
 
   protected fun applyThisAndAnother(
-    anotherAction: ConditionAction<RootEntityType, *, FieldType>,
-    block: EnhancedSearchImpl<RootEntityType>.(thisFieldPath: Path<FieldType>, anotherPath: Path<FieldType>) -> Predicate
+    anotherAction: ConditionAction<*, *, FieldType>,
+    block: EnhancedSearchImpl<*>.(thisFieldPath: Path<FieldType>, anotherPath: Path<FieldType>) -> Predicate
   ) {
     if (anotherAction is ConditionActionImpl) {
       enhancedSearch.predicates.add(
@@ -134,7 +134,7 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     return enhancedSearch.root.columnNameToPath(columnName)
   }
 
-  protected fun Root<RootEntityType>.columnNameToPath(columnName: String): Path<FieldType> {
+  protected fun Root<*>.columnNameToPath(columnName: String): Path<FieldType> {
     val splited = columnName.split(".")
     if (splited.size == 1) {
       return this.get<FieldType>(splited.first())

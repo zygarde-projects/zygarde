@@ -14,5 +14,6 @@ open class Book(
   @ManyToOne(targetEntity = Author::class, fetch = FetchType.LAZY)
   open var author: Author? = null,
   var releaseDate: LocalDate = LocalDate.now(),
-  var createdAt: LocalDateTime = LocalDateTime.now()
+  var createdAt: LocalDateTime = LocalDateTime.now(),
+  var aId: Int? = null,
 ) : AutoLongIdEntity()
