@@ -7,9 +7,13 @@ import zygarde.codegen.meta.ModelMetaField
 import kotlin.reflect.KClass
 
 class DtoApplyToModelDsl<E : Any>(
-  val modelClass: KClass<E>,
-  val dtoFieldMappings: MutableList<DtoFieldMapping>,
-  val dto: CodegenDto,
+  modelClass: KClass<E>,
+  dtoFieldMappings: MutableList<DtoFieldMapping>,
+  dto: CodegenDto,
+) : ModelFieldDsl<E>(
+  modelClass,
+  dtoFieldMappings,
+  dto,
 ) {
 
   /**
@@ -20,27 +24,6 @@ class DtoApplyToModelDsl<E : Any>(
       ModelApplyFromDtoFieldMappingVo(f, dto)
         .also(dsl)
         .also(dtoFieldMappings::add)
-    }
-  }
-
-  fun field(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
-    fields.forEach { f ->
-      dtoFieldMappings.add(
-        DtoFieldMapping.DtoFieldNoMapping(f, dto)
-          .also(dsl)
-      )
-    }
-  }
-
-  fun fieldCollection(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
-    fields.forEach { f ->
-      dtoFieldMappings.add(
-        DtoFieldMapping.DtoFieldNoMapping(f, dto)
-          .also(dsl)
-          .also {
-            it.refCollection = true
-          }
-      )
     }
   }
 

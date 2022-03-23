@@ -11,9 +11,13 @@ import zygarde.codegen.value.ValueProvider
 import kotlin.reflect.KClass
 
 class ModelToDtoDsl<E : Any>(
-  val modelClass: KClass<E>,
-  val dtoFieldMappings: MutableList<DtoFieldMapping>,
-  val dto: CodegenDto,
+  modelClass: KClass<E>,
+  dtoFieldMappings: MutableList<DtoFieldMapping>,
+  dto: CodegenDto,
+) : ModelFieldDsl<E>(
+  modelClass,
+  dtoFieldMappings,
+  dto,
 ) {
 
   /**
