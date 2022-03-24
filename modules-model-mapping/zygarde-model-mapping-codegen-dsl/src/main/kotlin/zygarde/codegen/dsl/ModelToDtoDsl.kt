@@ -1,7 +1,7 @@
 package zygarde.codegen.dsl
 
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
-import zygarde.codegen.dsl.model.internal.DtoFieldMapping.ModelToDtoFieldMappingVo
+import zygarde.codegen.dsl.model.internal.DtoFieldMapping.*
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.meta.ModelMetaField
@@ -28,6 +28,15 @@ class ModelToDtoDsl<E : Any>(
       ModelToDtoFieldMappingVo(modelField = f, dto = dto)
         .also(dsl)
         .also(dtoFieldMappings::add)
+    }
+  }
+
+  fun fieldExtra(vararg fields: ModelMetaField<E, *>, dsl: (ModelToDtoFieldMappingVo.() -> Unit) = {}) {
+    fields.forEach { f ->
+      dtoFieldMappings.add(
+        ModelToDtoFieldMappingVo(f.copy(extra = true), dto)
+          .also(dsl)
+      )
     }
   }
 
