@@ -137,7 +137,7 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   protected fun Root<*>.columnNameToPath(columnName: String): Path<FieldType> {
     val splited = columnName.split(".")
     if (splited.size == 1) {
-      return this.get<FieldType>(splited.first())
+      return this.get(splited.first())
     }
     var joinPath = splited[0]
     var currentJoin = enhancedSearch.joinMap.getOrPut(joinPath) {

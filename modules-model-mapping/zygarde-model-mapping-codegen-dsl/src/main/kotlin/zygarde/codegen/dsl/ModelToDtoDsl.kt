@@ -46,7 +46,7 @@ class ModelToDtoDsl<E : Any>(
     dsl: (ModelToDtoFieldMappingVo.() -> Unit) = {}
   ) {
     dtoFieldMappings.add(
-      DtoFieldMapping.ModelToDtoFieldMappingVo(
+      ModelToDtoFieldMappingVo(
         modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
         dto = dto
       )
@@ -64,7 +64,7 @@ class ModelToDtoDsl<E : Any>(
     dsl: (ModelToDtoFieldMappingVo.() -> Unit) = {}
   ) {
     dtoFieldMappings.add(
-      DtoFieldMapping.ModelToDtoFieldMappingVo(
+      ModelToDtoFieldMappingVo(
         modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
         dto = dto
       )

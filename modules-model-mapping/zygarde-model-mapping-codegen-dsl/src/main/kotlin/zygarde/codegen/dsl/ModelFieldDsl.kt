@@ -1,6 +1,7 @@
 package zygarde.codegen.dsl
 
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
+import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.meta.ModelMetaField
 import kotlin.reflect.KClass
@@ -20,6 +21,13 @@ abstract class ModelFieldDsl<E : Any>(
     }
   }
 
+  fun fieldNullable(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+    field(*fields) {
+      dsl(this)
+      forceNull = ForceNull.NULL
+    }
+  }
+
   fun fieldCollection(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     fields.forEach { f ->
       dtoFieldMappings.add(
@@ -29,6 +37,13 @@ abstract class ModelFieldDsl<E : Any>(
             it.refCollection = true
           }
       )
+    }
+  }
+
+  fun fieldCollectionNullable(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+    fieldCollection(*fields) {
+      dsl(this)
+      forceNull = ForceNull.NULL
     }
   }
 }
