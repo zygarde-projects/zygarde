@@ -38,13 +38,6 @@ class ZygardeApiGenerator(
           val reqRefTypeName = if (genApi.reqRef.isEmpty()) {
             safeGetTypeFromAnnotation { genApi.reqRefClass.asTypeName() }.kotlin(false)
               .takeIf { it.toString() != "java.lang.Object" }
-              ?.let {
-                if (genApi.reqCollection) {
-                  Collection::class.generic(it)
-                } else {
-                  it
-                }
-              }
           } else {
             ClassName(dtoPackage, genApi.reqRef)
           }
