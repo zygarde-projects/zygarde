@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import zygarde.api.exception.ApiExceptionFilter
 import zygarde.api.exception.ApiExceptionHandler
 import zygarde.api.exception.mapper.MissingKotlinParameterExceptionMapper
-import zygarde.api.tracing.ApiTracingContext
 import zygarde.api.tracing.ApiTracingHandlerInterceptor
 import zygarde.json.JacksonCommon
 
@@ -17,10 +17,7 @@ import zygarde.json.JacksonCommon
 class ZygardeSpringWebmvcConfig : WebMvcConfigurer {
 
   @Bean
-  fun apiTracingContext() = ApiTracingContext()
-
-  @Bean
-  fun apiTracingHandlerInterceptor() = ApiTracingHandlerInterceptor(apiTracingContext())
+  fun apiTracingHandlerInterceptor() = ApiTracingHandlerInterceptor()
 
   @ConditionalOnMissingBean
   @Bean
@@ -36,6 +33,7 @@ class ZygardeSpringWebmvcConfig : WebMvcConfigurer {
 
   @Bean
   @ConditionalOnMissingBean
+  @Order(Int.MIN_VALUE)
   fun apiExceptionFilter(
     apiExceptionHandler: ApiExceptionHandler,
     objectMapper: ObjectMapper

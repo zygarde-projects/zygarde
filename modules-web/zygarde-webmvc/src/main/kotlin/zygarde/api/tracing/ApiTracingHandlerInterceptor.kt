@@ -5,11 +5,11 @@ import org.springframework.web.servlet.HandlerInterceptor
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class ApiTracingHandlerInterceptor(val apiTracingContext: ApiTracingContext) : HandlerInterceptor {
+class ApiTracingHandlerInterceptor : HandlerInterceptor {
 
   override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
     if (handler is HandlerMethod) {
-      apiTracingContext.setApiId(
+      ApiTracingContext.setApiId(
         "${handler.beanType.simpleName}.${handler.method.name}"
       )
     }

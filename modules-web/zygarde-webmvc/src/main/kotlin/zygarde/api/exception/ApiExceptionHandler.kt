@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import zygarde.core.exception.ApiErrorCode
 import zygarde.api.tracing.ApiTracingContext
+import zygarde.core.exception.ApiErrorCode
 import zygarde.core.exception.BusinessException
 import zygarde.core.exception.HttpErrorCode
 import zygarde.core.extension.general.fallbackWhenNull
@@ -27,9 +27,6 @@ class ApiExceptionHandler : Loggable {
 
   @Autowired
   private lateinit var messageSource: MessageSource
-
-  @Autowired
-  private lateinit var apiTracingContext: ApiTracingContext
 
   @Autowired
   private lateinit var exceptionToBusinessExceptionMappers: List<ExceptionToBusinessExceptionMapper<*>>
@@ -112,11 +109,17 @@ class ApiExceptionHandler : Loggable {
   }
 
   private fun logUnknownException(t: Throwable, req: HttpServletRequest) {
-    LOGGER.error("uri='${req.requestURI}' headers=${apiTracingContext.getTracingData().requestHeaders} message='${t.message}'", t)
+    val tracingData = ApiTracingContext.getTracingData()
+    val messages = listOfNotNull(
+      "uri='${req.requestURI}",
+      "requestHeaders=${tracingData.requestHeaders},",
+      "exceptionMessage=${t.message}"
+    )
+    LOGGER.error(messages.joinToString(" ,"), t)
   }
 
   private fun logBusinessException(e: BusinessException) {
-    val tracingData = apiTracingContext.getTracingData()
+    val tracingData = ApiTracingContext.getTracingData()
     LOGGER.info(
       """${tracingData.apiId} ${e.code} ${e.message}
 ${tracingData.data.toJsonString()}""".trimMargin(),
