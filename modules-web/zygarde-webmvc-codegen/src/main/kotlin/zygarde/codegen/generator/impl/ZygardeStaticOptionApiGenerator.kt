@@ -100,19 +100,18 @@ class ZygardeStaticOptionApiGenerator(
           .addMember("name=%S", optionApiName)
           .build()
       )
-      .addAnnotation(
-        AnnotationSpec.builder(RequestMapping::class)
-          .addMember(
-            """value=["\_*zygarde.api.static-option-api.path}"]"""
-              .replace("_", "$")
-              .replace("*", "{")
-          )
-          .build()
-      )
       .addFunction(
         FunSpec.builder("getStaticOptions")
           .addModifiers(KModifier.ABSTRACT)
-          .addAnnotation(GetMapping::class)
+          .addAnnotation(
+            AnnotationSpec.builder(RequestMapping::class)
+              .addMember(
+                """value=["\_*zygarde.api.static-option-api.path}"]"""
+                  .replace("_", "$")
+                  .replace("*", "{")
+              )
+              .build()
+          )
           .addAnnotation(
             AnnotationSpec.builder(Operation::class)
               .addMember("summary=%S", "Get All Static Options")
