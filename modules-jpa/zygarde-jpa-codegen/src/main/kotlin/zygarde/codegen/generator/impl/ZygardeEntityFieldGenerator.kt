@@ -25,6 +25,7 @@ import zygarde.data.jpa.search.action.impl.SearchableImpl
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
+import javax.persistence.ElementCollection
 import javax.persistence.ManyToMany
 import javax.persistence.OneToMany
 import javax.persistence.Transient
@@ -133,6 +134,7 @@ class ZygardeEntityFieldGenerator(
   private fun Element.allSearchableFields(): List<Element> {
     return allFieldsIncludeSuper(processingEnv)
       .filter {
+        it.getAnnotation(ElementCollection::class.java) == null &&
         it.getAnnotation(Transient::class.java) == null &&
           it.getAnnotation(OneToMany::class.java) == null &&
           it.getAnnotation(ManyToMany::class.java) == null
