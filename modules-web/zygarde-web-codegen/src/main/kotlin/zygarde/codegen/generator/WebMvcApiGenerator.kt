@@ -292,8 +292,12 @@ class WebMvcApiGenerator(
         ClassName(serviceInterfacePackage, serviceInterfaceName)
       )
 
+      var resultDeclare = ""
+      if (resType != null) {
+        resultDeclare = "val result = "
+      }
       webMvcFuncBuilder.addStatement(
-        "val result = service.$serviceFunctionName(${paramsToCallServiceInterface.joinToString(",")})",
+        "${resultDeclare}service.$serviceFunctionName(${paramsToCallServiceInterface.joinToString(",")})",
       )
 
       if (servicePostProcessingFuncBuilder != null) {

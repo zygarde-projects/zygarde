@@ -22,6 +22,7 @@ object ApiTracingContext {
 
   fun trace(req: HttpServletRequest, block: () -> Unit) {
     try {
+      tracingDataThreadLocal.remove()
       tracingDataThreadLocal.set(ApiTracingData(requestHeaders = req.getHeadersAsString()))
       block.invoke()
     } finally {

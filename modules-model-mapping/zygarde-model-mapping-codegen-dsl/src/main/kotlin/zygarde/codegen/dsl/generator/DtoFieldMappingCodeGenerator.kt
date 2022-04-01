@@ -113,7 +113,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
       .map { e ->
         val dto = e.key
         val mappings = e.value
-        val extraValuesName = "${dto.name}ExtraValues"
+        val extraValuesName = "${mappings.first().modelField.modelClass.simpleName}To${dto.name}ExtraValues"
         val extraValueClass = ClassName(dtoPackageName, extraValuesName)
         val extraValueClassConstructorBuilder = FunSpec.constructorBuilder()
         val extraValueClassBuilder = TypeSpec.classBuilder(extraValueClass)

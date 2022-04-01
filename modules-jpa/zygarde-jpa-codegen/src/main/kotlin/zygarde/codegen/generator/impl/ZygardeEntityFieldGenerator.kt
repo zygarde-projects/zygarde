@@ -135,7 +135,7 @@ class ZygardeEntityFieldGenerator(
     return allFieldsIncludeSuper(processingEnv)
       .filter {
         it.getAnnotation(ElementCollection::class.java) == null &&
-        it.getAnnotation(Transient::class.java) == null &&
+          it.getAnnotation(Transient::class.java) == null &&
           it.getAnnotation(OneToMany::class.java) == null &&
           it.getAnnotation(ManyToMany::class.java) == null
       }
