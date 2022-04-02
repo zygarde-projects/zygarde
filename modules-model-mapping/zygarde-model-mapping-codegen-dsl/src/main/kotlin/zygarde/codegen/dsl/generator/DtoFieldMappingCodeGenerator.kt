@@ -26,7 +26,12 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
 
   val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
-  var dtoToExtraToDtoMappingMap = dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }.groupBy { it.dto }
+  var dtoToExtraToDtoMappingMap = dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }
+    .groupBy { it.modelField.modelClass.java.simpleName }
+    .entries
+    .associate {
+      it.key to it.value.groupBy { it.dto }
+    }
 
   fun generateFileSpec(): DtoFieldMappingGenerateResult {
     return DtoFieldMappingGenerateResult(
@@ -110,37 +115,40 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
 
   private fun generateDtoExtraValue(): List<FileSpec> {
     return dtoToExtraToDtoMappingMap
-      .map { e ->
-        val dto = e.key
-        val mappings = e.value
-        val extraValuesName = "${mappings.first().modelField.modelClass.simpleName}To${dto.name}ExtraValues"
-        val extraValueClass = ClassName(dtoPackageName, extraValuesName)
-        val extraValueClassConstructorBuilder = FunSpec.constructorBuilder()
-        val extraValueClassBuilder = TypeSpec.classBuilder(extraValueClass)
-          .addModifiers(KModifier.DATA)
-          .addSuperinterface(Serializable::class)
+      .flatMap { (modelClassName, dtoMappings) ->
+        dtoMappings.map { e ->
+            val dto = e.key
+            val mappings = e.value
+            val extraValuesName = "${modelClassName}To${dto.name}ExtraValues"
+            val extraValueClass = ClassName(dtoPackageName, extraValuesName)
+            val extraValueClassConstructorBuilder = FunSpec.constructorBuilder()
+            val extraValueClassBuilder = TypeSpec.classBuilder(extraValueClass)
+              .addModifiers(KModifier.DATA)
+              .addSuperinterface(Serializable::class)
 
-        mappings.forEach { mapping ->
-          val fieldName = mapping.modelField.fieldName
-          extraValueClassConstructorBuilder.addParameter(
-            ParameterSpec
-              .builder(fieldName, mapping.fieldType())
+            mappings.forEach { mapping ->
+              val fieldName = mapping.modelField.fieldName
+              extraValueClassConstructorBuilder.addParameter(
+                ParameterSpec
+                  .builder(fieldName, mapping.fieldType())
+                  .build()
+              )
+              extraValueClassBuilder.addProperty(
+                PropertySpec
+                  .builder(fieldName, mapping.fieldType())
+                  .initializer(fieldName)
+                  .build()
+              )
+            }
+
+            extraValueClassBuilder
+              .primaryConstructor(extraValueClassConstructorBuilder.build())
+
+            FileSpec.builder(dtoPackageName, extraValuesName)
+              .addType(extraValueClassBuilder.build())
               .build()
-          )
-          extraValueClassBuilder.addProperty(
-            PropertySpec
-              .builder(fieldName, mapping.fieldType())
-              .initializer(fieldName)
-              .build()
-          )
-        }
+          }
 
-        extraValueClassBuilder
-          .primaryConstructor(extraValueClassConstructorBuilder.build())
-
-        FileSpec.builder(dtoPackageName, extraValuesName)
-          .addType(extraValueClassBuilder.build())
-          .build()
       }
   }
 
@@ -150,7 +158,8 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
       .groupBy { it.modelField.modelClass }
       .map { e ->
         val modelClass = e.key
-        val extensionClassName = "${modelClass.simpleName}ToDtoExtensions"
+        val modelClassName = "${modelClass.simpleName}"
+        val extensionClassName = "${modelClassName}ToDtoExtensions"
         val extensionFileSpecBuilder = FileSpec.builder(modelExtensionPackageName, extensionClassName)
         val extensionClassBuilder = TypeSpec.objectBuilder(ClassName(modelExtensionPackageName, extensionClassName))
 
@@ -160,7 +169,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
 
           if (mappingsByDto.any { it.modelField.extra }) {
             toDtoFuncParameters.add(
-              ParameterSpec("extraValues", ClassName(dtoPackageName, "${dto.name}ExtraValues"))
+              ParameterSpec("extraValues", ClassName(dtoPackageName, "${modelClassName}To${dto.name}ExtraValues"))
             )
           }
 
@@ -193,11 +202,11 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
               if (mapping.refCollection) {
                 "  $dtoFieldName = this.$modelFieldName$q.map{it.%M()}"
               } else {
-                if (dtoToExtraToDtoMappingMap[dtoRef] != null) {
+                if (dtoToExtraToDtoMappingMap[modelClassName]?.get(dtoRef) != null) {
                   toDtoFuncParameters.add(
                     ParameterSpec(
                       "${modelFieldName}ExtraValues",
-                      ClassName(dtoPackageName, "${dtoRef.name}ExtraValues")
+                      ClassName(dtoPackageName, "${modelClassName}To${dtoRef.name}ExtraValues")
                     )
                   )
                   "  $dtoFieldName = this.$modelFieldName$q.%M(${modelFieldName}ExtraValues)"
