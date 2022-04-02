@@ -2,8 +2,15 @@ package zygarde.data.jpa.dao
 
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.NoRepositoryBean
+import zygarde.data.jpa.search.EnhancedSearch
+import zygarde.data.jpa.search.Searchable
 
 @NoRepositoryBean
 interface ZygardeEnhancedDao<T, ID> : BaseDao<T, ID> {
   fun delete(spec: Specification<T>)
+
+  fun <P> selectOne(
+    p: Searchable<T, P>,
+    searchContent: EnhancedSearch<T>.() -> Unit
+  ): P
 }

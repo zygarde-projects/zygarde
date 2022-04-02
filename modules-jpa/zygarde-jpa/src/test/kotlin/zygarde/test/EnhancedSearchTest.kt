@@ -358,6 +358,14 @@ class EnhancedSearchTest {
     }.size shouldBe 100
   }
 
+  @Order(1900)
+  @Test
+  fun `select one`() {
+    bookDao.selectOne(SearchableImpl<Book, String>("name")) {
+      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+    } shouldBe "zygarde"
+  }
+
   @Order(9000)
   @Test
   fun `should able to delete`() {
