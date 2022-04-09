@@ -17,7 +17,7 @@ abstract class SequenceIdEntity<T : Serializable> {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
   @GenericGenerator(
     name = "sequenceGenerator",
-    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    strategy = "zygarde.data.jpa.generator.ZygardeSequenceGenerator",
     parameters = [
       Parameter(name = SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, value = "true"),
       Parameter(name = SequenceStyleGenerator.OPT_PARAM, value = "pooled"),
