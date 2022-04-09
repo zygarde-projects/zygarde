@@ -24,7 +24,10 @@ class AutoIntIdBook : AutoIntIdEntity()
 
 @ZyModel
 @Entity
-class AutoLongIdBook : AutoLongIdEntity()
+class AutoLongIdBook(
+  @Id
+  override val id: Long?,
+) : AutoLongIdEntity()
 
 @ZyModel
 @Entity

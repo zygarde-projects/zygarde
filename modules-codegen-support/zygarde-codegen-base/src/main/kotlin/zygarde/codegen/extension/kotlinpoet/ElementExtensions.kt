@@ -54,9 +54,10 @@ object ElementExtensions {
         }
       }
 
-    return listOf(superElements, this.enclosedElements)
+    return listOf(this.enclosedElements, superElements)
       .flatten()
       .filter { it.kind == ElementKind.FIELD }
+      .distinctBy { it.fieldName() }
   }
 
   /**
