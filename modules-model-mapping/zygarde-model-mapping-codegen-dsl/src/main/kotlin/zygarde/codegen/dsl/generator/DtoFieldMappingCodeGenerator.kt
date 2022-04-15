@@ -11,7 +11,6 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
-import com.squareup.kotlinpoet.buildCodeBlock
 import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.type.ForceNull
@@ -39,20 +38,89 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
     return DtoFieldMappingGenerateResult(
       dtoFileSpecs = listOf(
         generateDtos(),
-        generateDtoExtraValue(),
       ).flatten(),
       modelMappingFileSpecs = listOf(
+        generateDtoExtraValue(),
         generateMapToDtoExtension(),
         generateApplyFromDtoExtension(),
+        generateCompoundDtoBuilder(),
       ).flatten()
     )
+  }
+
+  private fun generateCompoundDtoBuilder(): List<FileSpec> {
+    return dtoFieldMappings
+      .filter { it.compound }
+      .mapNotNull { if (it is DtoFieldMapping.ModelToDtoFieldMappingVo) it else null }
+      .groupBy { it.dto }
+      .map { e ->
+        val dto = e.key
+        val mappings = e.value
+        val dtoBuilderClassName = "${dto.name}Builder"
+        val dtoBuilderFileSpecBuilder = FileSpec.builder(modelExtensionPackageName, dtoBuilderClassName)
+        val dtoBuilderClassBuilder = TypeSpec.objectBuilder(ClassName(modelExtensionPackageName, dtoBuilderClassName))
+
+        val dtoClass = ClassName(dtoPackageName, dto.name)
+        val funcBuilder = FunSpec.builder("build")
+          .returns(dtoClass)
+
+        mappings.map { it.modelField.modelClass }.toSet().forEach { modelClass ->
+          funcBuilder
+            .addParameter(
+              modelClass.java.simpleName.replaceFirstChar { it.lowercase() },
+              modelClass
+            )
+        }
+
+        if (mappings.any { it.modelField.extra }) {
+          funcBuilder
+            .addParameter(
+              ParameterSpec("extraValues", ClassName(dtoPackageName, "${dto.name}CompoundExtraValues"))
+            )
+        }
+
+        val callDtoArgs: MutableList<Any> = mutableListOf(dtoClass)
+        val callDtoStatements = mappings
+          .map { mapping ->
+            val modelParamName = mapping.modelField.modelClass.java.simpleName.replaceFirstChar { it.lowercase() }
+            val fieldName = mapping.modelField.fieldName
+            val valueProvider = mapping.valueProvider
+            if (valueProvider != null) {
+              val valueProviderParam = when (mapping.valueProviderParameterType) {
+                ValueProviderParameterType.FIELD -> "$modelParamName.$fieldName"
+                ValueProviderParameterType.OBJECT -> modelParamName
+              }
+              callDtoArgs.add(valueProvider)
+              "$fieldName = %T().getValue($valueProviderParam)"
+            } else if (mapping.modelField.extra) {
+              "$fieldName = extraValues.$fieldName"
+            } else {
+              "$fieldName = $modelParamName.$fieldName"
+            }
+          }
+          .joinToString(",\r\n")
+
+        funcBuilder.addCode(
+          """return %T(
+$callDtoStatements
+)""",
+          *callDtoArgs.toTypedArray()
+        )
+
+        dtoBuilderFileSpecBuilder
+          .addType(
+            dtoBuilderClassBuilder
+              .addFunction(funcBuilder.build())
+              .build()
+          )
+          .build()
+      }
   }
 
   private fun generateDtos(): List<FileSpec> {
     return dtoFieldMappings.groupBy { it.dto }.map { e ->
       val dto = e.key
       val mappings = e.value
-      val compound = mappings.any { it.compound }
       val dtoClassName = ClassName(dtoPackageName, dto.name)
       val dtoFileBuilder = FileSpec.builder(dtoClassName.packageName, dtoClassName.simpleName)
       val dtoClassBuilder = TypeSpec.classBuilder(dtoClassName)
@@ -65,58 +133,6 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
         } else {
           dtoClassBuilder.superclass(superClass)
         }
-      }
-
-      if (compound) {
-        val secondaryConstructorBuilder = FunSpec.constructorBuilder()
-
-        mappings.map { it.modelField.modelClass }.toSet().forEach { modelClass ->
-          secondaryConstructorBuilder
-            .addParameter(
-              modelClass.java.simpleName.replaceFirstChar { it.lowercase() },
-              modelClass
-            )
-        }
-
-        if (mappings.any { it.modelField.extra }) {
-          secondaryConstructorBuilder
-            .addParameter(
-              ParameterSpec("extraValues", ClassName(dtoPackageName, "${dto.name}CompoundExtraValues"))
-            )
-        }
-
-        val callThisArgs = mappings
-          .mapNotNull { if (it is DtoFieldMapping.ModelToDtoFieldMappingVo) it else null }
-          .map { mapping ->
-            val modelParamName = mapping.modelField.modelClass.java.simpleName.replaceFirstChar { it.lowercase() }
-            buildCodeBlock {
-              val fieldName = mapping.modelField.fieldName
-              val valueProvider = mapping.valueProvider
-              if (valueProvider != null) {
-                val valueProviderParam = when (mapping.valueProviderParameterType) {
-                  ValueProviderParameterType.FIELD -> "$modelParamName.$fieldName"
-                  ValueProviderParameterType.OBJECT -> modelParamName
-                }
-                addStatement(
-                  "$fieldName = %T().getValue($valueProviderParam)",
-                  valueProvider,
-                )
-              } else if (mapping.modelField.extra) {
-                addStatement("$fieldName = extraValues.$fieldName")
-              } else {
-
-                addStatement("$fieldName = $modelParamName.$fieldName")
-              }
-            }
-          }
-
-        dtoClassBuilder.addFunction(
-          secondaryConstructorBuilder
-            .callThisConstructor(
-              callThisArgs
-            )
-            .build()
-        )
       }
 
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
