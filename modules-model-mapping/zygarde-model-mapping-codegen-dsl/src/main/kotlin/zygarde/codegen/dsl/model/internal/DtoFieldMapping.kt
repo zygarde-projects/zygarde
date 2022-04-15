@@ -16,6 +16,7 @@ sealed class DtoFieldMapping(
   open var refCollection: Boolean = false,
   open var forceNull: ForceNull = ForceNull.NONE,
   open var validations: MutableList<DtoFieldValidation> = mutableListOf(),
+  open var compound: Boolean = false,
 ) {
 
   data class DtoFieldNoMapping(

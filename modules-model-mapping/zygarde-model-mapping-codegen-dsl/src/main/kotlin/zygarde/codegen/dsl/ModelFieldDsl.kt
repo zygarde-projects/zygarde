@@ -8,11 +8,12 @@ import kotlin.reflect.KClass
 
 abstract class ModelFieldDsl<E : Any>(
   val modelClass: KClass<E>,
-  val dtoFieldMappings: MutableList<DtoFieldMapping>,
   val dto: CodegenDto,
 ) {
 
-  fun field(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+  val dtoFieldMappings: MutableList<DtoFieldMapping> = mutableListOf()
+
+  fun field(vararg fields: ModelMetaField<*, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     fields.forEach { f ->
       dtoFieldMappings.add(
         DtoFieldMapping.DtoFieldNoMapping(f, dto)
@@ -21,14 +22,14 @@ abstract class ModelFieldDsl<E : Any>(
     }
   }
 
-  fun fieldNullable(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+  fun fieldNullable(vararg fields: ModelMetaField<*, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     field(*fields) {
       dsl(this)
       forceNull = ForceNull.NULL
     }
   }
 
-  fun fieldCollection(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+  fun fieldCollection(vararg fields: ModelMetaField<*, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     fields.forEach { f ->
       dtoFieldMappings.add(
         DtoFieldMapping.DtoFieldNoMapping(f, dto)
@@ -40,7 +41,7 @@ abstract class ModelFieldDsl<E : Any>(
     }
   }
 
-  fun fieldCollectionNullable(vararg fields: ModelMetaField<E, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+  fun fieldCollectionNullable(vararg fields: ModelMetaField<*, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     fieldCollection(*fields) {
       dsl(this)
       forceNull = ForceNull.NULL

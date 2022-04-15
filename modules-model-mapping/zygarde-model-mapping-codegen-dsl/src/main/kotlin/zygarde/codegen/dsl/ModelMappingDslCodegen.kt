@@ -16,11 +16,19 @@ abstract class ModelMappingDslCodegen<E : Any>(val modelClass: KClass<E>) {
   protected abstract fun codegen()
 
   protected fun dto(dto: CodegenDto, dsl: ModelToDtoDsl<E>.() -> Unit) {
-    dsl.invoke(ModelToDtoDsl(modelClass, dtoFieldMappings, dto))
+    val modelToDtoDsl = ModelToDtoDsl(modelClass, dto)
+    dsl.invoke(modelToDtoDsl)
+    val fieldMappings = modelToDtoDsl.dtoFieldMappings
+    if (fieldMappings.map { it.modelField.modelClass }.toSet().size > 1) {
+      fieldMappings.forEach { it.compound = true }
+    }
+    dtoFieldMappings.addAll(fieldMappings)
   }
 
   protected fun req(dto: CodegenDto, dsl: DtoApplyToModelDsl<E>.() -> Unit) {
-    dsl.invoke(DtoApplyToModelDsl(modelClass, dtoFieldMappings, dto))
+    val dtoApplyToModelDsl = DtoApplyToModelDsl(modelClass, dto)
+    dsl.invoke(dtoApplyToModelDsl)
+    dtoFieldMappings.addAll(dtoApplyToModelDsl.dtoFieldMappings)
   }
 
   protected inline fun <reified F : Any> custom(

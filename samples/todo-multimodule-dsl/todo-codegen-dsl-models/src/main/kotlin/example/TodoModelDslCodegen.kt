@@ -1,6 +1,8 @@
 package example
 
 import example.codegen.model.meta.AbstractTodoCodegen
+import example.codegen.model.meta.NoteModelFields
+import example.codegen.model.meta.TodoModelFields
 import zygarde.codegen.meta.CodegenDtoSimple
 
 class TodoModelDslCodegen : AbstractTodoCodegen() {
@@ -9,6 +11,7 @@ class TodoModelDslCodegen : AbstractTodoCodegen() {
     TodoDto,
     CreateTodoReq,
     UpdateTodoReq,
+    TodoDetailDto,
   }
 
   override fun codegen() {
@@ -23,6 +26,17 @@ class TodoModelDslCodegen : AbstractTodoCodegen() {
 
     req(TodoDtos.UpdateTodoReq) {
       applyTo(description)
+    }
+
+    dto(TodoDtos.TodoDetailDto) {
+      fromAutoIntId(id)
+      from(
+        TodoModelFields.description,
+        NoteModelFields.title,
+      )
+      fieldExtra(
+        custom<String>("remark")
+      )
     }
   }
 }

@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.buildCodeBlock
 import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.type.ForceNull
@@ -26,7 +27,8 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
 
   val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
-  var dtoToExtraToDtoMappingMap = dtoFieldMappings.filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }
+  var dtoToExtraToDtoMappingMap = dtoFieldMappings
+    .filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }
     .groupBy { it.modelField.modelClass.java.simpleName }
     .entries
     .associate {
@@ -35,9 +37,11 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
 
   fun generateFileSpec(): DtoFieldMappingGenerateResult {
     return DtoFieldMappingGenerateResult(
-      dtoFileSpecs = generateDtos(),
-      modelMappingFileSpecs = listOf(
+      dtoFileSpecs = listOf(
+        generateDtos(),
         generateDtoExtraValue(),
+      ).flatten(),
+      modelMappingFileSpecs = listOf(
         generateMapToDtoExtension(),
         generateApplyFromDtoExtension(),
       ).flatten()
@@ -48,6 +52,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
     return dtoFieldMappings.groupBy { it.dto }.map { e ->
       val dto = e.key
       val mappings = e.value
+      val compound = mappings.any { it.compound }
       val dtoClassName = ClassName(dtoPackageName, dto.name)
       val dtoFileBuilder = FileSpec.builder(dtoClassName.packageName, dtoClassName.simpleName)
       val dtoClassBuilder = TypeSpec.classBuilder(dtoClassName)
@@ -60,6 +65,58 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
         } else {
           dtoClassBuilder.superclass(superClass)
         }
+      }
+
+      if (compound) {
+        val secondaryConstructorBuilder = FunSpec.constructorBuilder()
+
+        mappings.map { it.modelField.modelClass }.toSet().forEach { modelClass ->
+          secondaryConstructorBuilder
+            .addParameter(
+              modelClass.java.simpleName.replaceFirstChar { it.lowercase() },
+              modelClass
+            )
+        }
+
+        if (mappings.any { it.modelField.extra }) {
+          secondaryConstructorBuilder
+            .addParameter(
+              ParameterSpec("extraValues", ClassName(dtoPackageName, "${dto.name}CompoundExtraValues"))
+            )
+        }
+
+        val callThisArgs = mappings
+          .mapNotNull { if (it is DtoFieldMapping.ModelToDtoFieldMappingVo) it else null }
+          .map { mapping ->
+            val modelParamName = mapping.modelField.modelClass.java.simpleName.replaceFirstChar { it.lowercase() }
+            buildCodeBlock {
+              val fieldName = mapping.modelField.fieldName
+              val valueProvider = mapping.valueProvider
+              if (valueProvider != null) {
+                val valueProviderParam = when (mapping.valueProviderParameterType) {
+                  ValueProviderParameterType.FIELD -> "$modelParamName.$fieldName"
+                  ValueProviderParameterType.OBJECT -> modelParamName
+                }
+                addStatement(
+                  "$fieldName = %T().getValue($valueProviderParam)",
+                  valueProvider,
+                )
+              } else if (mapping.modelField.extra) {
+                addStatement("$fieldName = extraValues.$fieldName")
+              } else {
+
+                addStatement("$fieldName = $modelParamName.$fieldName")
+              }
+            }
+          }
+
+        dtoClassBuilder.addFunction(
+          secondaryConstructorBuilder
+            .callThisConstructor(
+              callThisArgs
+            )
+            .build()
+        )
       }
 
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
@@ -117,43 +174,44 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
     return dtoToExtraToDtoMappingMap
       .flatMap { (modelClassName, dtoMappings) ->
         dtoMappings.map { e ->
-            val dto = e.key
-            val mappings = e.value
-            val extraValuesName = "${modelClassName}To${dto.name}ExtraValues"
-            val extraValueClass = ClassName(dtoPackageName, extraValuesName)
-            val extraValueClassConstructorBuilder = FunSpec.constructorBuilder()
-            val extraValueClassBuilder = TypeSpec.classBuilder(extraValueClass)
-              .addModifiers(KModifier.DATA)
-              .addSuperinterface(Serializable::class)
+          val dto = e.key
+          val mappings = e.value
+          val compound = mappings.any { it.compound }
+          val extraValuesName = if (compound) "${dto.name}CompoundExtraValues" else "${modelClassName}To${dto.name}ExtraValues"
+          val extraValueClass = ClassName(dtoPackageName, extraValuesName)
+          val extraValueClassConstructorBuilder = FunSpec.constructorBuilder()
+          val extraValueClassBuilder = TypeSpec.classBuilder(extraValueClass)
+            .addModifiers(KModifier.DATA)
+            .addSuperinterface(Serializable::class)
 
-            mappings.forEach { mapping ->
-              val fieldName = mapping.modelField.fieldName
-              extraValueClassConstructorBuilder.addParameter(
-                ParameterSpec
-                  .builder(fieldName, mapping.fieldType())
-                  .build()
-              )
-              extraValueClassBuilder.addProperty(
-                PropertySpec
-                  .builder(fieldName, mapping.fieldType())
-                  .initializer(fieldName)
-                  .build()
-              )
-            }
-
-            extraValueClassBuilder
-              .primaryConstructor(extraValueClassConstructorBuilder.build())
-
-            FileSpec.builder(dtoPackageName, extraValuesName)
-              .addType(extraValueClassBuilder.build())
-              .build()
+          mappings.forEach { mapping ->
+            val fieldName = mapping.modelField.fieldName
+            extraValueClassConstructorBuilder.addParameter(
+              ParameterSpec
+                .builder(fieldName, mapping.fieldType())
+                .build()
+            )
+            extraValueClassBuilder.addProperty(
+              PropertySpec
+                .builder(fieldName, mapping.fieldType())
+                .initializer(fieldName)
+                .build()
+            )
           }
 
+          extraValueClassBuilder
+            .primaryConstructor(extraValueClassConstructorBuilder.build())
+
+          FileSpec.builder(dtoPackageName, extraValuesName)
+            .addType(extraValueClassBuilder.build())
+            .build()
+        }
       }
   }
 
   private fun generateMapToDtoExtension(): List<FileSpec> {
     return dtoFieldMappings
+      .filterNot { it.compound }
       .mapNotNull { if (it is DtoFieldMapping.ModelToDtoFieldMappingVo) it else null }
       .groupBy { it.modelField.modelClass }
       .map { e ->

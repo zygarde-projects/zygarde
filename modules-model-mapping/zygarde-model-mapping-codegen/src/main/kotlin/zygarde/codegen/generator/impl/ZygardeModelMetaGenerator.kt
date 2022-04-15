@@ -50,25 +50,39 @@ class ZygardeModelMetaGenerator(
   private fun generateMetaFields(modelElement: Element) {
     val className = modelElement.simpleName.toString()
     val pack = packageName(processingEnv.options.getOrDefault(MODEL_META_GENERATE_PACKAGE, "model.meta"))
-    val fileNameForFields = "Abstract${className}Codegen"
-    val classBuilder = TypeSpec.classBuilder(fileNameForFields)
+    val modelFieldHolderClassName = "${className}ModelFields"
+    val modelFieldHolderClassBuilder = TypeSpec.objectBuilder(modelFieldHolderClassName)
+
+    val codegenClassName = "Abstract${className}Codegen"
+    val codegenClassBuilder = TypeSpec.classBuilder(codegenClassName)
       .addModifiers(KModifier.ABSTRACT)
       .superclass(ModelMappingDslCodegen::class.generic(modelElement.typeName()))
       .addSuperclassConstructorParameter("%T::class", modelElement.typeName())
 
     val allFieldsIncludeSuper = modelElement.allFieldsIncludeSuper()
     allFieldsIncludeSuper.forEach { field ->
-      classBuilder.addProperty(
-        field.buildMetaProperty(modelElement)
+      val metaProperty = field.buildMetaProperty(modelElement)
+      codegenClassBuilder.addProperty(
+        PropertySpec
+          .builder(
+            metaProperty.name,
+            metaProperty.type,
+            KModifier.PROTECTED,
+          )
+          .initializer("$modelFieldHolderClassName.${field.fieldName()}")
+          .build()
       )
-      classBuilder.addFunction(
+      codegenClassBuilder.addFunction(
         field.buildMetaDslFn(modelElement)
+      )
+      modelFieldHolderClassBuilder.addProperty(
+        metaProperty
       )
     }
 
     val allFieldNames = allFieldsIncludeSuper.map { it.fieldName() }
 
-    classBuilder.addProperty(
+    codegenClassBuilder.addProperty(
       PropertySpec
         .builder(
           "allFields",
@@ -85,8 +99,13 @@ class ZygardeModelMetaGenerator(
         .build()
     )
 
-    FileSpec.builder(pack, fileNameForFields)
-      .addType(classBuilder.build())
+    FileSpec.builder(pack, codegenClassName)
+      .addType(codegenClassBuilder.build())
+      .build()
+      .writeTo(targetFolder)
+
+    FileSpec.builder(pack, modelFieldHolderClassName)
+      .addType(modelFieldHolderClassBuilder.build())
       .build()
       .writeTo(targetFolder)
   }
@@ -128,7 +147,6 @@ class ZygardeModelMetaGenerator(
           modelElement.typeName(),
           rawFieldType.generic(*genericTypeArguments.map { starType }.toTypedArray()),
         ),
-        KModifier.PROTECTED
       )
       .initializer(
         CodeBlock.builder()

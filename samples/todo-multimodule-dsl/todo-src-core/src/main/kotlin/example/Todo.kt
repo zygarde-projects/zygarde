@@ -11,3 +11,10 @@ import javax.persistence.Entity
 class Todo(
   var description: String = "",
 ) : AutoIntIdEntity()
+
+@Entity
+@ZyModel
+@ZyModelMeta
+class Note(
+  var title: String = "",
+) : AutoIntIdEntity()

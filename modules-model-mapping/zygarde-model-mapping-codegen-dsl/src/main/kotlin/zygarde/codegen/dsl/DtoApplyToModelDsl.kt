@@ -8,11 +8,9 @@ import kotlin.reflect.KClass
 
 class DtoApplyToModelDsl<E : Any>(
   modelClass: KClass<E>,
-  dtoFieldMappings: MutableList<DtoFieldMapping>,
   dto: CodegenDto,
 ) : ModelFieldDsl<E>(
   modelClass,
-  dtoFieldMappings,
   dto,
 ) {
 
