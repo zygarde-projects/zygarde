@@ -20,8 +20,8 @@ private fun SortField?.toSort(): Sort? {
 
 fun List<SortField>?.toSpringDataSort(): Sort {
   return this
-    ?.takeIf { it.isNotEmpty() }
     ?.mapNotNull { it.toSort() }
+    ?.takeIf { it.isNotEmpty() }
     ?.reduceRight { s1, s2 -> s1.and(s2) }
     ?: Sort.unsorted()
 }
