@@ -10,6 +10,7 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
@@ -330,8 +331,16 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         e.value.groupBy { it.dto }.forEach { dto, mappings ->
           val functionBuilder = FunSpec.builder("applyFrom")
             .addParameter("req", ClassName(dtoPackageName, dto.name))
-            .receiver(modelClass)
-            .returns(modelClass)
+          if (modelClass.isAbstract) {
+            functionBuilder
+              .addTypeVariable(TypeVariableName("T", modelClass))
+              .receiver(TypeVariableName("T"))
+              .returns(TypeVariableName("T"))
+          }else{
+            functionBuilder
+              .receiver(modelClass)
+              .returns(modelClass)
+          }
 
           mappings.forEach { mapping ->
             val modelFieldName = mapping.modelField.fieldName
