@@ -15,6 +15,7 @@ import zygarde.codegen.ZygardeKaptOptions.Companion.ENTITY_PACKAGE_SEARCH
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allFieldsIncludeSuper
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
+import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.Searchable
@@ -149,7 +150,7 @@ class ZygardeEntityFieldGenerator(
         fieldName(),
         Searchable::class.asClassName().parameterizedBy(
           entityElement.typeName(),
-          entityElement.resolveFieldType(this).copy(nullable = false)
+          entityElement.resolveFieldType(this).copy(nullable = false).kotlin(false)
         ),
         KModifier.PUBLIC
       )
@@ -189,7 +190,11 @@ class ZygardeEntityFieldGenerator(
   private fun Element.toConditionAction(rootEntityElement: Element, currentEntityElement: Element): TypeName {
     val rootEntityTypeName = rootEntityElement.typeName()
     val currentEntityTypeName = currentEntityElement.typeName()
-    return this.toConditionAction(rootEntityTypeName, currentEntityTypeName, currentEntityElement.resolveFieldType(this))
+    return this.toConditionAction(
+      rootEntityTypeName = rootEntityTypeName,
+      currentEntityTypeName = currentEntityTypeName,
+      fieldType = currentEntityElement.resolveFieldType(this).kotlin(false)
+    )
   }
 
   private fun Element.toConditionAction(rootEntityTypeName: TypeName, currentEntityTypeName: TypeName, fieldType: TypeName): TypeName {
@@ -204,14 +209,14 @@ class ZygardeEntityFieldGenerator(
         ComparableConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,
           currentEntityTypeName,
-          nonNullableFieldType,
+          nonNullableFieldType.kotlin(false),
         )
       }
     } else {
       ConditionAction::class.asClassName().parameterizedBy(
         rootEntityTypeName,
         currentEntityTypeName,
-        nonNullableFieldType,
+        nonNullableFieldType.kotlin(false),
       )
     }
   }
