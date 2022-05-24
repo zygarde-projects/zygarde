@@ -16,7 +16,7 @@ import com.squareup.kotlinpoet.asTypeName
 import org.springframework.util.FileSystemUtils
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.MODEL_META_GENERATE_PACKAGE
-import zygarde.codegen.dsl.ModelMappingDslCodegen
+import zygarde.codegen.dsl.ClassBasedModelMappingDslCodegen
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.extension.kotlinpoet.generic
@@ -56,7 +56,7 @@ class ZygardeModelMetaGenerator(
     val codegenClassName = "Abstract${className}Codegen"
     val codegenClassBuilder = TypeSpec.classBuilder(codegenClassName)
       .addModifiers(KModifier.ABSTRACT)
-      .superclass(ModelMappingDslCodegen::class.generic(modelElement.typeName()))
+      .superclass(ClassBasedModelMappingDslCodegen::class.generic(modelElement.typeName()))
       .addSuperclassConstructorParameter("%T::class", modelElement.typeName())
 
     val allFieldsIncludeSuper = modelElement.allFieldsIncludeSuper()

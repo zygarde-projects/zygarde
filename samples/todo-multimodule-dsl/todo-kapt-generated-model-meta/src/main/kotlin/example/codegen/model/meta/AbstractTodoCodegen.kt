@@ -5,10 +5,10 @@ import kotlin.Array
 import kotlin.Int
 import kotlin.String
 import kotlin.Unit
-import zygarde.codegen.dsl.ModelMappingDslCodegen
+import zygarde.codegen.dsl.ClassBasedModelMappingDslCodegen
 import zygarde.codegen.meta.ModelMetaField
 
-public abstract class AbstractTodoCodegen : ModelMappingDslCodegen<Todo>(Todo::class) {
+public abstract class AbstractTodoCodegen : ClassBasedModelMappingDslCodegen<Todo>(Todo::class) {
   protected val description: ModelMetaField<Todo, String> = TodoModelFields.description
 
   protected val id: ModelMetaField<Todo, Int> = TodoModelFields.id

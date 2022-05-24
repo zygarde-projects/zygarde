@@ -37,7 +37,7 @@ fun main() {
     }
 
   val modelMappingCodegenList = classes.loadClasses().map { clz ->
-    clz.newInstance() as ModelMappingDslCodegen<*>
+    clz.newInstance() as ModelMappingDslCodegen
   }
 
   modelMappingCodegenList.forEach { it.execute() }

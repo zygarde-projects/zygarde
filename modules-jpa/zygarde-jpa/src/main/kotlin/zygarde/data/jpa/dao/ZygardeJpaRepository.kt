@@ -23,6 +23,7 @@ open class ZygardeJpaRepository<T, ID>(
     entityManager.createQuery(criteriaDelete).executeUpdate()
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun <P> selectOne(p: Searchable<T, P>, searchContent: EnhancedSearch<T>.() -> Unit): P {
     val cb = entityManager.criteriaBuilder
     val query = cb.createQuery()

@@ -29,6 +29,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
   var dtoToExtraToDtoMappingMap = dtoFieldMappings
     .filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }
+    .filterNot { it.compound }
     .groupBy { it.modelField.modelClass.java.simpleName }
     .entries
     .associate {
@@ -65,20 +66,35 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
         val funcBuilder = FunSpec.builder("build")
           .returns(dtoClass)
 
-        mappings.map { it.modelField.modelClass }.toSet().forEach { modelClass ->
-          funcBuilder
-            .addParameter(
-              modelClass.java.simpleName.replaceFirstChar { it.lowercase() },
-              modelClass
-            )
-        }
+        mappings
+          .filterNot { it.modelField.extra }
+          .map { it.modelField.modelClass }
+          .toSet()
+          .filter { it != Any::class }
+          .forEach { modelClass ->
+            funcBuilder
+              .addParameter(
+                modelClass.java.simpleName.replaceFirstChar { it.lowercase() },
+                modelClass
+              )
+          }
 
-        if (mappings.any { it.modelField.extra }) {
-          funcBuilder
-            .addParameter(
-              ParameterSpec("extraValues", ClassName(dtoPackageName, "${dto.name}CompoundExtraValues"))
-            )
-        }
+        mappings
+          .filter { it.modelField.extra }
+          .forEach { mapping ->
+            funcBuilder
+              .addParameter(
+                mapping.modelField.fieldName,
+                mapping.fieldType(),
+              )
+          }
+
+        // if (mappings.any { it.modelField.extra }) {
+        //   funcBuilder
+        //     .addParameter(
+        //       ParameterSpec("extraValues", ClassName(dtoPackageName, "${dto.name}CompoundExtraValues"))
+        //     )
+        // }
 
         val callDtoArgs: MutableList<Any> = mutableListOf(dtoClass)
         val callDtoStatements = mappings
@@ -94,7 +110,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
               callDtoArgs.add(valueProvider)
               "$fieldName = %T().getValue($valueProviderParam)"
             } else if (mapping.modelField.extra) {
-              "$fieldName = extraValues.$fieldName"
+              "$fieldName = $fieldName"
             } else {
               "$fieldName = $modelParamName.$fieldName"
             }
@@ -193,8 +209,7 @@ $callDtoStatements
         dtoMappings.map { e ->
           val dto = e.key
           val mappings = e.value
-          val compound = mappings.any { it.compound }
-          val extraValuesName = if (compound) "${dto.name}CompoundExtraValues" else "${modelClassName}To${dto.name}ExtraValues"
+          val extraValuesName = "${modelClassName}To${dto.name}ExtraValues"
           val extraValueClass = ClassName(dtoPackageName, extraValuesName)
           val extraValueClassConstructorBuilder = FunSpec.constructorBuilder()
           val extraValueClassBuilder = TypeSpec.classBuilder(extraValueClass)
@@ -336,7 +351,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
               .addTypeVariable(TypeVariableName("T", modelClass))
               .receiver(TypeVariableName("T"))
               .returns(TypeVariableName("T"))
-          }else{
+          } else {
             functionBuilder
               .receiver(modelClass)
               .returns(modelClass)

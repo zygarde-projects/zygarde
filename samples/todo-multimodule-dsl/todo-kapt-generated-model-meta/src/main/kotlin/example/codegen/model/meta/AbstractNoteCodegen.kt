@@ -5,10 +5,10 @@ import kotlin.Array
 import kotlin.Int
 import kotlin.String
 import kotlin.Unit
-import zygarde.codegen.dsl.ModelMappingDslCodegen
+import zygarde.codegen.dsl.ClassBasedModelMappingDslCodegen
 import zygarde.codegen.meta.ModelMetaField
 
-public abstract class AbstractNoteCodegen : ModelMappingDslCodegen<Note>(Note::class) {
+public abstract class AbstractNoteCodegen : ClassBasedModelMappingDslCodegen<Note>(Note::class) {
   protected val title: ModelMetaField<Note, String> = NoteModelFields.title
 
   protected val id: ModelMetaField<Note, Int> = NoteModelFields.id

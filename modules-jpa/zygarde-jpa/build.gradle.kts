@@ -4,6 +4,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
   api(project(":zygarde-core"))
+  api(project(":zygarde-jackson"))
   api("org.springframework.boot:spring-boot-starter-data-jpa")
   testImplementation("org.jeasy:easy-random-core:4.2.0")
   testImplementation("com.h2database:h2")
