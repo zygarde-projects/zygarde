@@ -30,7 +30,7 @@ fun KProperty1<*, *>.asModelMetaField(): ModelMetaField<*, *> {
           modelClass = owner,
           fieldName = this.name,
           fieldClass = returnTypeClassifier,
-          fieldNullable = false,
+          fieldNullable = this.returnType.isMarkedNullable,
           extra = false,
           genericClasses = genericClasses,
           comment = comment
