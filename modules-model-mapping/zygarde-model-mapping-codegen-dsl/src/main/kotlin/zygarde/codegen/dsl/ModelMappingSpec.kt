@@ -74,17 +74,23 @@ open class ModelMappingSpec(
   }
 
   fun fromAutoIntId(vararg props: KProperty1<*, Int?>) {
-    fromObjectProvider<AutoIntIdValueProvider>(*props)
+    fromObjectProvider<AutoIntIdValueProvider>(*props) {
+      this.forceNull = ForceNull.NOT_NULL
+    }
   }
 
   fun fromAutoLongId(vararg props: KProperty1<*, Long?>) {
-    fromObjectProvider<AutoLongIdValueProvider>(*props)
+    fromObjectProvider<AutoLongIdValueProvider>(*props) {
+      this.forceNull = ForceNull.NOT_NULL
+    }
   }
 
   inline fun <reified P : ValueProvider<*, *>> fromObjectProvider(
     vararg props: KProperty1<*, *>,
+    crossinline dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = { },
   ) {
     from(*props) {
+      dsl.invoke(this)
       valueProvider = P::class
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }
