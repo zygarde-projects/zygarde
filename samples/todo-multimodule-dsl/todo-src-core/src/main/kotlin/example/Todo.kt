@@ -1,7 +1,7 @@
 package example
 
 import zygarde.codegen.ZyModel
-import zygarde.codegen.meta.Comment
+import zygarde.core.annotation.Comment
 import zygarde.codegen.meta.ZyModelMeta
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.jpa.converter.StringListToJsonStringConverter

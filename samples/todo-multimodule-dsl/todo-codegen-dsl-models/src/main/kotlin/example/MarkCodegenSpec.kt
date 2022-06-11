@@ -4,7 +4,7 @@ import example.MarkModels.MarkDto
 import example.MarkModels.SaveMarkReq
 import zygarde.codegen.dsl.ModelMappingCodegenSpec
 import zygarde.codegen.meta.CodegenDtoSimple
-import zygarde.codegen.meta.Comment
+import zygarde.core.annotation.Comment
 
 enum class MarkModels : CodegenDtoSimple {
   MarkDto,

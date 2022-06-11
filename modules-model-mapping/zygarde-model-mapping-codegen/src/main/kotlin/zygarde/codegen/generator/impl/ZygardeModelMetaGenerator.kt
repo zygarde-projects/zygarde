@@ -22,7 +22,7 @@ import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
-import zygarde.codegen.meta.Comment
+import zygarde.core.annotation.Comment
 import zygarde.codegen.meta.ModelMetaField
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element

@@ -1,4 +1,4 @@
-package zygarde.codegen.meta
+package zygarde.core.annotation
 
 @Target(AnnotationTarget.FIELD)
 annotation class Comment(

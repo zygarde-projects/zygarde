@@ -1,6 +1,6 @@
 package zygarde.codegen.dsl.extensions
 
-import zygarde.codegen.meta.Comment
+import zygarde.core.annotation.Comment
 import zygarde.codegen.meta.ModelMetaField
 import java.lang.reflect.ParameterizedType
 import kotlin.jvm.internal.CallableReference

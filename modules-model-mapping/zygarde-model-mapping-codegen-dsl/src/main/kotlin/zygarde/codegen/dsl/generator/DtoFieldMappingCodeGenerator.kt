@@ -18,7 +18,7 @@ import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
-import zygarde.codegen.meta.Comment
+import zygarde.core.annotation.Comment
 import java.io.Serializable
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
