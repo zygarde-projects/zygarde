@@ -40,4 +40,6 @@ interface EnhancedSearch<EntityType> {
   fun or(searchContent: EnhancedSearch<EntityType>.() -> Unit): EnhancedSearch<EntityType>
 
   fun and(searchContent: EnhancedSearch<EntityType>.() -> Unit): EnhancedSearch<EntityType>
+
+  fun distinct()
 }

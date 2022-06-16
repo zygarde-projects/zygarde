@@ -118,4 +118,8 @@ class EnhancedSearchImpl<EntityType>(
       }
     }
   }
+
+  override fun distinct() {
+    this.query.distinct(true)
+  }
 }
