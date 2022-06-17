@@ -19,6 +19,7 @@ annotation class Dto(
    * ref DTO Name
    */
   val ref: String = "",
+  val refNullable: Boolean = false,
   /**
    * specify if ref is Collection
    */
@@ -27,6 +28,7 @@ annotation class Dto(
    * specify ref Class if it's not DTO
    */
   val refClass: KClass<*> = Any::class,
+  val refClassNullable: Boolean = false,
   /**
    * whether assign value in dto from entity in generated toXXXDto extension function
    */

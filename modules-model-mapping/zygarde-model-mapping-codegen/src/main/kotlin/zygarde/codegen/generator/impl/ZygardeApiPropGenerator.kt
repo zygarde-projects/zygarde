@@ -87,7 +87,8 @@ class ZygardeApiPropGenerator(
                 toDtoFieldDescription(
                   elem = elem,
                   ref = dto.ref,
-                  refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(false),
+                  refNullable = dto.refNullable,
+                  refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable),
                   refCollection = dto.refCollection,
                   dtoName = dto.name,
                   dtoFieldName = dto.fieldName,
@@ -104,7 +105,8 @@ class ZygardeApiPropGenerator(
                 toDtoFieldDescription(
                   elem = elem,
                   ref = dto.ref,
-                  refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(false),
+                  refNullable = dto.refNullable,
+                  refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable),
                   refCollection = dto.refCollection,
                   dtoName = dto.name,
                   dtoFieldName = dto.fieldName,
@@ -195,6 +197,7 @@ class ZygardeApiPropGenerator(
 
   private fun toDtoFieldDescription(
     ref: String,
+    refNullable: Boolean,
     refClass: TypeName,
     refCollection: Boolean,
     elem: Element,
@@ -210,7 +213,7 @@ class ZygardeApiPropGenerator(
     val fieldType = when {
       ref.isNotEmpty() -> ClassName(dtoPackageName, ref).let {
         if (refCollection) {
-          Collection::class.generic(it.kotlin(it.isNullable))
+          Collection::class.generic(it.kotlin(refNullable))
         } else {
           it
         }

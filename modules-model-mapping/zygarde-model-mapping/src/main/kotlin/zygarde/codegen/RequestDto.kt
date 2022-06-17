@@ -13,8 +13,10 @@ annotation class RequestDto(
    */
   val fieldName: String = "",
   val refClass: KClass<*> = Any::class,
+  val refClassNullable: Boolean = false,
   val refCollection: Boolean = false,
   val ref: String = "",
+  val refNullable: Boolean = false,
   val applyValueToEntity: Boolean = true,
   val valueProvider: KClass<out ValueProvider<*, *>> = NoOpValueProvider::class,
   val searchType: SearchType = SearchType.NONE,
