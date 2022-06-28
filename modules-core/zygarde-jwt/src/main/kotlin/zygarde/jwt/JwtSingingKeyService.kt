@@ -25,7 +25,7 @@ open class JwtSingingKeyService(
     )
   }
 
-  fun sign(claims: Map<String, Any>, expireAt: LocalDateTime): String {
+  fun sign(claims: Map<String, Any?>, expireAt: LocalDateTime): String {
     return Jwts.builder()
       .setIssuedAt(Date())
       .setExpiration(
