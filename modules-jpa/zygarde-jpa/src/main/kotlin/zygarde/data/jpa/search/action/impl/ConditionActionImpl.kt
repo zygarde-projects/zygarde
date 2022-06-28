@@ -14,7 +14,8 @@ import javax.persistence.criteria.Root
 
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
-  private val columnName: String
+  private val columnName: String,
+  private val join: Boolean = false
 ) : ConditionAction<RootEntityType, EntityType, FieldType> {
 
   override fun <AnotherFieldType> field(fieldName: String): ConditionAction<RootEntityType, FieldType, AnotherFieldType> {
@@ -137,6 +138,9 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   protected fun Root<*>.columnNameToPath(columnName: String): Path<FieldType> {
     val splited = columnName.split(".")
     if (splited.size == 1) {
+      if (join) {
+        return enhancedSearch.root.join<EntityType, FieldType>(columnName)
+      }
       return this.get(splited.first())
     }
     var joinPath = splited[0]

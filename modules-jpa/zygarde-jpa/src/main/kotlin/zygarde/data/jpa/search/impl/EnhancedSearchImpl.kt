@@ -53,6 +53,10 @@ class EnhancedSearchImpl<EntityType>(
     return StringConditionActionImpl(this, searchable.fieldName())
   }
 
+  override fun <FieldType> join(fieldName: String): ConditionAction<EntityType, EntityType, FieldType> {
+    return ConditionActionImpl(this, fieldName, true)
+  }
+
   override fun concat(vararg stringFields: StringConditionAction<EntityType, *>): StringConditionAction<EntityType, EntityType> {
     return ConcatStringConditionImpl(this, stringFields.toList())
   }

@@ -26,6 +26,10 @@ interface EnhancedSearch<EntityType> {
     searchable: Searchable<EntityType, FieldType>
   ): ComparableConditionAction<EntityType, EntityType, FieldType>
 
+  fun <FieldType> join(
+    fieldName: String
+  ): ConditionAction<EntityType, EntityType, FieldType>
+
   fun <FieldType : Comparable<FieldType>> rangeOverlap(
     dateFieldStartFn: EnhancedSearch<EntityType>.() -> ComparableConditionAction<EntityType, *, FieldType>,
     dateFieldEndFn: EnhancedSearch<EntityType>.() -> ComparableConditionAction<EntityType, *, FieldType>,
