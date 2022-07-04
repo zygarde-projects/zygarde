@@ -8,4 +8,10 @@ open class PageDto<T>(
   val totalPages: Int,
   val items: List<T>,
   val totalCount: Long
-)
+) {
+  companion object {
+    fun <T> empty(): PageDto<T> {
+      return PageDto(0,0, emptyList(),0)
+    }
+  }
+}
