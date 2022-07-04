@@ -7,6 +7,7 @@ import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import javax.persistence.criteria.Expression
+import javax.persistence.criteria.Join
 import javax.persistence.criteria.JoinType
 import javax.persistence.criteria.Path
 import javax.persistence.criteria.Predicate
@@ -50,19 +51,29 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     stringField(searchable.fieldName())
 
   override fun join(joinType: JoinType) {
-    val splited = columnName.split(".")
+    val split = columnName.split(".")
     if (enhancedSearch.query.resultType.canonicalName == "java.lang.Long") {
-      splited.takeLast(splited.size - 1)
+      split.takeLast(split.size - 1)
         .fold(
-          enhancedSearch.root.join<EntityType, FieldType>(splited.first(), joinType),
-          { join, column -> join.join(column, joinType) }
-        )
+          enhancedSearch.root.join<EntityType, FieldType>(split.first(), joinType)
+        ) { join, column -> join.join(column, joinType) }
     } else {
-      splited.takeLast(splited.size - 1)
+      var colName = split.first()
+      split.takeLast(split.size - 1)
         .fold(
-          enhancedSearch.root.fetch<EntityType, FieldType>(splited.first(), joinType),
-          { fetch, column -> fetch.fetch(column, joinType) }
-        )
+          enhancedSearch.fetchMap.getOrPut(
+            colName,
+          ) {
+            enhancedSearch.root.fetch(colName, joinType)
+          }
+        ) { fetch, foldedColumn ->
+          colName = "$colName.$foldedColumn"
+          enhancedSearch.fetchMap.getOrPut(
+            colName,
+          ) {
+            fetch.fetch(foldedColumn, joinType)
+          }
+        }
     }
   }
 
@@ -142,6 +153,10 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
         return enhancedSearch.root.join<EntityType, FieldType>(columnName)
       }
       return this.get(splited.first())
+    }
+    val fetch = enhancedSearch.fetchMap[splited.take(splited.size - 1).joinToString(".")]
+    if (fetch != null && fetch is Join<*, *>) {
+      return fetch.get<FieldType>(splited.last())
     }
     var joinPath = splited[0]
     var currentJoin = enhancedSearch.joinMap.getOrPut(joinPath) {

@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import zygarde.codegen.ZygardeKaptOptions
-import java.io.File
 import java.nio.file.Files
 
 class ZygardeApiPropProcessorTest {

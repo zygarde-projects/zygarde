@@ -139,6 +139,7 @@ class EnhancedSearchTest {
   @Test
   fun `should able to search book by authorGroup name`() {
     bookDao.search {
+      field<Author>("author").field<AuthorGroup>("authorGroup").join()
       field(SearchableImpl<Book, Author>("author"))
         .field(SearchableImpl<Author, AuthorGroup>("authorGroup"))
         .field(SearchableImpl<AuthorGroup, String>("name")) eq "comic"
@@ -147,9 +148,13 @@ class EnhancedSearchTest {
         .field(SearchableImpl<AuthorGroup, String>("name")) contains "com"
     }.size shouldBe 500
     bookDao.search {
-      field<Author>("author")
-        .field<AuthorGroup>("authorGroup")
+      field<Author>("author").field<AuthorGroup>("authorGroup").join()
+      field<Author>("author").field<AuthorGroup>("authorGroup")
         .field<String>("name") eq "comic"
+    }.size shouldBe 500
+
+    bookDao.search {
+      field<Author>("author").field<AuthorGroup>("authorGroup").field<String>("name") eq "comic"
     }.size shouldBe 500
   }
 

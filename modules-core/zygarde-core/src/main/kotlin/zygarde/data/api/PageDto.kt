@@ -11,7 +11,7 @@ open class PageDto<T>(
 ) {
   companion object {
     fun <T> empty(): PageDto<T> {
-      return PageDto(0,0, emptyList(),0)
+      return PageDto(0, 0, emptyList(), 0)
     }
   }
 }
