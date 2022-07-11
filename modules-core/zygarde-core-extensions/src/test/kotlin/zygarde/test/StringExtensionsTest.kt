@@ -1,7 +1,10 @@
 package zygarde.test
 
 import io.kotest.matchers.shouldBe
+import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.Test
+import org.springframework.core.io.ClassPathResource
+import zygarde.core.extension.string.StringSqlExtensions.shortenSelectSql
 import zygarde.core.extension.string.isNumeric
 import zygarde.core.extension.string.replaceByArgs
 
@@ -23,5 +26,13 @@ class StringExtensionsTest {
     "-0223".isNumeric() shouldBe true
     "5.8".isNumeric() shouldBe true
     "a".isNumeric() shouldBe false
+  }
+
+  @Test
+  fun `should able to shorten select sql`() {
+    val raw = ClassPathResource("data/sql/complex_query_oracle.sql").inputStream.use { IOUtils.toString(it, "UTF-8") }
+    val shorten = ClassPathResource("data/sql/complex_query_oracle_shorten.sql").inputStream.use { IOUtils.toString(it, "UTF-8") }
+      .replace("\\n|\\r\\n".toRegex(), "")
+    raw.shortenSelectSql() shouldBe shorten
   }
 }
