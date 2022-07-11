@@ -61,6 +61,7 @@ class ApiExceptionHandler : Loggable {
 
   @ExceptionHandler(BusinessException::class)
   fun handleBusinessException(e: BusinessException, req: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
+    ApiTracingContext.getTracingData().exception = e
     logBusinessException(e)
     val code = e.code
     val res = ApiErrorResponse(
@@ -75,6 +76,7 @@ class ApiExceptionHandler : Loggable {
 
   @ExceptionHandler(Throwable::class)
   fun handleThrowable(t: Throwable, req: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
+    ApiTracingContext.getTracingData().exception = t
     val cause = t.cause
     return if (cause != null) {
       handleThrowableInternal(cause, req) { handleThrowable(it, req) }
