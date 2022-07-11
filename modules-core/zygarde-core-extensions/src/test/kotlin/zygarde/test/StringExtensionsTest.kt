@@ -29,9 +29,17 @@ class StringExtensionsTest {
   }
 
   @Test
-  fun `should able to shorten select sql`() {
+  fun `should able to shorten complex select sql`() {
     val raw = ClassPathResource("data/sql/complex_query_oracle.sql").inputStream.use { IOUtils.toString(it, "UTF-8") }
     val shorten = ClassPathResource("data/sql/complex_query_oracle_shorten.sql").inputStream.use { IOUtils.toString(it, "UTF-8") }
+      .replace("\\n|\\r\\n".toRegex(), "")
+    raw.shortenSelectSql() shouldBe shorten
+  }
+
+  @Test
+  fun `should able to shorten select count sql`() {
+    val raw = ClassPathResource("data/sql/count_query.sql").inputStream.use { IOUtils.toString(it, "UTF-8") }
+    val shorten = ClassPathResource("data/sql/count_query_shorten.sql").inputStream.use { IOUtils.toString(it, "UTF-8") }
       .replace("\\n|\\r\\n".toRegex(), "")
     raw.shortenSelectSql() shouldBe shorten
   }

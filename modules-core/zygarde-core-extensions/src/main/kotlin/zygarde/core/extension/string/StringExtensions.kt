@@ -1,6 +1,5 @@
 package zygarde.core.extension.string
 
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 
 private val PATTERN_NUMERIC: Pattern = Pattern.compile("-?\\d+(\\.\\d+)?")
