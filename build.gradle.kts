@@ -97,6 +97,7 @@ subprojects {
   dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.kotest:kotest-assertions-shared-jvm:4.6.3")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.6.3")
     testImplementation("io.mockk:mockk:1.12.0")
