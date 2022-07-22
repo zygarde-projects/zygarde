@@ -37,7 +37,7 @@ class WebMvcApiGeneratorTest {
               serviceName = "TodoService",
               serviceFunctionName = "createTodo",
               postProcessing = true,
-              postProcessingExtraParameters = mapOf(),
+              postProcessingParamType = String::class.asTypeName(),
               authenticationDetailName = "auth",
               authenticationDetailType = String::class.asTypeName()
             )
@@ -46,11 +46,14 @@ class WebMvcApiGeneratorTest {
         )
       )
     )
-    generator.generateApis().also {
+    val generateApis = generator.generateApis()
+    generateApis.also {
       it.apiInterfaces.size shouldBe 1
       it.feignApiInterfaces.size shouldBe 1
       it.controllers.size shouldBe 1
       it.serviceInterfaces.size shouldBe 1
+
+      // it.controllers.forEach { it.writeTo(System.out) }
     }
   }
 }

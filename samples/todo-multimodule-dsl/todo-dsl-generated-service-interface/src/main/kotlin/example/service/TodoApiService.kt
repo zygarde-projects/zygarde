@@ -1,6 +1,8 @@
 package example.service
 
+import java.util.function.Consumer
 import kotlin.Int
+import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Collection
 import zygarde.codegen.`data`.dto.CreateTodoReq
@@ -12,7 +14,13 @@ public interface TodoApiService {
 
   public fun getTodo(todoId: Int): TodoDto
 
-  public fun createTodo(req: CreateTodoReq): TodoDto
+  public fun createTodo(req: CreateTodoReq, postProcessingParamConsumer: Consumer<String>): TodoDto
+
+  public fun createTodoPostProcessing(
+    req: CreateTodoReq,
+    result: TodoDto,
+    extraParam: String
+  ): Unit
 
   public fun updateTodo(todoId: Int, req: UpdateTodoReq): TodoDto
 

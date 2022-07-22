@@ -7,7 +7,10 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cloud.openfeign.FeignClient
@@ -24,6 +27,7 @@ import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.model.ApiToGenerateVo
 import zygarde.codegen.model.WebApiGenerateResult
 import java.util.LinkedList
+import java.util.function.Consumer
 import javax.validation.Valid
 
 class WebMvcApiGenerator(
@@ -33,8 +37,8 @@ class WebMvcApiGenerator(
   private val apiInterfaceBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
   private val feignApiInterfaceFileSpecBuilderMap = mutableMapOf<String, FileSpec.Builder>()
   private val feignApiInterfaceBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
-  private val webMcvControllerFileSpecBuilderMap = mutableMapOf<String, FileSpec.Builder>()
-  private val webMcvControllerBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
+  private val webMvcControllerFileSpecBuilderMap = mutableMapOf<String, FileSpec.Builder>()
+  private val webMvcControllerBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
   private val serviceInterfaceFileSpecBuilderMap = mutableMapOf<String, FileSpec.Builder>()
   private val serviceInterfaceBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
 
@@ -49,8 +53,8 @@ class WebMvcApiGenerator(
     feignApiInterfaceFileSpecBuilderMap.forEach { (apiName, fileSpecBuilder) ->
       feignApiInterfaceBuilderMap[apiName]?.build()?.let(fileSpecBuilder::addType)
     }
-    webMcvControllerFileSpecBuilderMap.forEach { (apiName, fileSpecBuilder) ->
-      webMcvControllerBuilderMap[apiName]?.build()?.let(fileSpecBuilder::addType)
+    webMvcControllerFileSpecBuilderMap.forEach { (apiName, fileSpecBuilder) ->
+      webMvcControllerBuilderMap[apiName]?.build()?.let(fileSpecBuilder::addType)
     }
     serviceInterfaceFileSpecBuilderMap.forEach { (serviceName, fileSpecBuilder) ->
       serviceInterfaceBuilderMap[serviceName]?.build()?.let(fileSpecBuilder::addType)
@@ -58,7 +62,7 @@ class WebMvcApiGenerator(
     return WebApiGenerateResult(
       apiInterfaces = apiInterfaceFileSpecBuilderMap.values.map { it.build() },
       feignApiInterfaces = feignApiInterfaceFileSpecBuilderMap.values.map { it.build() },
-      controllers = webMcvControllerFileSpecBuilderMap.values.map { it.build() },
+      controllers = webMvcControllerFileSpecBuilderMap.values.map { it.build() },
       serviceInterfaces = serviceInterfaceFileSpecBuilderMap.values.map { it.build() },
     )
   }
@@ -102,10 +106,10 @@ class WebMvcApiGenerator(
     }
 
     val apiImplName = "${apiName}Controller"
-    webMcvControllerFileSpecBuilderMap.getOrPut(apiImplName) {
+    webMvcControllerFileSpecBuilderMap.getOrPut(apiImplName) {
       FileSpec.builder(controllerPackage, apiImplName)
     }
-    val webMvcControllerBuilder = webMcvControllerBuilderMap.getOrPut(apiImplName) {
+    val webMvcControllerBuilder = webMvcControllerBuilderMap.getOrPut(apiImplName) {
       TypeSpec.classBuilder(apiImplName)
         .addAnnotation(RestController::class)
         .addSuperinterface(ClassName(apiPackage, apiName))
@@ -187,6 +191,7 @@ class WebMvcApiGenerator(
       val serviceFuncBuilder = FunSpec.builder(serviceFunctionName)
         .addModifiers(KModifier.ABSTRACT)
 
+      val argsToCallServiceInterface = mutableListOf<Any>()
       val paramsToCallServiceInterface = mutableListOf<String>()
 
       func.pathVariables.forEach { (pathVariableName, pathVariableType) ->
@@ -274,6 +279,15 @@ class WebMvcApiGenerator(
           serviceFuncBuilder.returns(resType)
         }
 
+      val serviceFunctionThreadLocalName = serviceFunctionName + "ThreadLocal"
+      val postProcessingParamType = func.postProcessingParamType?.also { postProcessingParamType ->
+        webMvcControllerBuilder.addProperty(
+          PropertySpec.builder(serviceFunctionThreadLocalName, ThreadLocal::class.asTypeName().parameterizedBy(postProcessingParamType))
+            .initializer("ThreadLocal()")
+            .build()
+        )
+      }
+
       func.authenticationDetailType?.let { authenticationDetailType ->
         serviceFuncBuilder.addParameter(func.authenticationDetailName, authenticationDetailType)
         servicePostProcessingFuncBuilder?.addParameter(func.authenticationDetailName, authenticationDetailType)
@@ -284,6 +298,18 @@ class WebMvcApiGenerator(
           MemberName("zygarde.security.extension.SpringSecurityExtensions", "currentAuthenticationDetail"),
           authenticationDetailType,
         )
+      }
+
+      if (postProcessingParamType != null) {
+        serviceFuncBuilder.addParameter(
+          ParameterSpec.builder(
+            "postProcessingParamConsumer",
+            Consumer::class.asTypeName().parameterizedBy(postProcessingParamType)
+          )
+            .build()
+        )
+
+        paramsToCallServiceInterface.add("{ $serviceFunctionThreadLocalName.set(it) }")
       }
 
       webMvcFuncBuilder.addStatement(
@@ -298,20 +324,32 @@ class WebMvcApiGenerator(
       }
       webMvcFuncBuilder.addStatement(
         "${resultDeclare}service.$serviceFunctionName(${paramsToCallServiceInterface.joinToString(",")})",
+        *argsToCallServiceInterface.toTypedArray()
       )
 
       if (servicePostProcessingFuncBuilder != null) {
+        if (postProcessingParamType != null) {
+          paramsToCallServiceInterface.removeLast()
+        }
+
         val paramsToCallServicePostProcessing = LinkedList(paramsToCallServiceInterface)
         if (resType != null) {
           paramsToCallServicePostProcessing.add("result")
+          servicePostProcessingFuncBuilder.addParameter("result", resType)
         }
+
+        if (postProcessingParamType != null) {
+          webMvcFuncBuilder.addStatement("val extraParam = $serviceFunctionThreadLocalName.get()")
+          paramsToCallServicePostProcessing.add("extraParam")
+          servicePostProcessingFuncBuilder.addParameter("extraParam", postProcessingParamType)
+        }
+
         webMvcFuncBuilder.addStatement(
-          "service.${serviceFunctionName}PostProcessing(${paramsToCallServicePostProcessing.joinToString(",")})"
+          "service.${serviceFunctionName}PostProcessing(${paramsToCallServicePostProcessing.joinToString(",")})",
         )
       }
 
       if (resType != null) {
-        servicePostProcessingFuncBuilder?.addParameter("result", resType)
         webMvcFuncBuilder.addStatement("return result")
       }
 

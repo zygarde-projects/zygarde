@@ -17,7 +17,7 @@ data class ApiFunctionToGenerateVo(
   var serviceName: String? = null,
   var serviceFunctionName: String? = null,
   var postProcessing: Boolean = false,
-  var postProcessingExtraParameters: Map<String, TypeName> = emptyMap(),
+  var postProcessingParamType: TypeName? = null,
   var authenticationDetailName: String = "auth",
   var authenticationDetailType: TypeName? = null,
 )

@@ -24,6 +24,7 @@ class TodoApiCodegen : WebMvcDslCodegen() {
       post("createTodo", "") {
         req<CreateTodoReq>()
         res<TodoDto>()
+        servicePostProcessing<String>()
       }
       put("updateTodo", "{todoId}") {
         todoIdPathVariable()

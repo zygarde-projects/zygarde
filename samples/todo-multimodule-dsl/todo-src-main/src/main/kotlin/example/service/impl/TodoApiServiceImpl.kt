@@ -10,6 +10,7 @@ import zygarde.codegen.data.dto.TodoDto
 import zygarde.codegen.data.dto.UpdateTodoReq
 import zygarde.codegen.model.extensions.TodoApplyValueExtensions.applyFrom
 import zygarde.codegen.model.extensions.TodoToDtoExtensions.toTodoDto
+import java.util.function.Consumer
 
 @Service
 class TodoApiServiceImpl(
@@ -23,8 +24,12 @@ class TodoApiServiceImpl(
     return todoDao.getById(todoId).toTodoDto()
   }
 
-  override fun createTodo(req: CreateTodoReq): TodoDto {
-    return Todo().applyFrom(req).let(todoDao::saveAndFlush).toTodoDto()
+  override fun createTodo(req: CreateTodoReq, postProcessingParamConsumer: Consumer<String>): TodoDto {
+    return Todo().applyFrom(req).let(todoDao::saveAndFlush).toTodoDto().also { postProcessingParamConsumer.accept("created") }
+  }
+
+  override fun createTodoPostProcessing(req: CreateTodoReq, result: TodoDto, extraParam: String) {
+    println(extraParam)
   }
 
   override fun updateTodo(todoId: Int, req: UpdateTodoReq): TodoDto {

@@ -22,6 +22,7 @@ class DslApiFunction(
   var responseType: TypeName? = null
   var responseTypeGenericArguments: List<TypeName> = emptyList()
   var servicePostProcessing: Boolean = false
+  var servicePostProcessingExtraParamType: TypeName? = null
   var authenticationDetailName: String = "auth"
   var authenticationDetailType: TypeName? = null
 
@@ -69,6 +70,11 @@ class DslApiFunction(
     authenticationDetailType = T::class.asTypeName()
   }
 
+  inline fun <reified T : Any> servicePostProcessing() {
+    servicePostProcessing = true
+    servicePostProcessingExtraParamType = T::class.asTypeName()
+  }
+
   fun toApiFunctionToGenerate(): ApiFunctionToGenerateVo {
     return ApiFunctionToGenerateVo(
       method = method,
@@ -83,8 +89,8 @@ class DslApiFunction(
       responseTypeGenericArguments = responseTypeGenericArguments,
       serviceName = serviceName,
       serviceFunctionName = serviceFunctionName ?: functionName,
-      postProcessing = servicePostProcessing,
-      postProcessingExtraParameters = emptyMap(), // TODO not supported yet
+      postProcessing = servicePostProcessingExtraParamType != null || servicePostProcessing,
+      postProcessingParamType = servicePostProcessingExtraParamType,
       authenticationDetailName = authenticationDetailName,
       authenticationDetailType = authenticationDetailType
     )

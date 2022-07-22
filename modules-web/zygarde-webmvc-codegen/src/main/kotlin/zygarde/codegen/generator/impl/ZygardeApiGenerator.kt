@@ -59,6 +59,10 @@ class ZygardeApiGenerator(
             .kotlin(false)
             .takeIf { it.toString() != "java.lang.Object" }
 
+          val servicePostProcessingParamType = safeGetTypeFromAnnotation { genApi.servicePostProcessingParam.asTypeName() }
+            .kotlin(false)
+            .takeIf { it.toString() != "java.lang.Object" }
+
           val apiFunctionVo = ApiFunctionToGenerateVo(
             method = genApi.method,
             functionName = apiOperation,
@@ -83,7 +87,7 @@ class ZygardeApiGenerator(
             serviceName = serviceName,
             serviceFunctionName = serviceMethod,
             postProcessing = genApi.servicePostProcessing,
-            postProcessingExtraParameters = emptyMap(),
+            postProcessingParamType = servicePostProcessingParamType,
             authenticationDetailName = "authenticationDetail",
             authenticationDetailType = authenticationDetailType
           )
