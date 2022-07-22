@@ -12,7 +12,9 @@ import javax.annotation.processing.SupportedOptions
 import javax.annotation.processing.SupportedSourceVersion
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
+import javax.persistence.Embeddable
 import javax.persistence.Entity
+import javax.persistence.MappedSuperclass
 
 @AutoService(Processor::class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -32,9 +34,15 @@ class ZygardeJpaProcessor : AbstractProcessor() {
 
   override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
     val elementsAnnotatedWithEntity = roundEnv.getElementsAnnotatedWith(Entity::class.java)
+    val elementsAnnotatedWithEmbeddable = roundEnv.getElementsAnnotatedWith(Embeddable::class.java)
+    val elementsAnnotatedWithMappedSuperclass = roundEnv.getElementsAnnotatedWith(MappedSuperclass::class.java)
     val elementsAnnotatedWithZyModel = roundEnv.getElementsAnnotatedWith(ZyModel::class.java)
     ZygardeEntityFieldGenerator(processingEnv).generateSearchFieldForEntityElements(
-      elementsAnnotatedWithZyModel
+      elementsAnnotatedWithZyModel.filter {
+        elementsAnnotatedWithEntity.contains(it) ||
+          elementsAnnotatedWithEmbeddable.contains(it) ||
+          elementsAnnotatedWithMappedSuperclass.contains(it)
+      }
     )
     ZygardeJpaDaoGenerator(processingEnv).generateDaoForEntityElements(
       elementsAnnotatedWithZyModel.filter { elementsAnnotatedWithEntity.contains(it) }
