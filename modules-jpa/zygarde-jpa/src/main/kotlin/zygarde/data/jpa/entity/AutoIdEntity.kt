@@ -1,15 +1,15 @@
 package zygarde.data.jpa.entity
 
+import org.hibernate.Hibernate
 import java.io.Serializable
 import java.util.Objects
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.MappedSuperclass
-import org.hibernate.Hibernate
 
 @MappedSuperclass
-abstract class AutoIdEntity<T : Serializable> {
+abstract class AutoIdEntity<T : Serializable> : Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   open val id: T? = null

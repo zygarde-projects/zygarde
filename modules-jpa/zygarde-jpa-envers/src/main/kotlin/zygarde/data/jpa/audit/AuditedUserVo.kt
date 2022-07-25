@@ -1,5 +1,7 @@
 package zygarde.data.jpa.audit
 
-interface AuditedUserVo {
+import java.io.Serializable
+
+interface AuditedUserVo: Serializable {
   fun auditInfo(): String
 }
