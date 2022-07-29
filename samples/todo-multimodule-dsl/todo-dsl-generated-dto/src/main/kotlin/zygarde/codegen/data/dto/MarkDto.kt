@@ -9,33 +9,33 @@ import kotlin.collections.Collection
 @Schema
 public data class MarkDto(
   @Schema(
-    description="",
-    required=true
+    description = "",
+    required = true
   )
   public val id: Int,
   @Schema(
-    description="x",
-    required=true
+    description = "x",
+    required = true
   )
   public val x: Int,
   @Schema(
-    description="y",
-    required=true
+    description = "y",
+    required = true
   )
   public val y: Int,
   @Schema(
-    description="",
-    required=true
+    description = "",
+    required = true
   )
   public val comments: Collection<String>,
   @Schema(
-    description="extra string",
-    required=true
+    description = "extra string",
+    required = true
   )
   public val extraStr: String,
   @Schema(
-    description="",
-    required=true
+    description = "",
+    required = true
   )
   public val todo: TodoDto
 ) : Serializable

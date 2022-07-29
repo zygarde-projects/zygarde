@@ -27,9 +27,11 @@ import zygarde.data.jpa.entity.getId
 import zygarde.data.jpa.search.action.dateRange
 import zygarde.data.jpa.search.action.dateTimeRange
 import zygarde.data.jpa.search.action.impl.SearchableImpl
+import zygarde.data.jpa.search.action.numRange
 import zygarde.data.jpa.search.crossJoin
 import zygarde.data.search.SearchDateRange
 import zygarde.data.search.SearchDateTimeRange
+import zygarde.data.search.SearchIntRange
 import zygarde.data.search.SearchKeyword
 import zygarde.data.search.SearchKeywordType
 import zygarde.test.dao.TestAuthorDao
@@ -369,6 +371,14 @@ class EnhancedSearchTest {
     bookDao.selectOne(SearchableImpl<Book, String>("name")) {
       field(SearchableImpl<Book, String>("name")) eq "zygarde"
     } shouldBe "zygarde"
+  }
+
+  @Order(2000)
+  @Test
+  fun `search by int range`() {
+    bookDao.search {
+      comparableField<Int>("price") numRange SearchIntRange(100, 500)
+    }.size shouldBeGreaterThan 0
   }
 
   @Order(9000)

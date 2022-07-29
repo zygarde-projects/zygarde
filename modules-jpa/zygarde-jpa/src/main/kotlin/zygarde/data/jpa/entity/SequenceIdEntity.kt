@@ -12,7 +12,7 @@ import javax.persistence.Id
 import javax.persistence.MappedSuperclass
 
 @MappedSuperclass
-abstract class SequenceIdEntity<T : Serializable>: Serializable {
+abstract class SequenceIdEntity<T : Serializable> : Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
   @GenericGenerator(

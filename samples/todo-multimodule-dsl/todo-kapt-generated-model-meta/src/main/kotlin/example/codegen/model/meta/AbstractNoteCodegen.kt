@@ -13,13 +13,13 @@ public abstract class AbstractNoteCodegen : ClassBasedModelMappingDslCodegen<Not
 
   protected val id: ModelMetaField<Note, Int> = NoteModelFields.id
 
-  public val allFields: Array<ModelMetaField<Note, *>> = arrayOf(title,id)
+  public val allFields: Array<ModelMetaField<Note, *>> = arrayOf(title, id)
 
-  public fun title(dsl: ModelMetaField<Note, String>.() -> Unit): Unit {
+  public fun title(dsl: ModelMetaField<Note, String>.() -> Unit) {
     dsl.invoke(title)
   }
 
-  public fun id(dsl: ModelMetaField<Note, Int>.() -> Unit): Unit {
+  public fun id(dsl: ModelMetaField<Note, Int>.() -> Unit) {
     dsl.invoke(id)
   }
 }
