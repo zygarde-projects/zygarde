@@ -3,15 +3,17 @@ package zygarde.poi.xls.ext
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 object PoiCellExt {
 
   fun Cell.getString(
     scaleWhenNumeric: Int = 0,
+    scaleRoundingWhenNumeric: RoundingMode = RoundingMode.HALF_UP,
   ): String? {
     return when (cellType) {
       CellType.STRING -> stringCellValue
-      CellType.NUMERIC -> numericCellValue.toBigDecimal().setScale(scaleWhenNumeric).toPlainString()
+      CellType.NUMERIC -> numericCellValue.toBigDecimal().setScale(scaleWhenNumeric, scaleRoundingWhenNumeric).toPlainString()
       else -> null
     }
   }
