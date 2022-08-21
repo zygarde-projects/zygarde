@@ -24,7 +24,12 @@ fun apiErrCodeMatches(errorCode: ErrorCode, block: () -> Unit) {
   }
 }
 
-fun httpStatusMatches(httpStatus: HttpStatus, block: () -> Unit) {
+inline fun httpStatusMatches(httpStatus: HttpStatus, block: () -> Unit) {
+  httpStatusMatches<Unit>(httpStatus, block)
+}
+
+@JvmName("httpStatusMatchesWithReturn")
+inline fun <reified ERR_RES> httpStatusMatches(httpStatus: HttpStatus, block: () -> Unit): ERR_RES {
   val feignException = shouldThrow<FeignException> { block() }
   try {
     val responseBody = feignException.contentUTF8()
@@ -35,6 +40,10 @@ fun httpStatusMatches(httpStatus: HttpStatus, block: () -> Unit) {
         |$responseBody""".trimMargin()
       )
     }
+    if (ERR_RES::class == Unit::class) {
+      return Unit as ERR_RES
+    }
+    return responseBody.jsonStringToObject()
   } catch (e: Exception) {
     throw failure("Error handling feignException, status=${feignException.status()}", e)
   }
