@@ -7,10 +7,12 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeVariableName
+import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
@@ -170,6 +172,16 @@ $callDtoStatements
               }
               if (fieldType.isNullable) {
                 it.defaultValue("null")
+              } else {
+                if (fieldType is ParameterizedTypeName) {
+                  if (fieldType.rawType == Collection::class.asClassName()) {
+                    it.defaultValue("%M()", MemberName("kotlin.collections", "emptyList"))
+                  } else if (fieldType.rawType == List::class.asClassName()) {
+                    it.defaultValue("%M()", MemberName("kotlin.collections", "emptyList"))
+                  } else if (fieldType.rawType == Set::class.asClassName()) {
+                    it.defaultValue("%M()", MemberName("kotlin.collections", "emptySet"))
+                  }
+                }
               }
             }
             .build()

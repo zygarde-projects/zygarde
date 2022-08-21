@@ -7,18 +7,18 @@ import kotlin.Int
 @Schema
 public data class SaveMarkReq(
   @Schema(
-    description = "x",
-    required = true
+    description="x",
+    required=true
   )
   public val x: Int,
   @Schema(
-    description = "y",
-    required = true
+    description="y",
+    required=true
   )
   public val y: Int,
   @Schema(
-    description = "",
-    required = true
+    description="",
+    required=true
   )
   public val todo: TodoDto
 ) : Serializable

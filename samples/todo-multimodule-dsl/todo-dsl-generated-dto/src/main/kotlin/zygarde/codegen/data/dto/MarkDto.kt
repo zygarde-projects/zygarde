@@ -5,37 +5,38 @@ import java.io.Serializable
 import kotlin.Int
 import kotlin.String
 import kotlin.collections.Collection
+import kotlin.collections.emptyList
 
 @Schema
 public data class MarkDto(
   @Schema(
-    description = "",
-    required = true
+    description="",
+    required=true
   )
   public val id: Int,
   @Schema(
-    description = "x",
-    required = true
+    description="x",
+    required=true
   )
   public val x: Int,
   @Schema(
-    description = "y",
-    required = true
+    description="y",
+    required=true
   )
   public val y: Int,
   @Schema(
-    description = "",
-    required = true
+    description="",
+    required=true
   )
-  public val comments: Collection<String>,
+  public val comments: Collection<String> = emptyList(),
   @Schema(
-    description = "extra string",
-    required = true
+    description="extra string",
+    required=true
   )
   public val extraStr: String,
   @Schema(
-    description = "",
-    required = true
+    description="",
+    required=true
   )
   public val todo: TodoDto
 ) : Serializable

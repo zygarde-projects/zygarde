@@ -9,18 +9,18 @@ import zygarde.codegen.dsl.ClassBasedModelMappingDslCodegen
 import zygarde.codegen.meta.ModelMetaField
 
 public abstract class AbstractAbstractNoteCodegen :
-  ClassBasedModelMappingDslCodegen<AbstractNote>(AbstractNote::class) {
+    ClassBasedModelMappingDslCodegen<AbstractNote>(AbstractNote::class) {
   protected val title: ModelMetaField<AbstractNote, String> = AbstractNoteModelFields.title
 
   protected val id: ModelMetaField<AbstractNote, Int> = AbstractNoteModelFields.id
 
-  public val allFields: Array<ModelMetaField<AbstractNote, *>> = arrayOf(title, id)
+  public val allFields: Array<ModelMetaField<AbstractNote, *>> = arrayOf(title,id)
 
-  public fun title(dsl: ModelMetaField<AbstractNote, String>.() -> Unit) {
+  public fun title(dsl: ModelMetaField<AbstractNote, String>.() -> Unit): Unit {
     dsl.invoke(title)
   }
 
-  public fun id(dsl: ModelMetaField<AbstractNote, Int>.() -> Unit) {
+  public fun id(dsl: ModelMetaField<AbstractNote, Int>.() -> Unit): Unit {
     dsl.invoke(id)
   }
 }
