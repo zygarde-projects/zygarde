@@ -21,4 +21,3 @@ if (System.getenv("JITPACK") != "true") {
   registerModules("samples")
   registerModules("samples/todo-multimodule-dsl")
 }
-

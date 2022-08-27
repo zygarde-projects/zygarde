@@ -149,14 +149,14 @@ subprojects {
   }
 
   if (isPublishingProject()) {
-    val dokkaJavadoc by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+    // val dokkaJavadoc by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
 
-    val dokkaJar by tasks.creating(Jar::class) {
-      group = JavaBasePlugin.DOCUMENTATION_GROUP
-      description = "Assembles Kotlin docs with Dokka"
-      archiveClassifier.set("javadoc")
-      from(dokkaJavadoc.outputDirectory)
-    }
+    // val dokkaJar by tasks.creating(Jar::class) {
+    //   group = JavaBasePlugin.DOCUMENTATION_GROUP
+    //   description = "Assembles Kotlin docs with Dokka"
+    //   archiveClassifier.set("javadoc")
+    //   from(dokkaJavadoc.outputDirectory)
+    // }
 
     val sourceJar by tasks.creating(Jar::class) {
       group = JavaBasePlugin.DOCUMENTATION_GROUP
@@ -176,7 +176,7 @@ subprojects {
         create<MavenPublication>("default") {
           from(components["java"])
           artifact(sourceJar)
-          artifact(dokkaJar)
+          // artifact(dokkaJar)
 
           // XXX merge dependencyMangement in generated pom.xml
           // https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/257
