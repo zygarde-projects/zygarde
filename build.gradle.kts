@@ -148,6 +148,10 @@ subprojects {
     }
   }
 
+  tasks.jar {
+    archiveClassifier.set("")
+  }
+
   if (isPublishingProject()) {
     // val dokkaJavadoc by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
 
@@ -247,6 +251,7 @@ task("lintc") {
 tasks.getByName("publish").enabled = false
 tasks.getByName("printCoverage").enabled = false
 tasks.getByName("bootJar").enabled = false
+tasks.getByName("jar").enabled = false
 
 task("collectJacocoSourcePath", Exec::class) {
   val paths = subProjectsForJacoco
