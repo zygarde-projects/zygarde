@@ -53,6 +53,14 @@ subprojects {
             password = System.getenv("PUNI_NEXUS_DEPLOY_PWD")
           }
         }
+        maven {
+          name = "Github"
+          url = uri("https://maven.pkg.github.com/zygarde-projects/zygarde")
+          credentials {
+            username = System.getenv("ZYGARDE_GH_USER") ?: System.getenv("GITHUB_ACTOR")
+            password = System.getenv("ZYGARDE_GH_TOKEN") ?: System.getenv("GITHUB_TOKEN")
+          }
+        }
       }
     }
   }

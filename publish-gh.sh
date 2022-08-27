@@ -5,5 +5,5 @@ VERSION=${RELEASE_VERSION:-"$BUILD_TIME"}
 echo "VERSION=$VERSION"
 
 ./gradlew clean \
-  publishAllPublicationsToNexusRepository \
+  publishAllPublicationsToGithubRepository \
   -Pversion="$VERSION"

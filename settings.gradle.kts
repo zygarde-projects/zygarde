@@ -17,5 +17,8 @@ registerModules("modules-codegen-support")
 registerModules("modules-test-support")
 registerModules("modules-bom")
 
-registerModules("samples")
-registerModules("samples/todo-multimodule-dsl")
+if (System.getenv("JITPACK") != "true") {
+  registerModules("samples")
+  registerModules("samples/todo-multimodule-dsl")
+}
+
