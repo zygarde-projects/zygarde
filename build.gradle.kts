@@ -25,8 +25,6 @@ fun Project.isBomProject() = this.name.startsWith("zygarde-bom")
 fun Project.isPublishingProject() = this.name.startsWith("zygarde")
 
 allprojects {
-  group = "zygarde"
-
   if (!isBomProject()) {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
   }
