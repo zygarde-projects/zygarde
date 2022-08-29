@@ -1,11 +1,11 @@
 name: release
 
 on:
-  push:
-    branches:
-      - release
-#  release:
-#    types: [published]
+#  push:
+#    branches:
+#      - release
+  release:
+    types: [published]
 
 jobs:
   build:

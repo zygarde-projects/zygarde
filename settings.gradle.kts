@@ -17,7 +17,7 @@ registerModules("modules-codegen-support")
 registerModules("modules-test-support")
 registerModules("modules-bom")
 
-if (System.getenv("JITPACK") != "true") {
+if (System.getenv("JITPACK") != "true" && System.getenv("GITHUB_ACTIONS") != "true") {
   registerModules("samples")
   registerModules("samples/todo-multimodule-dsl")
 }
