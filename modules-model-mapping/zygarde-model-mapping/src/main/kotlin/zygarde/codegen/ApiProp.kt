@@ -1,6 +1,6 @@
 package zygarde.codegen
 
-@Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.SOURCE)
 annotation class ApiProp(
   val comment: String = "",
