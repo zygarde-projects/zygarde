@@ -127,7 +127,7 @@ class ZygardeApiPropGenerator(
                     refNullable = dto.refNullable,
                     refClass = refClass,
                     refCollection = dto.refCollection,
-                    dtoName = dto.name,
+                    dtoName = dtoName,
                     dtoFieldName = dto.fieldName,
                     comment = apiProp.comment,
                     valueProvider = valueProvider,
