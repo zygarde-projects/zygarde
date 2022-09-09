@@ -15,11 +15,12 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cloud.openfeign.FeignClient
-import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import zygarde.codegen.StaticOptionApi
 import zygarde.codegen.ZygardeKaptOptions.Companion.API_STATIC_OPTION_PACKAGE
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
 import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.option.OptionDto
@@ -42,14 +43,18 @@ class ZygardeStaticOptionApiGenerator(
   private val optionControllerPackage = "$optionPackage.impl"
   private val optionControllerName = "StaticOptionController"
 
+  private val optionDtoCollectionType = Collection::class.asClassName().parameterizedBy(OptionDto::class.asClassName())
+
   fun generateStaticOptionApi(elements: Collection<Element>) {
-    val filtered = elements.filter { it.isTypeOf<OptionEnum>() }
+    val filtered = elements
+      .filter { it.isTypeOf<OptionEnum>() }
+      .sortedBy { it.name() }
     if (filtered.isEmpty()) {
       return
     }
     generateStaticOptionDto(filtered)
-    generateStaticOptionApi()
-    generateStaticOptionController()
+    generateStaticOptionApiInterface(filtered)
+    generateStaticOptionController(filtered)
   }
 
   private fun generateStaticOptionDto(elements: Collection<Element>) {
@@ -60,9 +65,8 @@ class ZygardeStaticOptionApiGenerator(
     val constructorBuilder = FunSpec.constructorBuilder()
     elements.forEach { elem ->
       val staticOptionApi = elem.getAnnotation(StaticOptionApi::class.java)
-      val propType = Collection::class.asClassName().parameterizedBy(OptionDto::class.asClassName())
       ParameterSpec
-        .builder(elem.fieldName(), propType)
+        .builder(elem.fieldName(), optionDtoCollectionType)
         .defaultValue(
           CodeBlock.builder()
             .addStatement("%T.values().map{ it.toOptionDto() }", elem.asType().kotlinTypeName(false))
@@ -70,7 +74,7 @@ class ZygardeStaticOptionApiGenerator(
         )
         .build().also { constructorBuilder.addParameter(it) }
       PropertySpec
-        .builder(elem.fieldName(), propType)
+        .builder(elem.fieldName(), optionDtoCollectionType)
         .initializer(elem.fieldName())
         .addAnnotation(
           AnnotationSpec.builder(Schema::class)
@@ -86,8 +90,9 @@ class ZygardeStaticOptionApiGenerator(
       .writeTo(folderToGenerate())
   }
 
-  private fun generateStaticOptionApi() {
+  private fun generateStaticOptionApiInterface(elements: Collection<Element>) {
     val fileSpec = FileSpec.builder(optionPackage, optionApiName)
+    val springPropertyPath = """\${'$'}{zygarde.api.static-option-api.path}"""
     val staticOptionApiBuilder = TypeSpec.interfaceBuilder(optionApiName)
       .addAnnotation(
         AnnotationSpec.builder(FeignClient::class)
@@ -100,14 +105,12 @@ class ZygardeStaticOptionApiGenerator(
           .build()
       )
       .addFunction(
-        FunSpec.builder("getStaticOptions")
+        FunSpec.builder("getAllStaticOptions")
           .addModifiers(KModifier.ABSTRACT)
           .addAnnotation(
-            AnnotationSpec.builder(RequestMapping::class)
+            AnnotationSpec.builder(GetMapping::class)
               .addMember(
-                """value=["\_*zygarde.api.static-option-api.path}"]"""
-                  .replace("_", "$")
-                  .replace("*", "{")
+                """value=["$springPropertyPath"]"""
               )
               .build()
           )
@@ -121,28 +124,71 @@ class ZygardeStaticOptionApiGenerator(
           )
           .build()
       )
+
+    elements.forEach { elem ->
+      val staticOptionApi = elem.getAnnotation(StaticOptionApi::class.java)
+      staticOptionApiBuilder
+        .addFunction(
+          FunSpec.builder("get${elem.name()}")
+            .addModifiers(KModifier.ABSTRACT)
+            .addAnnotation(
+              AnnotationSpec.builder(GetMapping::class)
+                .addMember(
+                  """value=["$springPropertyPath/${elem.fieldName()}"]"""
+                )
+                .build()
+            )
+            .addAnnotation(
+              AnnotationSpec.builder(Operation::class)
+                .addMember("summary=%S", "Get ${staticOptionApi.comment}")
+                .build()
+            )
+            .returns(
+              optionDtoCollectionType
+            )
+            .build()
+        )
+    }
+
     fileSpec
       .addType(staticOptionApiBuilder.build())
       .build()
       .writeTo(folderToGenerate())
   }
 
-  private fun generateStaticOptionController() {
+  private fun generateStaticOptionController(elements: Collection<Element>) {
     val fileSpec = FileSpec.builder(optionControllerPackage, optionControllerName)
     val staticOptionControllerBuilder = TypeSpec.classBuilder(optionControllerName)
       .addSuperinterface(
         ClassName(optionPackage, optionApiName)
       )
       .addAnnotation(RestController::class)
+      .addProperty(
+        PropertySpec.builder("staticOptionDto", ClassName(optionDtoPackage, optionDtoName), KModifier.PRIVATE)
+          .initializer("%T()", ClassName(optionDtoPackage, optionDtoName))
+          .build()
+      )
       .addFunction(
-        FunSpec.builder("getStaticOptions")
+        FunSpec.builder("getAllStaticOptions")
           .addModifiers(KModifier.OVERRIDE)
           .returns(
             ClassName(optionDtoPackage, optionDtoName)
           )
-          .addStatement("return %T()", ClassName(optionDtoPackage, optionDtoName))
+          .addStatement("return staticOptionDto")
           .build()
       )
+
+    elements.forEach { elem ->
+      staticOptionControllerBuilder
+        .addFunction(
+          FunSpec.builder("get${elem.name()}")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(optionDtoCollectionType)
+            .addStatement("return staticOptionDto.${elem.fieldName()}")
+            .build()
+        )
+    }
+
     fileSpec
       .addType(staticOptionControllerBuilder.build())
       .build()
