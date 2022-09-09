@@ -10,7 +10,11 @@ annotation class Dto(
   /**
    * Name of DTO in this field
    */
-  val name: String,
+  val name: String = "",
+  /**
+   * Name of DTO in this field
+   */
+  val names: Array<String> = [],
   /**
    * override fieldName in DTO
    */

@@ -3,7 +3,11 @@ package codegen.entity
 import codegen.spec.AuthorApiSpec.Companion.DTO_AUTHOR
 import codegen.spec.AuthorApiSpec.Companion.DTO_AUTHOR_DETAIL
 import codegen.spec.BookApiSpec.Companion.DTO_BOOK
-import zygarde.codegen.*
+import zygarde.codegen.AdditionalDtoProp
+import zygarde.codegen.AdditionalDtoProps
+import zygarde.codegen.ApiProp
+import zygarde.codegen.Dto
+import zygarde.codegen.ZyModel
 import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.data.jpa.entity.AutoLongIdEntity
 import java.time.LocalDateTime
@@ -12,9 +16,8 @@ import javax.persistence.MappedSuperclass
 import javax.persistence.OneToMany
 import javax.persistence.Transient
 
-
 @MappedSuperclass
-abstract class FooEntity: AutoLongIdEntity() {
+abstract class FooEntity : AutoLongIdEntity() {
   var createdAt: LocalDateTime? = null
 }
 
@@ -38,7 +41,7 @@ enum class BookType {
 @ZyModel
 class Author(
   @ApiProp(
-    dto = [Dto(DTO_AUTHOR), Dto(DTO_AUTHOR_DETAIL)]
+    dto = [Dto(names = [DTO_AUTHOR, DTO_AUTHOR_DETAIL])]
   )
   var name: String = "",
   @ApiProp(

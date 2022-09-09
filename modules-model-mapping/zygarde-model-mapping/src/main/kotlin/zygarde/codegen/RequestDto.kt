@@ -8,6 +8,7 @@ import zygarde.codegen.value.ValueProvider
 @Retention(AnnotationRetention.SOURCE)
 annotation class RequestDto(
   val name: String = "",
+  val names: Array<String> = [],
   /**
    * override fieldName in DTO
    */

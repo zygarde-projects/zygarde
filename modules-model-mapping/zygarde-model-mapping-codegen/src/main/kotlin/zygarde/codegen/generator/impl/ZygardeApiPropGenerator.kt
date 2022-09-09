@@ -1,24 +1,35 @@
 package zygarde.codegen.generator.impl
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.Schema
-import java.io.Serializable
-import javax.annotation.processing.ProcessingEnvironment
-import javax.lang.model.element.Element
 import zygarde.codegen.AdditionalDtoProps
 import zygarde.codegen.ApiProp
 import zygarde.codegen.DtoInherits
 import zygarde.codegen.SearchType
 import zygarde.codegen.ZygardeKaptOptions
-import zygarde.codegen.value.NoOpValueProvider
-import zygarde.codegen.extension.kotlinpoet.*
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.isNullable
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.nullableTypeName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
+import zygarde.codegen.extension.kotlinpoet.generic
+import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
+import zygarde.codegen.value.NoOpValueProvider
 import zygarde.data.jpa.search.EnhancedSearch
+import java.io.Serializable
+import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.Element
 import javax.persistence.Transient
 
 class ZygardeApiPropGenerator(
@@ -83,44 +94,53 @@ class ZygardeApiPropGenerator(
         elem.getAnnotationsByType(ApiProp::class.java)
           .flatMap { apiProp ->
             listOf(
-              apiProp.dto.map { dto ->
-                toDtoFieldDescription(
-                  elem = elem,
-                  ref = dto.ref,
-                  refNullable = dto.refNullable,
-                  refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable),
-                  refCollection = dto.refCollection,
-                  dtoName = dto.name,
-                  dtoFieldName = dto.fieldName,
-                  comment = apiProp.comment,
-                  valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider(),
-                  entityValueProvider = safeGetTypeFromAnnotation { dto.entityValueProvider.asTypeName() }.kotlin(false).validValueProvider(),
-                  isTransient = isTransient
-                ).copy(
-                  generateToDtoExtension = dto.applyValueFromEntity,
-                  generateApplyToEntityExtension = false
-                )
+              apiProp.dto.flatMap { dto ->
+                val refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable)
+                val valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()
+                val entityValueProvider = safeGetTypeFromAnnotation { dto.entityValueProvider.asTypeName() }.kotlin(false).validValueProvider()
+                dto.names.plus(dto.name).filter { it.isNotEmpty() }.map { dtoName ->
+                  toDtoFieldDescription(
+                    elem = elem,
+                    ref = dto.ref,
+                    refNullable = dto.refNullable,
+                    refClass = refClass,
+                    refCollection = dto.refCollection,
+                    dtoName = dtoName,
+                    dtoFieldName = dto.fieldName,
+                    comment = apiProp.comment,
+                    valueProvider = valueProvider,
+                    entityValueProvider = entityValueProvider,
+                    isTransient = isTransient
+                  ).copy(
+                    generateToDtoExtension = dto.applyValueFromEntity,
+                    generateApplyToEntityExtension = false
+                  )
+                }
               },
-              apiProp.requestDto.map { dto ->
-                toDtoFieldDescription(
-                  elem = elem,
-                  ref = dto.ref,
-                  refNullable = dto.refNullable,
-                  refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable),
-                  refCollection = dto.refCollection,
-                  dtoName = dto.name,
-                  dtoFieldName = dto.fieldName,
-                  comment = apiProp.comment,
-                  valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider(),
-                  forceNotNull = dto.notNullInReq,
-                  forceNullable = dto.forceNullableInReq,
-                  isTransient = isTransient
-                ).copy(
-                  generateToDtoExtension = false,
-                  generateApplyToEntityExtension = !isTransient && dto.applyValueToEntity && dto.searchType == SearchType.NONE,
-                  searchType = dto.searchType,
-                  searchForField = dto.searchForField.takeIf { it.isNotEmpty() }
-                )
+              apiProp.requestDto.flatMap { dto ->
+                val refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable)
+                val valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()
+                dto.names.plus(dto.name).map { dtoName ->
+                  toDtoFieldDescription(
+                    elem = elem,
+                    ref = dto.ref,
+                    refNullable = dto.refNullable,
+                    refClass = refClass,
+                    refCollection = dto.refCollection,
+                    dtoName = dto.name,
+                    dtoFieldName = dto.fieldName,
+                    comment = apiProp.comment,
+                    valueProvider = valueProvider,
+                    forceNotNull = dto.notNullInReq,
+                    forceNullable = dto.forceNullableInReq,
+                    isTransient = isTransient
+                  ).copy(
+                    generateToDtoExtension = false,
+                    generateApplyToEntityExtension = !isTransient && dto.applyValueToEntity && dto.searchType == SearchType.NONE,
+                    searchType = dto.searchType,
+                    searchForField = dto.searchForField.takeIf { it.isNotEmpty() }
+                  )
+                }
               }
             ).flatten()
           }
