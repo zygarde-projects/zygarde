@@ -120,7 +120,7 @@ class ZygardeApiPropGenerator(
               apiProp.requestDto.flatMap { dto ->
                 val refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable)
                 val valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()
-                dto.names.plus(dto.name).map { dtoName ->
+                dto.names.plus(dto.name).filter { it.isNotEmpty() }.map { dtoName ->
                   toDtoFieldDescription(
                     elem = elem,
                     ref = dto.ref,
