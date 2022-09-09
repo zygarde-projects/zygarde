@@ -195,6 +195,7 @@ class ZygardeApiPropGenerator(
             .build().also { constructorBuilder.addParameter(it) }
           PropertySpec
             .builder(fieldName, fieldType)
+            .mutable(true)
             .initializer(fieldName)
             .addAnnotation(
               AnnotationSpec.builder(Schema::class)
