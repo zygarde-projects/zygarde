@@ -37,9 +37,12 @@ import zygarde.data.search.SearchKeywordType
 import zygarde.test.dao.TestAuthorDao
 import zygarde.test.dao.TestAuthorGroupDao
 import zygarde.test.dao.TestBookDao
+import zygarde.test.dao.TestComputerDao
 import zygarde.test.entity.Author
 import zygarde.test.entity.AuthorGroup
 import zygarde.test.entity.Book
+import zygarde.test.entity.Computer
+import zygarde.test.entity.Gpu
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -57,6 +60,9 @@ class EnhancedSearchTest {
 
   @Autowired
   lateinit var bookDao: TestBookDao
+
+  @Autowired
+  lateinit var computerDao: TestComputerDao
 
   @BeforeEach
   fun setUp() {
@@ -391,5 +397,24 @@ class EnhancedSearchTest {
     bookDao.search {
       field(SearchableImpl<Book, String>("name")) eq "zygarde"
     }.size shouldBe 0
+  }
+
+  @Order(10000)
+  @Test
+  fun `should able to count by embedded field`() {
+    computerDao.saveAll(
+      listOf(
+        Computer("Gaming", Gpu()),
+        Computer("Work", Gpu()),
+      )
+    )
+
+    computerDao.search {
+      field<Gpu>("gpu").field<Double>("price") eq 1000.0
+    }.size shouldBe 2
+
+    computerDao.searchCount {
+      field<Gpu>("gpu").field<Double>("price") eq 1000.0
+    } shouldBe 2L
   }
 }

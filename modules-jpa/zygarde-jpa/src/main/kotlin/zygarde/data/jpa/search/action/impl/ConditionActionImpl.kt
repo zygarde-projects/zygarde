@@ -16,7 +16,8 @@ import javax.persistence.criteria.Root
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
   private val columnName: String,
-  private val join: Boolean = false
+  private val join: Boolean = false,
+  private val isCountQuery: Boolean = enhancedSearch.query.resultType.canonicalName == "java.lang.Long",
 ) : ConditionAction<RootEntityType, EntityType, FieldType> {
 
   override fun <AnotherFieldType> field(fieldName: String): ConditionAction<RootEntityType, FieldType, AnotherFieldType> {
@@ -52,13 +53,22 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
 
   override fun join(joinType: JoinType) {
     val split = columnName.split(".")
-    if (enhancedSearch.query.resultType.canonicalName == "java.lang.Long") {
+    var colName = split.first()
+    if (isCountQuery) {
       split.takeLast(split.size - 1)
         .fold(
-          enhancedSearch.root.join<EntityType, FieldType>(split.first(), joinType)
-        ) { join, column -> join.join(column, joinType) }
+          enhancedSearch.joinMap.getOrPut(split.first()) {
+            enhancedSearch.root.join(split.first(), joinType)
+          }
+        ) { join, foldedColumn ->
+          colName = "$colName.$foldedColumn"
+          enhancedSearch.joinMap.getOrPut(
+            colName,
+          ) {
+            join.join(foldedColumn, joinType)
+          }
+        }
     } else {
-      var colName = split.first()
       split.takeLast(split.size - 1)
         .fold(
           enhancedSearch.fetchMap.getOrPut(
@@ -154,6 +164,12 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
       }
       return this.get(splited.first())
     }
+    if (isCountQuery) {
+      return splited.takeLast(splited.size - 1).fold(enhancedSearch.root.get<Any>(splited[0])) { join, foldedColumn ->
+        join.get<Any>(foldedColumn)
+      } as Path<FieldType>
+    }
+
     val fetch = enhancedSearch.fetchMap[splited.take(splited.size - 1).joinToString(".")]
     if (fetch != null && fetch is Join<*, *>) {
       return fetch.get<FieldType>(splited.last())
