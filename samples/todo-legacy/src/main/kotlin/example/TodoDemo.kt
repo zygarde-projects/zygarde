@@ -53,6 +53,13 @@ class Todo(
     ]
   )
   var description: String = "",
+
+  @ApiProp(
+    requestDto = [
+      RequestDto(updateToDoReq, sinceApiVersion = 20220901),
+    ]
+  )
+  var referenceUrl: String? = null
 ) : AutoIntIdEntity()
 
 @Service

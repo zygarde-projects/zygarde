@@ -1,8 +1,8 @@
 package zygarde.codegen
 
-import kotlin.reflect.KClass
 import zygarde.codegen.value.NoOpValueProvider
 import zygarde.codegen.value.ValueProvider
+import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.ANNOTATION_CLASS)
 @Retention(AnnotationRetention.SOURCE)
@@ -24,4 +24,5 @@ annotation class RequestDto(
   val searchForField: String = "",
   val notNullInReq: Boolean = false,
   val forceNullableInReq: Boolean = false,
+  val sinceApiVersion: Long = 0,
 )

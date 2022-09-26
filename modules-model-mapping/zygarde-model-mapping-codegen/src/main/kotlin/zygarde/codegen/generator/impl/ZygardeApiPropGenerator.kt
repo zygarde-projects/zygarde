@@ -49,7 +49,8 @@ class ZygardeApiPropGenerator(
     val generateToDtoExtension: Boolean = false,
     val generateApplyToEntityExtension: Boolean = false,
     val searchType: SearchType = SearchType.NONE,
-    val searchForField: String? = null
+    val searchForField: String? = null,
+    val sinceApiVersion: Long = 0,
   )
 
   val dtoPackageName = packageName("data.dto")
@@ -117,28 +118,29 @@ class ZygardeApiPropGenerator(
                   )
                 }
               },
-              apiProp.requestDto.flatMap { dto ->
-                val refClass = safeGetTypeFromAnnotation { dto.refClass.asTypeName() }.kotlin(dto.refClassNullable)
-                val valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()
-                dto.names.plus(dto.name).filter { it.isNotEmpty() }.map { dtoName ->
+              apiProp.requestDto.flatMap { requestDto ->
+                val refClass = safeGetTypeFromAnnotation { requestDto.refClass.asTypeName() }.kotlin(requestDto.refClassNullable)
+                val valueProvider = safeGetTypeFromAnnotation { requestDto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()
+                requestDto.names.plus(requestDto.name).filter { it.isNotEmpty() }.map { dtoName ->
                   toDtoFieldDescription(
                     elem = elem,
-                    ref = dto.ref,
-                    refNullable = dto.refNullable,
+                    ref = requestDto.ref,
+                    refNullable = requestDto.refNullable,
                     refClass = refClass,
-                    refCollection = dto.refCollection,
+                    refCollection = requestDto.refCollection,
                     dtoName = dtoName,
-                    dtoFieldName = dto.fieldName,
+                    dtoFieldName = requestDto.fieldName,
                     comment = apiProp.comment,
                     valueProvider = valueProvider,
-                    forceNotNull = dto.notNullInReq,
-                    forceNullable = dto.forceNullableInReq,
-                    isTransient = isTransient
+                    forceNotNull = requestDto.notNullInReq,
+                    forceNullable = requestDto.forceNullableInReq,
+                    isTransient = isTransient,
                   ).copy(
                     generateToDtoExtension = false,
-                    generateApplyToEntityExtension = !isTransient && dto.applyValueToEntity && dto.searchType == SearchType.NONE,
-                    searchType = dto.searchType,
-                    searchForField = dto.searchForField.takeIf { it.isNotEmpty() }
+                    generateApplyToEntityExtension = !isTransient && requestDto.applyValueToEntity && requestDto.searchType == SearchType.NONE,
+                    searchType = requestDto.searchType,
+                    searchForField = requestDto.searchForField.takeIf { it.isNotEmpty() },
+                    sinceApiVersion = requestDto.sinceApiVersion
                   )
                 }
               }
@@ -323,16 +325,30 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
       .receiver(element.typeName())
       .returns(element.typeName())
 
+    val checkApiVersion = dtoFieldDescriptions.any { it.sinceApiVersion > 0 }
+    if (checkApiVersion) {
+      functionBuilder.addStatement("val apiVersion = %T.version()", ClassName("zygarde.ctx", "ApiVersionContext"))
+    }
+
     dtoFieldDescriptions
-      .forEach {
-        if (it.valueProvider != null) {
-          val q = if (it.fieldType.isNullable) "?" else ""
-          functionBuilder.addStatement(
-            "this.${it.entityFieldName} = req.${it.dtoFieldName}$q.let{ %T().getValue(it) }",
-            it.valueProvider
-          )
-        } else {
-          functionBuilder.addStatement("this.${it.entityFieldName} = req.${it.dtoFieldName}")
+      .groupBy { it.sinceApiVersion }
+      .forEach { (sinceApiVersion, fieldDescriptionVos) ->
+        if (sinceApiVersion > 0) {
+          functionBuilder.addStatement("if(apiVersion >= $sinceApiVersion){")
+        }
+        fieldDescriptionVos.forEach { fieldDescriptionVo ->
+          if (fieldDescriptionVo.valueProvider != null) {
+            val q = if (fieldDescriptionVo.fieldType.isNullable) "?" else ""
+            functionBuilder.addStatement(
+              "this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}$q.let{ %T().getValue(it) }",
+              fieldDescriptionVo.valueProvider
+            )
+          } else {
+            functionBuilder.addStatement("this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}")
+          }
+        }
+        if (sinceApiVersion > 0) {
+          functionBuilder.addStatement("}")
         }
       }
 
