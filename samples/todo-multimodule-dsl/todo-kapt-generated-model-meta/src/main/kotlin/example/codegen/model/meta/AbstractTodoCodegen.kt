@@ -13,13 +13,13 @@ public abstract class AbstractTodoCodegen : ClassBasedModelMappingDslCodegen<Tod
 
   protected val id: ModelMetaField<Todo, Int> = TodoModelFields.id
 
-  public val allFields: Array<ModelMetaField<Todo, *>> = arrayOf(description,id)
+  public val allFields: Array<ModelMetaField<Todo, *>> = arrayOf(description, id)
 
-  public fun description(dsl: ModelMetaField<Todo, String>.() -> Unit): Unit {
+  public fun description(dsl: ModelMetaField<Todo, String>.() -> Unit) {
     dsl.invoke(description)
   }
 
-  public fun id(dsl: ModelMetaField<Todo, Int>.() -> Unit): Unit {
+  public fun id(dsl: ModelMetaField<Todo, Int>.() -> Unit) {
     dsl.invoke(id)
   }
 }
