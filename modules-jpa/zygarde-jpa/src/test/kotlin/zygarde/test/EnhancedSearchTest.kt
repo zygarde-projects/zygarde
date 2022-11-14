@@ -417,4 +417,16 @@ class EnhancedSearchTest {
       field<Gpu>("gpu").field<Double>("price") eq 1000.0
     } shouldBe 2L
   }
+
+  @Order(11000)
+  @Test
+  fun `should able to search page with oneToMany`() {
+    authorDao
+      .searchPage(PagingAndSortingRequest().also { it.paging = PagingRequest(page = 1, pageSize = 1) }) {
+        stringField("name") contains "Author"
+        field<Book>("books")
+          .comparableField<Int>("price") gte 100
+      }
+      .totalPages shouldBeGreaterThan 0
+  }
 }

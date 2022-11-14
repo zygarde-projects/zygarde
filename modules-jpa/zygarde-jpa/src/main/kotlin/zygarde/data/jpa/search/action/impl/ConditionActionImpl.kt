@@ -1,5 +1,6 @@
 package zygarde.data.jpa.search.action.impl
 
+import org.hibernate.query.criteria.internal.path.SingularAttributePath
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
@@ -165,9 +166,12 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
       return this.get(splited.first())
     }
     if (isCountQuery) {
-      return splited.takeLast(splited.size - 1).fold(enhancedSearch.root.get<Any>(splited[0])) { join, foldedColumn ->
-        join.get<Any>(foldedColumn)
-      } as Path<FieldType>
+      val initialPath = enhancedSearch.root.get<Any>(splited[0])
+      if (initialPath is SingularAttributePath<*>) {
+        return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
+          join.get<Any>(foldedColumn)
+        } as Path<FieldType>
+      }
     }
 
     val fetch = enhancedSearch.fetchMap[splited.take(splited.size - 1).joinToString(".")]
