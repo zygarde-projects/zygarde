@@ -7,6 +7,7 @@ class WebMvcDslCodegenTest : WebMvcDslCodegen() {
   data class CreateTodoReq(val description: String)
   data class UpdateTodoReq(val description: String)
   data class TodoDto(val id: Int, val description: String)
+  data class GetTodoByIdReq(val id: Int)
 
   override fun codegen() {
     api("TodoApi", "/api/todo") {
@@ -14,6 +15,10 @@ class WebMvcDslCodegenTest : WebMvcDslCodegen() {
         pathVariable<Int>("todoId")
       }
 
+      get("getTodoById", "byId") {
+        req<GetTodoByIdReq>("req")
+        resCollection<TodoDto>()
+      }
       get("getTodoList", "") {
         resCollection<TodoDto>()
       }

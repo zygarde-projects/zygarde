@@ -5,6 +5,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 dependencies {
   api("org.springframework.boot:spring-boot-starter-web")
   api("org.springframework.boot:spring-boot-starter-validation")
+  api("org.springdoc:springdoc-openapi-common:1.6.14")
   api(project(":zygarde-core"))
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation(project(":zygarde-test"))

@@ -13,6 +13,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springdoc.api.annotations.ParameterObject
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.cloud.openfeign.SpringQueryMap
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -254,6 +255,9 @@ class WebMvcApiGenerator(
               .also { paramSpec ->
                 if (func.method in listOf(RequestMethod.POST, RequestMethod.PUT)) {
                   paramSpec.addAnnotation(RequestBody::class)
+                }
+                if (func.method == RequestMethod.GET) {
+                  paramSpec.addAnnotation(ParameterObject::class)
                 }
               }
               .addAnnotation(
