@@ -14,6 +14,7 @@ import javax.persistence.MappedSuperclass
 @ZyModelMeta
 class Todo(
   var description: String = "",
+  var checkTimes: Int = 0,
 ) : AutoIntIdEntity()
 
 @Entity

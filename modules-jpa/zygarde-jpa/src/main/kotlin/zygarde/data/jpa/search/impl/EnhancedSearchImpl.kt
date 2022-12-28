@@ -1,7 +1,6 @@
 package zygarde.data.jpa.search.impl
 
 import zygarde.data.jpa.search.EnhancedSearch
-import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
@@ -37,22 +36,6 @@ class EnhancedSearchImpl<EntityType>(
 
   override fun stringField(fieldName: String): StringConditionAction<EntityType, EntityType> {
     return StringConditionActionImpl(this, fieldName)
-  }
-
-  override fun <FieldType> field(
-    searchable: Searchable<EntityType, FieldType>
-  ): ConditionAction<EntityType, EntityType, FieldType> {
-    return ConditionActionImpl(this, searchable.fieldName())
-  }
-
-  override fun <FieldType : Comparable<FieldType>> field(
-    searchable: Searchable<EntityType, FieldType>
-  ): ComparableConditionAction<EntityType, EntityType, FieldType> {
-    return ComparableConditionActionImpl(this, searchable.fieldName())
-  }
-
-  override fun field(searchable: Searchable<EntityType, String>): StringConditionAction<EntityType, EntityType> {
-    return StringConditionActionImpl(this, searchable.fieldName())
   }
 
   override fun <FieldType> join(fieldName: String): ConditionAction<EntityType, EntityType, FieldType> {

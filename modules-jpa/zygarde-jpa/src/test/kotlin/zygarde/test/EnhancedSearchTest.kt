@@ -24,9 +24,11 @@ import zygarde.data.jpa.dao.searchCount
 import zygarde.data.jpa.dao.searchOne
 import zygarde.data.jpa.dao.searchPage
 import zygarde.data.jpa.entity.getId
+import zygarde.data.jpa.search.action.ComparableConditionAction
+import zygarde.data.jpa.search.action.ConditionAction
+import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.action.dateRange
 import zygarde.data.jpa.search.action.dateTimeRange
-import zygarde.data.jpa.search.action.impl.SearchableImpl
 import zygarde.data.jpa.search.action.numRange
 import zygarde.data.jpa.search.crossJoin
 import zygarde.data.search.SearchDateRange
@@ -106,7 +108,7 @@ class EnhancedSearchTest {
   @Test
   fun `should able to search book by name`() {
     bookDao.search {
-      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+      field(Book::name) eq "zygarde"
       field<Author>("author").field<AuthorGroup>("authorGroup").join()
     }.size shouldBe 20
   }
@@ -115,7 +117,7 @@ class EnhancedSearchTest {
   @Test
   fun `should able to search book page by name`() {
     bookDao.searchPage(PagingAndSortingRequest()) {
-      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+      field(Book::name) eq "zygarde"
       field<Author>("author").field<AuthorGroup>("authorGroup").join()
     }.totalPages shouldBe 2
   }
@@ -133,7 +135,7 @@ class EnhancedSearchTest {
     bookDao.search { comparableField<LocalDate>("releaseDate") dateRange null }.size shouldBe 1000
     bookDao.search { comparableField<LocalDateTime>("createdAt") dateTimeRange null }.size shouldBe 1000
     bookDao.search { field<Author>("author").comparableField<String>("name") inList emptyList() }.size shouldBe 1000
-    bookDao.search { field<Author>("author").field<LocalDate>(SearchableImpl("registerDate")) eq null }.size shouldBe 1000
+    bookDao.search { field<Author>("author").field<LocalDate>("registerDate") eq null }.size shouldBe 1000
   }
 
   @Order(400)
@@ -148,12 +150,13 @@ class EnhancedSearchTest {
   fun `should able to search book by authorGroup name`() {
     bookDao.search {
       field<Author>("author").field<AuthorGroup>("authorGroup").join()
-      field(SearchableImpl<Book, Author>("author"))
-        .field(SearchableImpl<Author, AuthorGroup>("authorGroup"))
-        .field(SearchableImpl<AuthorGroup, String>("name")) eq "comic"
-      field(SearchableImpl<Book, Author>("author"))
-        .field(SearchableImpl<Author, AuthorGroup>("authorGroup"))
-        .field(SearchableImpl<AuthorGroup, String>("name")) contains "com"
+      field(Book::author)
+        .field<AuthorGroup>(Author::authorGroup.name)
+        .field(AuthorGroup::name) eq "comic"
+      val author: ConditionAction<Book, Book, Author> = field(Book::author)
+      val authorGroup: ConditionAction<Book, Author, AuthorGroup> = author.field(Author::authorGroup)
+      val authorGroupName: StringConditionAction<Book, AuthorGroup> = authorGroup.field(AuthorGroup::name)
+      authorGroupName contains "com"
     }.size shouldBe 500
     bookDao.search {
       field<Author>("author").field<AuthorGroup>("authorGroup").join()
@@ -269,10 +272,10 @@ class EnhancedSearchTest {
   @Test
   fun `should able to search one`() {
     bookDao.searchOne {
-      field(SearchableImpl<Book, Int>("id")) eq 1
+      field(Book::id) eq 1
     } shouldNotBe null
     bookDao.searchOne {
-      field(SearchableImpl<Book, Int>("id")) eq 0
+      field(Book::id) eq 0
     } shouldBe null
   }
 
@@ -289,24 +292,25 @@ class EnhancedSearchTest {
           it.sorts = listOf(SortField(SortDirection.DESC, "id"))
         }
     ) {
-      field(SearchableImpl<Book, LocalDate>("releaseDate")) dateRange SearchDateRange(
+      field(Book::releaseDate) dateRange SearchDateRange(
         from = LocalDate.now().minusDays(1),
         to = LocalDate.now().plusDays(1)
       )
-      field(SearchableImpl<Book, LocalDate>("releaseDate")) dateRange SearchDateRange().also {
+      field(Book::releaseDate) dateRange SearchDateRange().also {
         it.from = LocalDate.now().minusDays(1)
       }
-      field(SearchableImpl<Book, LocalDate>("releaseDate")) dateRange SearchDateRange().also {
+      field(Book::releaseDate) dateRange SearchDateRange().also {
         it.to = LocalDate.now().plusDays(1)
       }
-      field(SearchableImpl<Book, LocalDateTime>("createdAt")) dateTimeRange SearchDateTimeRange(
+      val field: ComparableConditionAction<Book, Book, LocalDateTime> = field(Book::createdAt)
+      field dateTimeRange SearchDateTimeRange(
         from = LocalDate.now().minusDays(1).atStartOfDay(),
         until = LocalDate.now().plusDays(1).atStartOfDay()
       )
-      field(SearchableImpl<Book, LocalDateTime>("createdAt")) dateTimeRange SearchDateTimeRange().also {
+      field(Book::createdAt) dateTimeRange SearchDateTimeRange().also {
         it.from = LocalDate.now().minusDays(1).atStartOfDay()
       }
-      field(SearchableImpl<Book, LocalDateTime>("createdAt")) dateTimeRange SearchDateTimeRange().also {
+      field(Book::createdAt) dateTimeRange SearchDateTimeRange().also {
         it.until = LocalDate.now().plusDays(1).atStartOfDay()
       }
     }.totalPages shouldBe 100
@@ -374,8 +378,8 @@ class EnhancedSearchTest {
   @Order(1900)
   @Test
   fun `select one`() {
-    bookDao.selectOne(SearchableImpl<Book, String>("name")) {
-      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+    bookDao.selectOne(Book::name) {
+      field(Book::name) eq "zygarde"
     } shouldBe "zygarde"
   }
 
@@ -391,11 +395,11 @@ class EnhancedSearchTest {
   @Test
   fun `should able to delete`() {
     bookDao.remove {
-      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+      field(Book::name) eq "zygarde"
     }
 
     bookDao.search {
-      field(SearchableImpl<Book, String>("name")) eq "zygarde"
+      field(Book::name) eq "zygarde"
     }.size shouldBe 0
   }
 

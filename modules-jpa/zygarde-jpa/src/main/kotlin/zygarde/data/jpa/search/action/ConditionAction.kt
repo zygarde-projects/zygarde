@@ -1,9 +1,9 @@
 package zygarde.data.jpa.search.action
 
 import zygarde.data.jpa.search.EnhancedSearch
-import zygarde.data.jpa.search.Searchable
 import javax.persistence.criteria.Expression
 import javax.persistence.criteria.JoinType
+import kotlin.reflect.KProperty1
 
 interface ConditionAction<RootEntityType, EntityType, FieldType> {
 
@@ -19,17 +19,17 @@ interface ConditionAction<RootEntityType, EntityType, FieldType> {
     fieldName: String
   ): StringConditionAction<RootEntityType, FieldType>
 
-  fun <AnotherFieldType> field(
-    searchable: Searchable<FieldType, AnotherFieldType>
-  ): ConditionAction<RootEntityType, FieldType, AnotherFieldType>
-
-  fun <AnotherFieldType : Comparable<AnotherFieldType>> field(
-    searchable: Searchable<FieldType, AnotherFieldType>
-  ): ComparableConditionAction<RootEntityType, FieldType, AnotherFieldType>
+  fun <NestedFieldType> field(
+    property: KProperty1<FieldType, NestedFieldType?>
+  ): ConditionAction<RootEntityType, FieldType, NestedFieldType> = field(property.name)
 
   fun field(
-    searchable: Searchable<FieldType, String>
-  ): StringConditionAction<RootEntityType, FieldType>
+    property: KProperty1<FieldType, String?>
+  ): StringConditionAction<RootEntityType, FieldType> = stringField(property.name)
+
+  fun <AnotherFieldType : Comparable<AnotherFieldType>> field(
+    property: KProperty1<FieldType, AnotherFieldType?>
+  ): ComparableConditionAction<RootEntityType, FieldType, AnotherFieldType> = comparableField(property.name)
 
   fun join(joinType: JoinType = JoinType.INNER)
 

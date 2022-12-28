@@ -4,10 +4,10 @@ import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.support.JpaEntityInformation
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
 import zygarde.data.jpa.search.EnhancedSearch
-import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import javax.persistence.EntityManager
 import javax.persistence.criteria.Predicate
+import kotlin.reflect.KProperty1
 
 open class ZygardeJpaRepository<T, ID>(
   entityInformation: JpaEntityInformation<T, ID>,
@@ -24,7 +24,7 @@ open class ZygardeJpaRepository<T, ID>(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun <P> selectOne(p: Searchable<T, P>, searchContent: EnhancedSearch<T>.() -> Unit): P {
+  override fun <P> selectOne(p: KProperty1<T, P>, searchContent: EnhancedSearch<T>.() -> Unit): P {
     val cb = entityManager.criteriaBuilder
     val query = cb.createQuery()
     val root = query.from(domainClass)
@@ -32,7 +32,7 @@ open class ZygardeJpaRepository<T, ID>(
     val enhancedSearchImpl = EnhancedSearchImpl(predicates, root, query, cb)
     searchContent.invoke(enhancedSearchImpl)
 
-    query.where(cb.and(*predicates.toTypedArray())).select(root.get<P>(p.fieldName()))
+    query.where(cb.and(*predicates.toTypedArray())).select(root.get<P>(p.name))
 
     return entityManager.createQuery(query).singleResult as P
   }

@@ -15,6 +15,15 @@ public object TodoModelFields {
     genericClasses = arrayOf()
   )
 
+  public val checkTimes: ModelMetaField<Todo, Int> = ModelMetaField(
+    modelClass = Todo::class,
+    fieldName = "checkTimes",
+    fieldClass = Int::class,
+    fieldNullable = false,
+    comment = "",
+    genericClasses = arrayOf()
+  )
+
   public val id: ModelMetaField<Todo, Int> = ModelMetaField(
     modelClass = Todo::class,
     fieldName = "id",

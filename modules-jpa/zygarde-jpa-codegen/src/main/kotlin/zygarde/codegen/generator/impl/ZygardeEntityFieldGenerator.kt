@@ -1,14 +1,10 @@
 package zygarde.codegen.generator.impl
 
 import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asClassName
 import zygarde.codegen.ZygardeKaptOptions.Companion.ENTITY_PACKAGE_SEARCH
@@ -18,11 +14,9 @@ import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.jpa.search.EnhancedSearch
-import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
-import zygarde.data.jpa.search.action.impl.SearchableImpl
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -46,7 +40,6 @@ class ZygardeEntityFieldGenerator(
     }
     elements.forEach {
       try {
-        generateFields(it)
         generateExtensionFunctions(elements, it)
       } catch (e: IllegalArgumentException) {
         throw e
@@ -54,24 +47,6 @@ class ZygardeEntityFieldGenerator(
         throw RuntimeException("error generating search field for entity $it", t)
       }
     }
-  }
-
-  private fun generateFields(element: Element) {
-    val className = element.simpleName.toString()
-    val pack = packageName(processingEnv.options.getOrDefault(ENTITY_PACKAGE_SEARCH, "entity.search"))
-    val fileNameForFields = "${className}Fields"
-
-    val classBuilder = TypeSpec.objectBuilder(fileNameForFields)
-    element.allSearchableFields().forEach { field ->
-      classBuilder.addProperty(
-        field.buildSearchableProperty(element)
-      )
-    }
-
-    FileSpec.builder(pack, fileNameForFields)
-      .addType(classBuilder.build())
-      .build()
-      .writeTo(folderToGenerate())
   }
 
   private fun generateExtensionFunctions(allEntityElements: Collection<Element>, element: Element) {
@@ -85,13 +60,13 @@ class ZygardeEntityFieldGenerator(
     allFields
       .forEach { field ->
         val fieldName = field.simpleName.toString()
-
+        val fieldConditionFunction = field.fieldConditionFunction()
         fileBuilderForExtension
           .addFunction(
             FunSpec.builder(fieldName)
               .receiver(EnhancedSearch::class.asClassName().parameterizedBy(rootEntityType))
               .returns(field.toConditionAction(element, element))
-              .addStatement("return this.field(${className}Fields.$fieldName)")
+              .addStatement("return this.$fieldConditionFunction($className::$fieldName)")
               .build()
           )
           .addFunction(
@@ -111,7 +86,7 @@ class ZygardeEntityFieldGenerator(
                   element.resolveFieldType(field)
                 )
               )
-              .addStatement("return this.field(${className}Fields.$fieldName)")
+              .addStatement("return this.$fieldConditionFunction($className::$fieldName)")
               .build()
           )
       }
@@ -142,27 +117,8 @@ class ZygardeEntityFieldGenerator(
       }
   }
 
-  private fun Element.buildSearchableProperty(
-    entityElement: Element
-  ): PropertySpec {
-    return PropertySpec
-      .builder(
-        fieldName(),
-        Searchable::class.asClassName().parameterizedBy(
-          entityElement.typeName(),
-          entityElement.resolveFieldType(this).copy(nullable = false).kotlin(false)
-        ),
-        KModifier.PUBLIC
-      )
-      .initializer(
-        CodeBlock.builder()
-          .addStatement("""%T("${fieldName()}")""", SearchableImpl::class.asClassName())
-          .build()
-      )
-      .build()
-  }
-
   private fun Element.buildRelateTypeConditionAction(rootEntityElement: Element, currentEntityElement: Element): FunSpec {
+    val fieldConditionFunction = this.fieldConditionFunction()
     return FunSpec.builder(fieldName())
       .addAnnotation(
         AnnotationSpec.builder(JvmName::class)
@@ -179,12 +135,20 @@ class ZygardeEntityFieldGenerator(
       .returns(
         toConditionAction(rootEntityElement, currentEntityElement)
       )
-      .addStatement("return this.field(${currentEntityElement.simpleName}Fields.${fieldName()})")
+      .addStatement("return this.$fieldConditionFunction(${currentEntityElement.simpleName}::${fieldName()})")
       .build()
   }
 
   private fun Element.isComparable(): Boolean {
     return processingEnv.typeUtils.isAssignable(this.asType(), erasuredComparable)
+  }
+
+  private fun Element.isString(): Boolean {
+    return kotlin.runCatching { typeName().toString() == "kotlin.String" }.getOrDefault(false)
+  }
+
+  private fun Element.fieldConditionFunction(): String {
+    return "field"
   }
 
   private fun Element.toConditionAction(rootEntityElement: Element, currentEntityElement: Element): TypeName {
@@ -200,7 +164,7 @@ class ZygardeEntityFieldGenerator(
   private fun Element.toConditionAction(rootEntityTypeName: TypeName, currentEntityTypeName: TypeName, fieldType: TypeName): TypeName {
     val nonNullableFieldType = fieldType.copy(nullable = false)
     return if (isComparable()) {
-      if (this.typeName().toString() == "kotlin.String") {
+      if (this.isString()) {
         StringConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,
           currentEntityTypeName

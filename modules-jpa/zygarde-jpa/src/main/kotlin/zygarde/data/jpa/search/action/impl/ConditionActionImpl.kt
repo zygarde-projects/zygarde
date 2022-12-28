@@ -2,7 +2,6 @@ package zygarde.data.jpa.search.action.impl
 
 import org.hibernate.query.criteria.internal.path.SingularAttributePath
 import zygarde.data.jpa.search.EnhancedSearch
-import zygarde.data.jpa.search.Searchable
 import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
@@ -40,17 +39,6 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   override fun stringField(fieldName: String): StringConditionAction<RootEntityType, FieldType> {
     return StringConditionActionImpl<RootEntityType, FieldType>(enhancedSearch, "$columnName.$fieldName")
   }
-
-  override fun <AnotherFieldType> field(
-    searchable: Searchable<FieldType, AnotherFieldType>
-  ): ConditionAction<RootEntityType, FieldType, AnotherFieldType> = field(searchable.fieldName())
-
-  override fun <AnotherFieldType : Comparable<AnotherFieldType>> field(
-    searchable: Searchable<FieldType, AnotherFieldType>
-  ): ComparableConditionAction<RootEntityType, FieldType, AnotherFieldType> = comparableField(searchable.fieldName())
-
-  override fun field(searchable: Searchable<FieldType, String>): StringConditionAction<RootEntityType, FieldType> =
-    stringField(searchable.fieldName())
 
   override fun join(joinType: JoinType) {
     val split = columnName.split(".")
@@ -157,6 +145,7 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     return enhancedSearch.root.columnNameToPath(columnName)
   }
 
+  @Suppress("UNCHECKED_CAST")
   protected fun Root<*>.columnNameToPath(columnName: String): Path<FieldType> {
     val splited = columnName.split(".")
     if (splited.size == 1) {
