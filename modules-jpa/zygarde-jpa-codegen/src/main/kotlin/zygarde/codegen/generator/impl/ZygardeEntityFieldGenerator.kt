@@ -92,18 +92,18 @@ class ZygardeEntityFieldGenerator(
           )
       }
 
-    allEntityElements
-      .filter {
-        allFields.any { f -> f.asType() == it.asType() }
-      }
-      .forEach { relatedTypeElement ->
-        relatedTypeElement.allSearchableFields().forEach { fieldForRelativeType ->
-          fileBuilderForExtension
-            .addFunction(
-              fieldForRelativeType.buildRelateTypeConditionAction(element, relatedTypeElement)
-            )
-        }
-      }
+    // allEntityElements
+    //   .filter {
+    //     allFields.any { f -> f.asType() == it.asType() }
+    //   }
+    //   .forEach { relatedTypeElement ->
+    //     relatedTypeElement.allSearchableFields().forEach { fieldForRelativeType ->
+    //       fileBuilderForExtension
+    //         .addFunction(
+    //           fieldForRelativeType.buildRelateTypeConditionAction(element, relatedTypeElement)
+    //         )
+    //     }
+    //   }
 
     fileBuilderForExtension.build().writeTo(folderToGenerate())
   }

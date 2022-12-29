@@ -237,11 +237,12 @@ task("covAll", JacocoReport::class) {
   dependsOn(
     *subProjectsForJacoco.map { it.tasks.getByName("test") }.toTypedArray()
   )
+
+  task("lint") {
+    dependsOn("ktlintFormat")
+  }
 }
 
-task("lint") {
-  dependsOn("ktlintFormat")
-}
 task("lintc") {
   dependsOn("ktlintCheck")
 }
