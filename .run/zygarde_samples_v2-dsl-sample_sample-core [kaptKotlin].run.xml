@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="zygarde:samples:v2-dsl-sample:sample-core [kaptKotlin]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="todo-legacy [kapt]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
-      <option name="externalProjectPath" value="$PROJECT_DIR$/samples/v2-dsl-sample/sample-core" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$/samples/todo-legacy" />
       <option name="externalSystemIdString" value="GRADLE" />
       <option name="scriptParameters" value="" />
       <option name="taskDescriptions">

@@ -20,6 +20,7 @@ import zygarde.data.jpa.search.action.StringConditionAction
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
+import javax.persistence.Convert
 import javax.persistence.ElementCollection
 import javax.persistence.ManyToMany
 import javax.persistence.OneToMany
@@ -113,7 +114,8 @@ class ZygardeEntityFieldGenerator(
         it.getAnnotation(ElementCollection::class.java) == null &&
           it.getAnnotation(Transient::class.java) == null &&
           it.getAnnotation(OneToMany::class.java) == null &&
-          it.getAnnotation(ManyToMany::class.java) == null
+          it.getAnnotation(ManyToMany::class.java) == null &&
+          it.getAnnotation(Convert::class.java) == null
       }
   }
 
@@ -163,25 +165,27 @@ class ZygardeEntityFieldGenerator(
 
   private fun Element.toConditionAction(rootEntityTypeName: TypeName, currentEntityTypeName: TypeName, fieldType: TypeName): TypeName {
     val nonNullableFieldType = fieldType.copy(nullable = false)
-    return if (isComparable()) {
-      if (this.isString()) {
+    return when {
+      this.isString() -> {
         StringConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,
           currentEntityTypeName
         )
-      } else {
+      }
+      this.isComparable() -> {
         ComparableConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,
           currentEntityTypeName,
           nonNullableFieldType.kotlin(false),
         )
       }
-    } else {
-      ConditionAction::class.asClassName().parameterizedBy(
-        rootEntityTypeName,
-        currentEntityTypeName,
-        nonNullableFieldType.kotlin(false),
-      )
+      else -> {
+        ConditionAction::class.asClassName().parameterizedBy(
+          rootEntityTypeName,
+          currentEntityTypeName,
+          nonNullableFieldType.kotlin(false),
+        )
+      }
     }
   }
 }
