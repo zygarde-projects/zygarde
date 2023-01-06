@@ -46,7 +46,7 @@ bookDao.search {
 kapt {
   arguments {
     arg("zygarde.codegen.base.package", "my_packge.codegen")
-    arg("zygarde.codegen.dao.enhanced", "true")
+    arg("zygarde.codegen.dao.inherit", "zygarde.data.jpa.dao.ZygardeEnhancedDao")
   }
 }
 ```

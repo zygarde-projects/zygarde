@@ -44,7 +44,7 @@ class ZygardeJpaDaoGeneratorTest {
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
-      kaptArgs.put(ZygardeKaptOptions.DAO_ENHANCED_IMPL, "true")
+      kaptArgs.put(ZygardeKaptOptions.DAO_INHERIT, "zygarde.data.jpa.dao.ZygardeEnhancedDao")
       kaptArgs.put(ZygardeKaptOptions.DAO_COMBINE, "false")
     }.compile()
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK

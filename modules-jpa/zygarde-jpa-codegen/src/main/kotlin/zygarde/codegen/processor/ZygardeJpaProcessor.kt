@@ -23,7 +23,7 @@ import javax.persistence.MappedSuperclass
   ZygardeKaptOptions.BASE_PACKAGE,
   ZygardeKaptOptions.DAO_SUFFIX,
   ZygardeKaptOptions.DAO_PACKAGE,
-  ZygardeKaptOptions.DAO_ENHANCED_IMPL,
+  ZygardeKaptOptions.DAO_INHERIT,
   ZygardeKaptOptions.DAO_COMBINE,
 )
 class ZygardeJpaProcessor : AbstractProcessor() {

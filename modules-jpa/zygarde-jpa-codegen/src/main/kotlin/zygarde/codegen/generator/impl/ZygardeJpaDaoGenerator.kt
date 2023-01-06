@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Component
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_COMBINE
-import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_ENHANCED_IMPL
+import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_INHERIT
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_PACKAGE
 import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_SUFFIX
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
@@ -26,7 +26,6 @@ import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.core.exception.CommonErrorCode
 import zygarde.core.extension.exception.errWhenNull
-import zygarde.data.jpa.dao.ZygardeEnhancedDao
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.persistence.Id
@@ -36,8 +35,8 @@ class ZygardeJpaDaoGenerator(
   processingEnv: ProcessingEnvironment
 ) : AbstractZygardeGenerator(processingEnv) {
 
-  private val useDaoEnhancedImpl by lazy {
-    processingEnv.options.getOrDefault(DAO_ENHANCED_IMPL, "false") == "true"
+  private val daoInherit by lazy {
+    processingEnv.options[DAO_INHERIT]
   }
 
   fun generateDaoForEntityElements(elements: Collection<Element>) {
@@ -52,9 +51,10 @@ class ZygardeJpaDaoGenerator(
           .addType(
             TypeSpec.interfaceBuilder(daoName)
               .also { interfaceBuilder ->
-                if (useDaoEnhancedImpl) {
+                val superInterface = daoInherit?.let { ClassName.bestGuess(it) }
+                if (superInterface != null) {
                   interfaceBuilder.addSuperinterface(
-                    ZygardeEnhancedDao::class.generic(element.typeName(), element.findIdClass())
+                    superInterface.generic(element.typeName(), element.findIdClass())
                   )
                 } else {
                   interfaceBuilder.addSuperinterface(
