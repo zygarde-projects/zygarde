@@ -26,10 +26,14 @@ class DslApiFunction(
   var authenticationDetailName: String = "auth"
   var authenticationDetailType: TypeName? = null
 
-  private val pathVariables: MutableMap<String, KClass<*>> = mutableMapOf()
+  private val pathVariables: MutableMap<String, TypeName> = mutableMapOf()
 
   fun pathVariable(name: String, type: KClass<*>) {
     pathVariables(name to type)
+  }
+
+  fun pathVariable(name: String, type: TypeName) {
+    pathVariables[name] = type
   }
 
   inline fun <reified T : Any> pathVariable(name: String) {
@@ -37,7 +41,7 @@ class DslApiFunction(
   }
 
   fun pathVariables(vararg pairs: Pair<String, KClass<*>>) {
-    pathVariables.putAll(pairs)
+    pathVariables.putAll(pairs.toMap().mapValues { it.value.asTypeName() })
   }
 
   inline fun <reified T : Any> req(name: String = "req") {
@@ -81,7 +85,7 @@ class DslApiFunction(
       functionName = functionName,
       description = description,
       path = path,
-      pathVariables = pathVariables.mapValues { e -> e.value.asTypeName() },
+      pathVariables = pathVariables,
       requestName = requestName,
       requestType = requestType,
       requestTypeGenericArguments = requestTypeGenericArguments,
