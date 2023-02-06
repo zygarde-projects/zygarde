@@ -17,6 +17,10 @@ object ElementExtensions {
   fun Element.isNullable() = this.getAnnotation(Nullable::class.java) != null
 
   fun Element.typeName(): TypeName {
+    return typeName(isNullable())
+  }
+
+  fun Element.notNullTypeName(): TypeName {
     return typeName(canBeNullable = false)
   }
 

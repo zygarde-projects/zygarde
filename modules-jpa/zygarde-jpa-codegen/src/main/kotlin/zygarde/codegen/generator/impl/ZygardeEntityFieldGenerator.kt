@@ -10,7 +10,7 @@ import com.squareup.kotlinpoet.asClassName
 import zygarde.codegen.ZygardeKaptOptions.Companion.ENTITY_PACKAGE_SEARCH
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allFieldsIncludeSuper
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.notNullTypeName
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.jpa.search.EnhancedSearch
@@ -55,7 +55,7 @@ class ZygardeEntityFieldGenerator(
     val pack = packageName(processingEnv.options.getOrDefault(ENTITY_PACKAGE_SEARCH, "entity.search"))
     val fileNameForExtension = "${className}Extensions"
     val fileBuilderForExtension = FileSpec.builder(pack, fileNameForExtension)
-    val rootEntityType = element.typeName()
+    val rootEntityType = element.notNullTypeName()
 
     val allFields = element.allSearchableFields()
     allFields
@@ -129,9 +129,9 @@ class ZygardeEntityFieldGenerator(
       )
       .receiver(
         ConditionAction::class.asClassName().parameterizedBy(
-          rootEntityElement.typeName(),
-          rootEntityElement.typeName(),
-          currentEntityElement.typeName()
+          rootEntityElement.notNullTypeName(),
+          rootEntityElement.notNullTypeName(),
+          currentEntityElement.notNullTypeName()
         )
       )
       .returns(
@@ -146,7 +146,7 @@ class ZygardeEntityFieldGenerator(
   }
 
   private fun Element.isString(): Boolean {
-    return kotlin.runCatching { typeName().toString() == "kotlin.String" }.getOrDefault(false)
+    return kotlin.runCatching { notNullTypeName().toString() == "kotlin.String" }.getOrDefault(false)
   }
 
   private fun Element.fieldConditionFunction(): String {
@@ -154,8 +154,8 @@ class ZygardeEntityFieldGenerator(
   }
 
   private fun Element.toConditionAction(rootEntityElement: Element, currentEntityElement: Element): TypeName {
-    val rootEntityTypeName = rootEntityElement.typeName()
-    val currentEntityTypeName = currentEntityElement.typeName()
+    val rootEntityTypeName = rootEntityElement.notNullTypeName()
+    val currentEntityTypeName = currentEntityElement.notNullTypeName()
     return this.toConditionAction(
       rootEntityTypeName = rootEntityTypeName,
       currentEntityTypeName = currentEntityTypeName,

@@ -19,7 +19,7 @@ import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_SUFFIX
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.resolveGenericFieldTypeMap
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.notNullTypeName
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
@@ -54,14 +54,14 @@ class ZygardeJpaDaoGenerator(
                 val superInterface = daoInherit?.let { ClassName.bestGuess(it) }
                 if (superInterface != null) {
                   interfaceBuilder.addSuperinterface(
-                    superInterface.generic(element.typeName(), element.findIdClass())
+                    superInterface.generic(element.notNullTypeName(), element.findIdClass())
                   )
                 } else {
                   interfaceBuilder.addSuperinterface(
-                    JpaRepository::class.generic(element.typeName(), element.findIdClass())
+                    JpaRepository::class.generic(element.notNullTypeName(), element.findIdClass())
                   )
                     .addSuperinterface(
-                      JpaSpecificationExecutor::class.generic(element.typeName())
+                      JpaSpecificationExecutor::class.generic(element.notNullTypeName())
                     )
                 }
               }

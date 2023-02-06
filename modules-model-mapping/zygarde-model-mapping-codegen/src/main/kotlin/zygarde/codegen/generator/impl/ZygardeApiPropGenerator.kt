@@ -20,6 +20,7 @@ import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.isNullable
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.notNullTypeName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.nullableTypeName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.extension.kotlinpoet.generic
@@ -38,9 +39,10 @@ class ZygardeApiPropGenerator(
 
   data class DtoFieldDescriptionVo(
     val entityFieldName: String,
-    val fieldType: TypeName,
+    val entityFieldType: TypeName,
     val dtoName: String,
     val dtoFieldName: String,
+    val dtoFieldType: TypeName,
     val comment: String,
     val dtoRef: String = "",
     val dtoRefCollection: Boolean = false,
@@ -74,7 +76,8 @@ class ZygardeApiPropGenerator(
             additionalDtoProp.forDto.map {
               DtoFieldDescriptionVo(
                 entityFieldName = additionalDtoProp.field,
-                fieldType = safeGetTypeFromAnnotation { additionalDtoProp.fieldType.asTypeName() },
+                entityFieldType = safeGetTypeFromAnnotation { additionalDtoProp.fieldType.asTypeName() },
+                dtoFieldType = safeGetTypeFromAnnotation { additionalDtoProp.fieldType.asTypeName() },
                 dtoName = it,
                 dtoFieldName = additionalDtoProp.field,
                 comment = additionalDtoProp.comment,
@@ -90,9 +93,9 @@ class ZygardeApiPropGenerator(
       )
     val dtoDescriptionsFromElementFields = element
       .allFieldsIncludeSuper()
-      .flatMap { elem ->
-        val isTransient = elem.getAnnotation(Transient::class.java) != null
-        elem.getAnnotationsByType(ApiProp::class.java)
+      .flatMap { fieldElement ->
+        val isTransient = fieldElement.getAnnotation(Transient::class.java) != null
+        fieldElement.getAnnotationsByType(ApiProp::class.java)
           .flatMap { apiProp ->
             listOf(
               apiProp.dto.flatMap { dto ->
@@ -101,7 +104,7 @@ class ZygardeApiPropGenerator(
                 val entityValueProvider = safeGetTypeFromAnnotation { dto.entityValueProvider.asTypeName() }.kotlin(false).validValueProvider()
                 dto.names.plus(dto.name).filter { it.isNotEmpty() }.map { dtoName ->
                   toDtoFieldDescription(
-                    elem = elem,
+                    fieldElement = fieldElement,
                     ref = dto.ref,
                     refNullable = dto.refNullable,
                     refClass = refClass,
@@ -123,7 +126,7 @@ class ZygardeApiPropGenerator(
                 val valueProvider = safeGetTypeFromAnnotation { requestDto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()
                 requestDto.names.plus(requestDto.name).filter { it.isNotEmpty() }.map { dtoName ->
                   toDtoFieldDescription(
-                    elem = elem,
+                    fieldElement = fieldElement,
                     ref = requestDto.ref,
                     refNullable = requestDto.refNullable,
                     refClass = refClass,
@@ -186,7 +189,7 @@ class ZygardeApiPropGenerator(
 
         dtoFieldDescriptions.forEach { dto ->
           val fieldName = dto.dtoFieldName
-          val fieldType = dto.fieldType.let { if (isSearchDto) it.copy(nullable = true) else it }
+          val fieldType = dto.dtoFieldType.let { if (isSearchDto) it.copy(nullable = true) else it }
           ParameterSpec
             .builder(fieldName, fieldType)
             .also {
@@ -223,7 +226,7 @@ class ZygardeApiPropGenerator(
     refNullable: Boolean,
     refClass: TypeName,
     refCollection: Boolean,
-    elem: Element,
+    fieldElement: Element,
     dtoName: String,
     dtoFieldName: String,
     comment: String,
@@ -248,9 +251,9 @@ class ZygardeApiPropGenerator(
           refClass
         }
       }
-      else -> elem.nullableTypeName()
+      else -> fieldElement.nullableTypeName()
     }
-    val entityFieldName = elem.fieldName()
+    val entityFieldName = fieldElement.fieldName()
     if (isTransient && !entityFieldName.startsWith("_")) {
       throw IllegalArgumentException("transient field '$entityFieldName' should be starts with '_'")
     }
@@ -259,7 +262,8 @@ class ZygardeApiPropGenerator(
     }
     return DtoFieldDescriptionVo(
       entityFieldName = entityFieldName,
-      fieldType = fieldType.kotlin(canBeNullable = if (forceNullable) true else !forceNotNull && elem.isNullable()),
+      entityFieldType = fieldElement.typeName(),
+      dtoFieldType = fieldType.kotlin(canBeNullable = if (forceNullable) true else !forceNotNull && fieldElement.isNullable()),
       dtoName = dtoName,
       dtoFieldName = (if (dtoFieldName.isNotEmpty()) dtoFieldName else entityFieldName).replaceFirst("_", ""),
       comment = comment,
@@ -286,7 +290,7 @@ class ZygardeApiPropGenerator(
     val codeBlockArgs = mutableListOf<Any>(ClassName(dtoPackageName, dtoName))
     val dtoFieldSetterStatements = dtoFieldDescriptions
       .map {
-        val q = if (it.fieldType.isNullable) "?" else ""
+        val q = if (it.dtoFieldType.isNullable) "?" else ""
         if (it.entityValueProvider != null) {
           codeBlockArgs.add(it.entityValueProvider)
           "  ${it.dtoFieldName} = %T().getValue(this)"
@@ -305,7 +309,7 @@ class ZygardeApiPropGenerator(
         }
       }
     return FunSpec.builder("to$dtoName")
-      .receiver(element.typeName())
+      .receiver(element.notNullTypeName())
       .addStatement(
         """return %T(
 ${dtoFieldSetterStatements.joinToString(",\r\n")}              
@@ -322,8 +326,8 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
   ): FunSpec {
     val functionBuilder = FunSpec.builder("applyFrom$dtoName")
       .addParameter("req", ClassName(dtoPackageName, dtoName))
-      .receiver(element.typeName())
-      .returns(element.typeName())
+      .receiver(element.notNullTypeName())
+      .returns(element.notNullTypeName())
 
     val checkApiVersion = dtoFieldDescriptions.any { it.sinceApiVersion > 0 }
     if (checkApiVersion) {
@@ -333,18 +337,24 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
     dtoFieldDescriptions
       .groupBy { it.sinceApiVersion }
       .forEach { (sinceApiVersion, fieldDescriptionVos) ->
+        var indent = ""
         if (sinceApiVersion > 0) {
           functionBuilder.addStatement("if(apiVersion >= $sinceApiVersion){")
+          indent = "  "
         }
         fieldDescriptionVos.forEach { fieldDescriptionVo ->
           if (fieldDescriptionVo.valueProvider != null) {
-            val q = if (fieldDescriptionVo.fieldType.isNullable) "?" else ""
+            val q = if (fieldDescriptionVo.dtoFieldType.isNullable) "?" else ""
             functionBuilder.addStatement(
-              "this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}$q.let{ %T().getValue(it) }",
+              indent + "this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}$q.let{ %T().getValue(it) }",
               fieldDescriptionVo.valueProvider
             )
           } else {
-            functionBuilder.addStatement("this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}")
+            if (fieldDescriptionVo.dtoFieldType.isNullable && !fieldDescriptionVo.entityFieldType.isNullable) {
+              functionBuilder.addStatement(indent + "req.${fieldDescriptionVo.dtoFieldName}?.let{ this.${fieldDescriptionVo.entityFieldName} = it }")
+            } else {
+              functionBuilder.addStatement(indent + "this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}")
+            }
           }
         }
         if (sinceApiVersion > 0) {
@@ -363,7 +373,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
     val dtoClass = ClassName(dtoPackageName, dtoName)
     val functionBuilder = FunSpec.builder("applyFrom$dtoName")
       .addParameter("req", dtoClass)
-      .receiver(EnhancedSearch::class.generic(element.typeName()))
+      .receiver(EnhancedSearch::class.generic(element.notNullTypeName()))
 
     dtoFieldDescriptions
       .forEach {

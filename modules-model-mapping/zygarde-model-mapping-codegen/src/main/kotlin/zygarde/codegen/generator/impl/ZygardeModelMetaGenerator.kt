@@ -18,7 +18,7 @@ import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.ZygardeKaptOptions.Companion.MODEL_META_GENERATE_PACKAGE
 import zygarde.codegen.dsl.ClassBasedModelMappingDslCodegen
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.notNullTypeName
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
@@ -56,8 +56,8 @@ class ZygardeModelMetaGenerator(
     val codegenClassName = "Abstract${className}Codegen"
     val codegenClassBuilder = TypeSpec.classBuilder(codegenClassName)
       .addModifiers(KModifier.ABSTRACT)
-      .superclass(ClassBasedModelMappingDslCodegen::class.generic(modelElement.typeName()))
-      .addSuperclassConstructorParameter("%T::class", modelElement.typeName())
+      .superclass(ClassBasedModelMappingDslCodegen::class.generic(modelElement.notNullTypeName()))
+      .addSuperclassConstructorParameter("%T::class", modelElement.notNullTypeName())
 
     val allFieldsIncludeSuper = modelElement.allFieldsIncludeSuper()
     allFieldsIncludeSuper.forEach { field ->
@@ -88,7 +88,7 @@ class ZygardeModelMetaGenerator(
           "allFields",
           Array::class.generic(
             ModelMetaField::class.generic(
-              modelElement.typeName(),
+              modelElement.notNullTypeName(),
               starType
             )
           )
@@ -132,7 +132,7 @@ class ZygardeModelMetaGenerator(
     }
     val statmentArgs = mutableListOf(
       ModelMetaField::class.asClassName(),
-      modelElement.typeName(),
+      modelElement.notNullTypeName(),
       rawFieldType,
       fieldType.isNullable,
       comment,
@@ -144,7 +144,7 @@ class ZygardeModelMetaGenerator(
       .builder(
         fieldName,
         ModelMetaField::class.asClassName().parameterizedBy(
-          modelElement.typeName(),
+          modelElement.notNullTypeName(),
           rawFieldType.generic(*genericTypeArguments.map { starType }.toTypedArray()),
         ),
       )
@@ -188,7 +188,7 @@ class ZygardeModelMetaGenerator(
           "dsl",
           LambdaTypeName.get(
             receiver = ModelMetaField::class.asClassName().parameterizedBy(
-              modelElement.typeName(),
+              modelElement.notNullTypeName(),
               rawFieldType.generic(*genericTypeArguments.map { starType }.toTypedArray()),
             ),
             returnType = Unit::class.asTypeName()

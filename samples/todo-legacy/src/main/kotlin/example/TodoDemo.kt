@@ -48,11 +48,11 @@ class Todo(
     comment = "description of todo",
     dto = [Dto(todoDto)],
     requestDto = [
-      RequestDto(createToDoReq),
+      RequestDto(createToDoReq, forceNullableInReq = true),
       RequestDto(updateToDoReq),
     ]
   )
-  var description: String = "",
+  var description: String = "123",
 
   @ApiProp(
     requestDto = [
