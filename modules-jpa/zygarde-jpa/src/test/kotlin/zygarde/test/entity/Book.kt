@@ -16,4 +16,6 @@ open class Book(
   var releaseDate: LocalDate = LocalDate.now(),
   var createdAt: LocalDateTime = LocalDateTime.now(),
   var aId: Int? = null,
+  var minPrice: Int = (price * 0.8).toInt(),
+  var maxPrice: Int = (price * 1.2).toInt(),
 ) : AutoLongIdEntity()

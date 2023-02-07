@@ -82,28 +82,28 @@ class EnhancedSearchImpl<EntityType>(
   }
 
   override fun <FieldType : Comparable<FieldType>> rangeOverlap(
-    dateFieldStartFn: EnhancedSearch<EntityType>.() -> ComparableConditionAction<EntityType, *, FieldType>,
-    dateFieldEndFn: EnhancedSearch<EntityType>.() -> ComparableConditionAction<EntityType, *, FieldType>,
+    fieldStartFn: EnhancedSearch<EntityType>.() -> ComparableConditionAction<EntityType, *, FieldType>,
+    fieldEndFn: EnhancedSearch<EntityType>.() -> ComparableConditionAction<EntityType, *, FieldType>,
     from: FieldType?,
     to: FieldType?,
   ) {
     if (from == null || to == null) return
     or {
       it.and {
-        this.dateFieldStartFn() lte from
-        this.dateFieldEndFn() gte from
+        this.fieldStartFn() lte from
+        this.fieldEndFn() gte from
       }
       it.and {
-        this.dateFieldStartFn() lte to
-        this.dateFieldEndFn() gte to
+        this.fieldStartFn() lte to
+        this.fieldEndFn() gte to
       }
       it.and {
-        this.dateFieldStartFn() lte from
-        this.dateFieldEndFn() gte to
+        this.fieldStartFn() lte from
+        this.fieldEndFn() gte to
       }
       it.and {
-        this.dateFieldStartFn() gte from
-        this.dateFieldEndFn() lte to
+        this.fieldStartFn() gte from
+        this.fieldEndFn() lte to
       }
     }
   }

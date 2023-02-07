@@ -36,6 +36,7 @@ import zygarde.data.search.SearchDateTimeRange
 import zygarde.data.search.SearchIntRange
 import zygarde.data.search.SearchKeyword
 import zygarde.data.search.SearchKeywordType
+import zygarde.data.search.range.SearchIntRangeOverlap
 import zygarde.test.dao.TestAuthorDao
 import zygarde.test.dao.TestAuthorGroupDao
 import zygarde.test.dao.TestBookDao
@@ -136,6 +137,7 @@ class EnhancedSearchTest {
     bookDao.search { comparableField<LocalDateTime>("createdAt") dateTimeRange null }.size shouldBe 1000
     bookDao.search { field<Author>("author").comparableField<String>("name") inList emptyList() }.size shouldBe 1000
     bookDao.search { field<Author>("author").field<LocalDate>("registerDate") eq null }.size shouldBe 1000
+    bookDao.search { rangeOverlap({ field(Book::minPrice) }, { field(Book::maxPrice) }, SearchIntRangeOverlap(0, 1000)) }.size shouldBe 1000
   }
 
   @Order(400)
