@@ -7,8 +7,8 @@ import kotlin.String
 @Schema
 public data class UpdateTodoReq(
   @Schema(
-    description = "",
-    required = true
+    description="",
+    required=true
   )
-  public val description: String
+  public var description: String
 ) : Serializable

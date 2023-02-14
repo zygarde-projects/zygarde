@@ -190,6 +190,7 @@ $callDtoStatements
           PropertySpec
             .builder(fieldName, fieldType)
             .initializer(fieldName)
+            .mutable(true)
             .addAnnotation(
               AnnotationSpec.builder(Schema::class)
                 .addMember("description=%S", comment.orEmpty())

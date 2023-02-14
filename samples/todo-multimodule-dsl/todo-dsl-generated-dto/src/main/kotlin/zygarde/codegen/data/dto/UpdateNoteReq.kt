@@ -7,8 +7,8 @@ import kotlin.String
 @Schema
 public data class UpdateNoteReq(
   @Schema(
-    description = "",
-    required = true
+    description="",
+    required=true
   )
-  public val title: String
+  public var title: String
 ) : Serializable

@@ -12,11 +12,11 @@ public object MarkDtoBuilder {
     extraStr: String,
     todo: TodoDto
   ): MarkDto = MarkDto(
-    id = AutoIntIdValueProvider().getValue(mark),
-    x = mark.x,
-    y = mark.y,
-    comments = mark.comments,
-    extraStr = extraStr,
-    todo = todo
+  id = AutoIntIdValueProvider().getValue(mark),
+  x = mark.x,
+  y = mark.y,
+  comments = mark.comments,
+  extraStr = extraStr,
+  todo = todo
   )
 }
