@@ -85,7 +85,7 @@ subprojects {
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.0")
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2022.0.1")
     }
   }
 
