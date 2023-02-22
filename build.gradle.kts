@@ -3,7 +3,7 @@ buildscript {
     mavenCentral()
     maven("https://plugins.gradle.org/m2/")
     maven("https://repo.spring.io/plugins-release")
-    maven { url = uri("https://repo.spring.io/release") }
+    maven("https://repo.spring.io/release")
   }
 }
 
