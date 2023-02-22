@@ -2,10 +2,10 @@ package zygarde.test.entity
 
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import java.time.LocalDate
-import javax.persistence.Entity
-import javax.persistence.FetchType
-import javax.persistence.ManyToOne
-import javax.persistence.OneToMany
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 
 @Entity
 open class Author(

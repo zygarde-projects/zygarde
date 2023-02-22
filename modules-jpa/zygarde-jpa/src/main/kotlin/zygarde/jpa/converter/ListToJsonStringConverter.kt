@@ -3,7 +3,7 @@ package zygarde.jpa.converter
 import zygarde.json.jsonStringToList
 import zygarde.json.toJsonString
 import java.io.Serializable
-import javax.persistence.AttributeConverter
+import jakarta.persistence.AttributeConverter
 import kotlin.reflect.KClass
 
 abstract class ListToJsonStringConverter<T : Serializable>(val clz: KClass<T>) : AttributeConverter<Collection<T>, String> {

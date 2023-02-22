@@ -10,7 +10,7 @@ import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import zygarde.data.jpa.search.request.toSpringDataPageRequest
 import zygarde.data.jpa.search.request.toSpringDataSort
-import javax.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Predicate
 
 private fun <T> buildSpec(searchContent: EnhancedSearch<T>.() -> Unit): Specification<T> {
   return Specification<T> { root, query, cb ->

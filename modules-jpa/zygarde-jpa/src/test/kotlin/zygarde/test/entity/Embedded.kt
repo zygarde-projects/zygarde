@@ -1,13 +1,13 @@
 package zygarde.test.entity
 
 import zygarde.data.jpa.entity.AutoLongIdEntity
-import javax.persistence.Column
-import javax.persistence.Embeddable
-import javax.persistence.Embedded
-import javax.persistence.Entity
-import javax.persistence.PrimaryKeyJoinColumn
-import javax.persistence.SecondaryTable
-import javax.persistence.SecondaryTables
+import jakarta.persistence.Column
+import jakarta.persistence.Embeddable
+import jakarta.persistence.Embedded
+import jakarta.persistence.Entity
+import jakarta.persistence.PrimaryKeyJoinColumn
+import jakarta.persistence.SecondaryTable
+import jakarta.persistence.SecondaryTables
 
 @Entity
 @SecondaryTables(

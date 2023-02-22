@@ -17,7 +17,7 @@ import zygarde.core.extension.general.fallbackWhenNull
 import zygarde.core.log.Loggable
 import zygarde.data.api.ApiErrorResponse
 import zygarde.json.toJsonString
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 /**
  * @author leo

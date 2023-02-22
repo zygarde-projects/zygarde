@@ -7,7 +7,7 @@ import org.springframework.data.annotation.LastModifiedBy
 import org.springframework.data.annotation.LastModifiedDate
 import zygarde.data.jpa.audit.AuditInfoContainer
 import java.time.LocalDateTime
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.MappedSuperclass
 
 @Audited
 @MappedSuperclass
