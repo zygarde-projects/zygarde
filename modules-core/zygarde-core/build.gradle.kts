@@ -2,7 +2,6 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
-  implementation("org.springframework.boot:spring-boot-starter")
   implementation("org.springframework.boot:spring-boot-starter-logging")
   api(project(":zygarde-error-handling"))
   api("io.swagger.core.v3:swagger-annotations:2.1.10")
