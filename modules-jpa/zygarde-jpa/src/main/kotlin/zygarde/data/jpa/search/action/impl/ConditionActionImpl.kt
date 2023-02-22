@@ -11,6 +11,7 @@ import jakarta.persistence.criteria.JoinType
 import jakarta.persistence.criteria.Path
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import org.hibernate.query.sqm.tree.domain.AbstractSqmSimplePath
 
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
@@ -155,12 +156,13 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     }
     if (isCountQuery) {
       val initialPath = enhancedSearch.root.get<Any>(splited[0])
-      throw IllegalArgumentException("SingularAttributePath has been removed since hibernate 6.")
-      // if (initialPath is SingularAttributePath<*>) {
-      //   return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
-      //     join.get<Any>(foldedColumn)
-      //   } as Path<FieldType>
-      // }
+
+      // SingularAttributePath has been removed since hibernate 6.
+      if (initialPath is AbstractSqmSimplePath<*>) {
+        return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
+          join.get<Any>(foldedColumn)
+        } as Path<FieldType>
+      }
     }
 
     val fetch = enhancedSearch.fetchMap[splited.take(splited.size - 1).joinToString(".")]
