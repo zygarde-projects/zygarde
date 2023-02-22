@@ -55,5 +55,5 @@ fun <T> JpaSpecificationExecutor<T>.searchPage(
 }
 
 fun <T> ZygardeEnhancedDao<T, *>.remove(searchContent: EnhancedSearch<T>.() -> Unit) {
-  delete(buildSpec(searchContent))
+  deleteBySpec(buildSpec(searchContent))
 }

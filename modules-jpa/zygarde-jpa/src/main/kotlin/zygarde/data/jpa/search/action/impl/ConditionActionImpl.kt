@@ -1,6 +1,5 @@
 package zygarde.data.jpa.search.action.impl
 
-import org.hibernate.query.criteria.internal.path.SingularAttributePath
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
@@ -156,11 +155,12 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     }
     if (isCountQuery) {
       val initialPath = enhancedSearch.root.get<Any>(splited[0])
-      if (initialPath is SingularAttributePath<*>) {
-        return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
-          join.get<Any>(foldedColumn)
-        } as Path<FieldType>
-      }
+      throw IllegalArgumentException("SingularAttributePath has been removed since hibernate 6.")
+      // if (initialPath is SingularAttributePath<*>) {
+      //   return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
+      //     join.get<Any>(foldedColumn)
+      //   } as Path<FieldType>
+      // }
     }
 
     val fetch = enhancedSearch.fetchMap[splited.take(splited.size - 1).joinToString(".")]

@@ -14,6 +14,15 @@ open class ZygardeJpaRepository<T, ID>(
   val entityManager: EntityManager
 ) : SimpleJpaRepository<T, ID>(entityInformation, entityManager), ZygardeEnhancedDao<T, ID> {
 
+  override fun deleteBySpec(spec: Specification<T>) {
+    val cb = entityManager.criteriaBuilder
+    val criteriaDelete = cb.createCriteriaDelete(domainClass)
+    val root = criteriaDelete.from(domainClass)
+    val query = cb.createQuery()
+    criteriaDelete.where(spec.toPredicate(root, query, cb))
+    entityManager.createQuery(criteriaDelete).executeUpdate()
+  }
+
   @Suppress("UNCHECKED_CAST")
   override fun <P> selectOne(p: KProperty1<T, P>, searchContent: EnhancedSearch<T>.() -> Unit): P {
     val cb = entityManager.criteriaBuilder
