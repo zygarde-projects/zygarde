@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockkClass
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Primary
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
@@ -13,6 +14,7 @@ import org.springframework.mail.javamail.MimeMessagePreparator
  * @author leo
  */
 @SpringBootApplication
+@ComponentScan("zygarde.mail.service")
 class EmailTestApp {
 
   @Primary

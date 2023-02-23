@@ -2,6 +2,7 @@ package zygarde.mail.service.impl
 
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.stereotype.Service
 import zygarde.mail.service.EmailService
 import zygarde.mail.types.SendEmailRequest
 import java.util.function.Consumer
@@ -9,6 +10,7 @@ import java.util.function.Consumer
 /**
  * @author leo
  */
+@Service
 class SmtpEmailServiceImpl(val javaMailSender: JavaMailSender) : EmailService {
 
   override fun sendEmail(request: SendEmailRequest, extraMimeMessageProcessor: Consumer<MimeMessageHelper>?) {
