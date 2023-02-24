@@ -11,10 +11,10 @@ import zygarde.codegen.ZyModel
 import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.data.jpa.entity.AutoLongIdEntity
 import java.time.LocalDateTime
-import javax.persistence.Entity
-import javax.persistence.MappedSuperclass
-import javax.persistence.OneToMany
-import javax.persistence.Transient
+import jakarta.persistence.Entity
+import jakarta.persistence.MappedSuperclass
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Transient
 
 @MappedSuperclass
 abstract class FooEntity : AutoLongIdEntity() {

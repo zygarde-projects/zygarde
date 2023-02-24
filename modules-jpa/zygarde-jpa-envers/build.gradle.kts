@@ -6,7 +6,7 @@ dependencies {
   api(project(":zygarde-jpa"))
   api("org.springframework.boot:spring-boot-starter-data-jpa")
   api("org.springframework.security:spring-security-core")
-  api("org.hibernate:hibernate-envers")
+  api("org.hibernate.orm:hibernate-envers")
   testImplementation("com.h2database:h2")
   testImplementation(project(":zygarde-test"))
   testImplementation("org.springframework.boot:spring-boot-starter-test")

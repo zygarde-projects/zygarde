@@ -6,8 +6,10 @@ import feign.Logger
 import feign.Request
 import feign.Target
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations
+import org.springframework.cloud.openfeign.FeignAutoConfiguration
 import org.springframework.cloud.openfeign.FeignLoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,6 +23,7 @@ import zygarde.test.feign.TestUserRequestInterceptor
 import java.util.concurrent.TimeUnit
 
 @Configuration
+@ImportAutoConfiguration(FeignAutoConfiguration::class)
 class ZygardeSpringTestFeignConfig(
   @Value("\${server.port}")
   val serverPort: Int

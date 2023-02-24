@@ -3,6 +3,7 @@ buildscript {
     mavenCentral()
     maven("https://plugins.gradle.org/m2/")
     maven("https://repo.spring.io/plugins-release")
+    maven("https://repo.spring.io/release")
   }
 }
 
@@ -11,11 +12,11 @@ plugins {
   id("org.jetbrains.dokka") version "1.6.10"
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
   id("de.jansauer.printcoverage") version "2.0.0"
-  id("org.springframework.boot") version "2.6.3"
-  id("io.spring.dependency-management") version "1.0.11.RELEASE"
-  kotlin("jvm") version "1.6.10"
-  kotlin("plugin.spring") version "1.6.10"
-  kotlin("kapt") version "1.6.10"
+  id("org.springframework.boot") version "3.0.2"
+  id("io.spring.dependency-management") version "1.1.0"
+  kotlin("jvm") version "1.7.10"
+  kotlin("plugin.spring") version "1.7.10"
+  kotlin("kapt") version "1.7.10"
   `maven-publish`
   jacoco
   application
@@ -84,19 +85,19 @@ subprojects {
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.0")
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2022.0.1")
     }
   }
 
   configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = "1.8"
+      jvmTarget = "17"
     }
   }
 

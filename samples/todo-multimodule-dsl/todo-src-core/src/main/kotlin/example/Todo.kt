@@ -5,9 +5,9 @@ import zygarde.core.annotation.Comment
 import zygarde.codegen.meta.ZyModelMeta
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.jpa.converter.StringListToJsonStringConverter
-import javax.persistence.Convert
-import javax.persistence.Entity
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.Convert
+import jakarta.persistence.Entity
+import jakarta.persistence.MappedSuperclass
 
 @Entity
 @ZyModel

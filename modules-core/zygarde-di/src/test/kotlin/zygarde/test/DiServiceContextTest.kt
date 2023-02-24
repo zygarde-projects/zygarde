@@ -6,10 +6,17 @@ import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Bean
+import zygarde.core.di.DiServiceContext
 import zygarde.core.di.DiServiceContext.autowired
 import zygarde.core.di.DiServiceContext.bean
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [DiServiceContextTest.DiServiceContextTestApp::class])
+@SpringBootTest(
+  webEnvironment = SpringBootTest.WebEnvironment.NONE,
+  classes = [
+    DiServiceContextTest.DiServiceContextTestApp::class,
+    DiServiceContext::class
+  ]
+)
 class DiServiceContextTest {
 
   class MyBean

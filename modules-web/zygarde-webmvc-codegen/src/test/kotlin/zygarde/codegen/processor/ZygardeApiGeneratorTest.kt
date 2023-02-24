@@ -21,7 +21,7 @@ class ZygardeApiGeneratorTest {
         ClassPathResource("input/model/BookTagsValueProvider.kt").file,
         ClassPathResource("input/model/User.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_1_8.description
+      jvmTarget = JvmTarget.JVM_17.description
       annotationProcessors = listOf(ZygardeApiProcessor(), ZygardeApiPropProcessor(), ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

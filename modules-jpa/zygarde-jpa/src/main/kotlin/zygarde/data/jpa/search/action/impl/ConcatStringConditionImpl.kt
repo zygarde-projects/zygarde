@@ -2,8 +2,8 @@ package zygarde.data.jpa.search.action.impl
 
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import javax.persistence.criteria.Expression
-import javax.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Expression
+import jakarta.persistence.criteria.Predicate
 
 class ConcatStringConditionImpl<RootEntityType, EntityType>(
   val enhancedSearch: EnhancedSearchImpl<RootEntityType>,

@@ -7,7 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate
 import zygarde.data.jpa.audit.AuditInfoContainer
 import java.io.Serializable
 import java.time.LocalDateTime
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.MappedSuperclass
 
 @MappedSuperclass
 abstract class AuditedAutoIdEntity<T : Serializable> : AutoIdEntity<T>(), AuditInfoContainer {

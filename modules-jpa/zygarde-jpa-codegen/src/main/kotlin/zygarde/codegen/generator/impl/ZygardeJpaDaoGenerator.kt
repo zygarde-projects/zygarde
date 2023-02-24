@@ -28,8 +28,8 @@ import zygarde.core.exception.CommonErrorCode
 import zygarde.core.extension.exception.errWhenNull
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
-import javax.persistence.Id
-import javax.persistence.IdClass
+import jakarta.persistence.Id
+import jakarta.persistence.IdClass
 
 class ZygardeJpaDaoGenerator(
   processingEnv: ProcessingEnvironment

@@ -7,9 +7,9 @@ import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.jpa.entity.AutoLongIdEntity
 import zygarde.data.jpa.entity.SequenceIntIdEntity
 import java.io.Serializable
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.IdClass
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.IdClass
 
 @ZyModel
 @Entity

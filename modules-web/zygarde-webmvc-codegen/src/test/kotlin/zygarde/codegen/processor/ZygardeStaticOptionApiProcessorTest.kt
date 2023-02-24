@@ -18,7 +18,7 @@ class ZygardeStaticOptionApiProcessorTest {
         ClassPathResource("input/options/BarType.kt").file,
         ClassPathResource("input/options/FooType.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_1_8.description
+      jvmTarget = JvmTarget.JVM_17.description
       annotationProcessors = listOf(ZygardeStaticOptionApiProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

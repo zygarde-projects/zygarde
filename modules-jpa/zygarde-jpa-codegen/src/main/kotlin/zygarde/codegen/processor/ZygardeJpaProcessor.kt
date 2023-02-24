@@ -12,9 +12,9 @@ import javax.annotation.processing.SupportedOptions
 import javax.annotation.processing.SupportedSourceVersion
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
-import javax.persistence.Embeddable
-import javax.persistence.Entity
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.Embeddable
+import jakarta.persistence.Entity
+import jakarta.persistence.MappedSuperclass
 
 @AutoService(Processor::class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)

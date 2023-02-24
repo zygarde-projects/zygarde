@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.support.JpaEntityInformation
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import javax.persistence.EntityManager
-import javax.persistence.criteria.Predicate
+import jakarta.persistence.EntityManager
+import jakarta.persistence.criteria.Predicate
 import kotlin.reflect.KProperty1
 
 open class ZygardeJpaRepository<T, ID>(
@@ -14,7 +14,7 @@ open class ZygardeJpaRepository<T, ID>(
   val entityManager: EntityManager
 ) : SimpleJpaRepository<T, ID>(entityInformation, entityManager), ZygardeEnhancedDao<T, ID> {
 
-  override fun delete(spec: Specification<T>) {
+  override fun deleteBySpec(spec: Specification<T>) {
     val cb = entityManager.criteriaBuilder
     val criteriaDelete = cb.createCriteriaDelete(domainClass)
     val root = criteriaDelete.from(domainClass)

@@ -9,6 +9,6 @@ class TestApi {
 
   @GetMapping("/apiId")
   fun getApiId(): String {
-    return ApiTracingContext.getTracingData().apiId
+    return ApiTracingContext.getTracingData().apply { apiId = "TestApi.getApiId" }.apiId
   }
 }

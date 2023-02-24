@@ -29,7 +29,7 @@ import zygarde.codegen.model.ApiToGenerateVo
 import zygarde.codegen.model.WebApiGenerateResult
 import java.util.LinkedList
 import java.util.function.Consumer
-import javax.validation.Valid
+import jakarta.validation.Valid
 
 class WebMvcApiGenerator(
   private val apis: Collection<ApiToGenerateVo>

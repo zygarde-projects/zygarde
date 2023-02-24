@@ -3,9 +3,9 @@ package zygarde.test.entity
 import zygarde.data.jpa.entity.AutoLongIdEntity
 import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.persistence.Entity
-import javax.persistence.FetchType
-import javax.persistence.ManyToOne
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.ManyToOne
 
 @Entity
 open class Book(
