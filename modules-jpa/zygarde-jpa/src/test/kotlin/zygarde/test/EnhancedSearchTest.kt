@@ -435,4 +435,15 @@ class EnhancedSearchTest {
       }
       .totalPages shouldBeGreaterThan 0
   }
+
+  @Order(11001)
+  @Test
+  fun `should able to search page with manyToOne then oneToMany`() {
+    bookDao
+      .searchPage(PagingAndSortingRequest().also { it.paging = PagingRequest(page = 1, pageSize = 1) }) {
+        field(Book::author).field<Book>(Author::books.name)
+          .comparableField<Int>(Book::price.name) gte 100
+      }
+      .totalPages shouldBeGreaterThan 0
+  }
 }

@@ -12,6 +12,7 @@ import javax.persistence.criteria.JoinType
 import javax.persistence.criteria.Path
 import javax.persistence.criteria.Predicate
 import javax.persistence.criteria.Root
+import javax.persistence.metamodel.Attribute
 
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
@@ -19,6 +20,13 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val join: Boolean = false,
   private val isCountQuery: Boolean = enhancedSearch.query.resultType.canonicalName == "java.lang.Long",
 ) : ConditionAction<RootEntityType, EntityType, FieldType> {
+
+  companion object {
+    private val COUNT_QUERY_ALLOW_GET_ATTRIBUTE_TYPE = listOf(
+      Attribute.PersistentAttributeType.ONE_TO_MANY,
+      Attribute.PersistentAttributeType.EMBEDDED,
+    )
+  }
 
   override fun <AnotherFieldType> field(fieldName: String): ConditionAction<RootEntityType, FieldType, AnotherFieldType> {
     return ConditionActionImpl<RootEntityType, FieldType, AnotherFieldType>(
@@ -156,7 +164,10 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     }
     if (isCountQuery) {
       val initialPath = enhancedSearch.root.get<Any>(splited[0])
-      if (initialPath is SingularAttributePath<*>) {
+      if (
+        initialPath is SingularAttributePath<*> &&
+        initialPath.attribute.persistentAttributeType in COUNT_QUERY_ALLOW_GET_ATTRIBUTE_TYPE
+      ) {
         return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
           join.get<Any>(foldedColumn)
         } as Path<FieldType>
