@@ -1,5 +1,6 @@
 package example
 
+import example.MarkModels.MarkDetailDto
 import example.MarkModels.MarkDto
 import example.MarkModels.SaveMarkReq
 import zygarde.codegen.dsl.ModelMappingCodegenSpec
@@ -8,22 +9,28 @@ import zygarde.core.annotation.Comment
 
 enum class MarkModels : CodegenDtoSimple {
   MarkDto,
+  MarkDetailDto,
   SaveMarkReq,
 }
 
 class MarkCodegenSpec : ModelMappingCodegenSpec({
-  MarkDto {
+  group(MarkDto, MarkDetailDto) {
     fromAutoIntId(Mark::id)
     from(
       Mark::x,
       Mark::y,
-      Mark::comments,
     )
-    fromExtra(
-      MarkCodegenSpec::extraStr,
-    )
-    fromRef("todo", TodoModelDslCodegen.TodoDtos.TodoDto)
+    MarkDetailDto {
+      from(
+        Mark::comments,
+      )
+      fromExtra(
+        MarkCodegenSpec::extraStr,
+      )
+      fromRef("todo", TodoModelDslCodegen.TodoDtos.TodoDto)
+    }
   }
+
   SaveMarkReq {
     applyTo(
       Mark::x,
