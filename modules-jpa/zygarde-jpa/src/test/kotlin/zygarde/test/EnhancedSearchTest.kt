@@ -238,6 +238,9 @@ class EnhancedSearchTest {
         and {
           stringField("name") startsWith "zygarde"
           stringField("name") endsWith "zygarde"
+          stringField("name").upper() startsWith "ZYGARDE"
+          stringField("name").lower() startsWith "zygarde"
+          stringField("name").trim() startsWith "zygarde"
         }
       }
     }.size shouldBeGreaterThan 0

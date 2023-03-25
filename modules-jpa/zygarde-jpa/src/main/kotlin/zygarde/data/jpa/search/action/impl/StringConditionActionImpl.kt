@@ -5,10 +5,14 @@ import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import zygarde.data.search.SearchKeyword
 import zygarde.data.search.SearchKeywordType
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Expression
+import javax.persistence.criteria.Predicate
 
 open class StringConditionActionImpl<RootEntityType, EntityType>(
-  enhancedSearch: EnhancedSearchImpl<RootEntityType>,
-  columnName: String
+  val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
+  val columnName: String,
+  val pathExpressionProcessor: (cb: CriteriaBuilder, exp: Expression<String>) -> Expression<String> = { _, exp -> exp },
 ) : ComparableConditionActionImpl<RootEntityType, EntityType, String>(enhancedSearch, columnName), StringConditionAction<RootEntityType, EntityType> {
 
   override fun keyword(value: SearchKeyword?): EnhancedSearch<RootEntityType> = applyNonNullAction(value?.keyword) { path, keyword ->
@@ -38,4 +42,31 @@ open class StringConditionActionImpl<RootEntityType, EntityType>(
         *keywords.map { keyword -> cb.like(path, "%$keyword%") }.toTypedArray()
       )
     }
+
+  override fun lower(): StringConditionAction<RootEntityType, EntityType> {
+    return StringConditionActionImpl(enhancedSearch, columnName) { cb, exp ->
+      cb.lower(exp)
+    }
+  }
+
+  override fun upper(): StringConditionAction<RootEntityType, EntityType> {
+    return StringConditionActionImpl(enhancedSearch, columnName) { cb, exp ->
+      cb.upper(exp)
+    }
+  }
+
+  override fun trim(): StringConditionAction<RootEntityType, EntityType> {
+    return StringConditionActionImpl(enhancedSearch, columnName) { cb, exp ->
+      cb.trim(exp)
+    }
+  }
+
+  override fun <T> applyNonNullAction(
+    value: T?,
+    block: EnhancedSearchImpl<RootEntityType>.(path: Expression<String>, v: T) -> Predicate
+  ): EnhancedSearchImpl<RootEntityType> {
+    return super.applyNonNullAction(value) { path, v ->
+      block.invoke(this, pathExpressionProcessor(cb, path), v)
+    }
+  }
 }

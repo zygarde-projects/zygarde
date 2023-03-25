@@ -6,7 +6,7 @@ import javax.persistence.criteria.Expression
 import javax.persistence.criteria.Predicate
 
 class ConcatStringConditionImpl<RootEntityType, EntityType>(
-  val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
+  enhancedSearch: EnhancedSearchImpl<RootEntityType>,
   val stringFields: List<StringConditionAction<RootEntityType, *>>
 ) : StringConditionActionImpl<RootEntityType, EntityType>(enhancedSearch, "") {
   override fun <T> applyNonNullAction(
