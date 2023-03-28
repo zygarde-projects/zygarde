@@ -360,7 +360,11 @@ class WebMvcApiGenerator(
       apiInterfaceBuilder.addFunction(apiFuncBuilder.build())
       feignApiInterfaceBuilder.addFunction(feignApiFuncBuilder.build())
       webMvcControllerBuilder.addFunction(webMvcFuncBuilder.build())
-      serviceInterfaceBuilder.addFunction(serviceFuncBuilder.build())
+
+      serviceFuncBuilder.build()
+        .takeUnless(serviceInterfaceBuilder.funSpecs::contains)
+        ?.let(serviceInterfaceBuilder::addFunction)
+
       servicePostProcessingFuncBuilder?.build()?.let(serviceInterfaceBuilder::addFunction)
     }
   }

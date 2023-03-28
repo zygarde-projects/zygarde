@@ -35,5 +35,12 @@ class TodoApiCodegen : WebMvcDslCodegen() {
         todoIdPathVariable()
       }
     }
+
+    api("TodoApi2", "api/todo2") {
+      get("getTodoList", "") {
+        resCollection<TodoDto>()
+        serviceName = "TodoApiService" // we can share TodoApiService that generated from TodoApi Spec
+      }
+    }
   }
 }

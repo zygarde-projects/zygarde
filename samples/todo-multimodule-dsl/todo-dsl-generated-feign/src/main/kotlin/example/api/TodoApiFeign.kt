@@ -14,24 +14,21 @@ import zygarde.codegen.`data`.dto.CreateTodoReq
 import zygarde.codegen.`data`.dto.TodoDto
 import zygarde.codegen.`data`.dto.UpdateTodoReq
 
-@FeignClient(name = "TodoApi")
+@FeignClient(name="TodoApi")
 public interface TodoApiFeign : TodoApi {
-  @GetMapping(value = ["/api/todo"])
+  @GetMapping(value=["/api/todo"])
   public override fun getTodoList(): Collection<TodoDto>
 
-  @GetMapping(value = ["/api/todo/{todoId}"])
-  public override fun getTodo(@PathVariable(value = "todoId") todoId: Int): TodoDto
+  @GetMapping(value=["/api/todo/{todoId}"])
+  public override fun getTodo(@PathVariable(value="todoId") todoId: Int): TodoDto
 
-  @PostMapping(value = ["/api/todo"])
+  @PostMapping(value=["/api/todo"])
   public override fun createTodo(@RequestBody req: CreateTodoReq): TodoDto
 
-  @PutMapping(value = ["/api/todo/{todoId}"])
-  public override fun updateTodo(
-    @PathVariable(value = "todoId") todoId: Int,
-    @RequestBody
-    req: UpdateTodoReq
-  ): TodoDto
+  @PutMapping(value=["/api/todo/{todoId}"])
+  public override fun updateTodo(@PathVariable(value="todoId") todoId: Int, @RequestBody
+      req: UpdateTodoReq): TodoDto
 
-  @DeleteMapping(value = ["/api/todo/{todoId}"])
-  public override fun deleteTodo(@PathVariable(value = "todoId") todoId: Int): Unit
+  @DeleteMapping(value=["/api/todo/{todoId}"])
+  public override fun deleteTodo(@PathVariable(value="todoId") todoId: Int): Unit
 }
