@@ -1,5 +1,7 @@
 package zygarde.codegen.dsl.model.internal
 
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
@@ -17,6 +19,7 @@ sealed class DtoFieldMapping(
   open var forceNull: ForceNull = ForceNull.NONE,
   open var validations: MutableList<DtoFieldValidation> = mutableListOf(),
   open var compound: Boolean = false,
+  open var additionalAnnotations: List<AnnotationSpec> = emptyList(),
 ) {
 
   data class DtoFieldNoMapping(
@@ -35,7 +38,7 @@ sealed class DtoFieldMapping(
     override var dtoRefClass: KClass<*>? = null,
     override var refCollection: Boolean = false,
     override var forceNull: ForceNull = ForceNull.NONE,
-    var valueProvider: KClass<out ValueProvider<*, *>>? = null,
+    var valueProvider: ClassName? = null,
     var valueProviderParameterType: ValueProviderParameterType = ValueProviderParameterType.FIELD,
   ) : DtoFieldMapping(
     modelField,

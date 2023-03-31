@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl
 
+import com.squareup.kotlinpoet.asClassName
 import zygarde.codegen.dsl.extensions.asModelMetaField
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.type.ForceNull
@@ -91,7 +92,7 @@ open class ModelMappingSpec(
   ) {
     from(*props) {
       dsl.invoke(this)
-      valueProvider = P::class
+      valueProvider = P::class.asClassName()
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }
   }
@@ -100,7 +101,7 @@ open class ModelMappingSpec(
     vararg props: KProperty1<*, *>,
   ) {
     from(*props) {
-      valueProvider = P::class
+      valueProvider = P::class.asClassName()
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }
   }

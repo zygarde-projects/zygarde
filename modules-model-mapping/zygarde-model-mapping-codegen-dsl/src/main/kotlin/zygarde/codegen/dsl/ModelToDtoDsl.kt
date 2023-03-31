@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl
 
+import com.squareup.kotlinpoet.asClassName
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping.ModelToDtoFieldMappingVo
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
@@ -86,7 +87,7 @@ class ModelToDtoDsl<E : Any>(
     vararg fields: ModelMetaField<E, *>,
   ) {
     from(*fields) {
-      valueProvider = P::class
+      valueProvider = P::class.asClassName()
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }
   }
@@ -95,7 +96,7 @@ class ModelToDtoDsl<E : Any>(
     vararg fields: ModelMetaField<E, *>,
   ) {
     from(*fields) {
-      valueProvider = P::class
+      valueProvider = P::class.asClassName()
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }
   }

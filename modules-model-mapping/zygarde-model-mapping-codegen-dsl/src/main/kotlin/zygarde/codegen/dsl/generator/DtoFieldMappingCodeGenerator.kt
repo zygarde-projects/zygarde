@@ -198,6 +198,7 @@ $callDtoStatements
                 .build()
             )
             .also { p ->
+              mapping?.additionalAnnotations?.forEach { a -> p.addAnnotation(a) }
               mapping?.validations?.toSet()?.forEach {
                 p.addAnnotation(it.buildAnnotation())
               }
