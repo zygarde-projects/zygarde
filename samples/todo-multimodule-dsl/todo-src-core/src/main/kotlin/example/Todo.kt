@@ -2,7 +2,6 @@ package example
 
 import zygarde.codegen.ZyModel
 import zygarde.core.annotation.Comment
-import zygarde.codegen.meta.ZyModelMeta
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.jpa.converter.StringListToJsonStringConverter
 import javax.persistence.Convert
@@ -11,7 +10,6 @@ import javax.persistence.MappedSuperclass
 
 @Entity
 @ZyModel
-@ZyModelMeta
 class Todo(
   var description: String = "",
   var checkTimes: Int = 0,
@@ -19,10 +17,8 @@ class Todo(
 
 @Entity
 @ZyModel
-@ZyModelMeta
 class Note : AbstractNote()
 
-@ZyModelMeta
 @MappedSuperclass
 abstract class AbstractNote(
   var title: String = "",

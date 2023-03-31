@@ -7,7 +7,7 @@
 
 ```
 @Entity
-@ZyModelMeta
+@ZyModel
 class Todo(
   var description: String = "",
 ) : AutoIntIdEntity()

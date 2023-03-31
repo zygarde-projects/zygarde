@@ -41,7 +41,7 @@ class ZygardeEntityFieldGenerator(
     }
     elements.forEach {
       try {
-        generateExtensionFunctions(elements, it)
+        generateExtensionFunctions(it)
       } catch (e: IllegalArgumentException) {
         throw e
       } catch (t: Throwable) {
@@ -50,7 +50,7 @@ class ZygardeEntityFieldGenerator(
     }
   }
 
-  private fun generateExtensionFunctions(allEntityElements: Collection<Element>, element: Element) {
+  private fun generateExtensionFunctions(element: Element) {
     val className = element.simpleName.toString()
     val pack = packageName(processingEnv.options.getOrDefault(ENTITY_PACKAGE_SEARCH, "entity.search"))
     val fileNameForExtension = "${className}Extensions"

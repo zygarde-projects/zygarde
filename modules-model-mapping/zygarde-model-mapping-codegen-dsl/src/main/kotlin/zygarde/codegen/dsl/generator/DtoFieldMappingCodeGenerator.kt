@@ -153,6 +153,13 @@ $callDtoStatements
           dtoClassBuilder.superclass(superClass)
         }
       }
+      dto.superInterfaces().forEach { i ->
+        dtoClassBuilder.addSuperinterface(i)
+      }
+
+      dto.annotations().forEach { a ->
+        dtoClassBuilder.addAnnotation(a)
+      }
 
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
       val fieldNameToInterfacePropertyMap = dto.superClass()?.takeIf { it.java.isInterface }?.memberProperties?.associateBy { it.name } ?: emptyMap()

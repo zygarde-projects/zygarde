@@ -3,10 +3,8 @@ package zygarde.test.input
 import zygarde.codegen.ApiProp
 import zygarde.codegen.Dto
 import zygarde.codegen.ZyModel
-import zygarde.codegen.meta.ZyModelMeta
 
 @ZyModel
-@ZyModelMeta
 data class Item(
   var id: String,
   var price: Double?,
