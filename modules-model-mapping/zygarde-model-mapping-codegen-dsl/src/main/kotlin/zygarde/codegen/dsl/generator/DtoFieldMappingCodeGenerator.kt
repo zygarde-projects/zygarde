@@ -291,11 +291,12 @@ $callDtoStatements
             val q = if (mapping.modelField.fieldNullable) "?" else ""
             val valueProvider = mapping.valueProvider
             val valueProviderParameterType = mapping.valueProviderParameterType
+            val valueProviderParameterField = mapping.valueProviderParameterField
             val isExtraField = mapping.modelField.extra
             if (valueProvider != null) {
               codeBlockArgs.add(valueProvider)
               val valueProviderParam = when (valueProviderParameterType) {
-                ValueProviderParameterType.FIELD -> "this.$modelFieldName"
+                ValueProviderParameterType.FIELD -> "this.$valueProviderParameterField"
                 ValueProviderParameterType.OBJECT -> "this"
               }
 

@@ -40,6 +40,7 @@ sealed class DtoFieldMapping(
     override var forceNull: ForceNull = ForceNull.NONE,
     var valueProvider: ClassName? = null,
     var valueProviderParameterType: ValueProviderParameterType = ValueProviderParameterType.FIELD,
+    var valueProviderParameterField: String = modelField.fieldName,
   ) : DtoFieldMapping(
     modelField,
     dto,
