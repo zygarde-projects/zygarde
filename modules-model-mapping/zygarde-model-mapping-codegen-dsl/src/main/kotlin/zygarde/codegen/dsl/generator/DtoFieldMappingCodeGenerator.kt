@@ -103,10 +103,11 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
           .map { mapping ->
             val modelParamName = mapping.modelField.modelClass.java.simpleName.replaceFirstChar { it.lowercase() }
             val fieldName = mapping.modelField.fieldName
+            val valueProviderParameterField = mapping.valueProviderParameterField
             val valueProvider = mapping.valueProvider
             if (valueProvider != null) {
               val valueProviderParam = when (mapping.valueProviderParameterType) {
-                ValueProviderParameterType.FIELD -> "$modelParamName.$fieldName"
+                ValueProviderParameterType.FIELD -> "$modelParamName.$valueProviderParameterField"
                 ValueProviderParameterType.OBJECT -> modelParamName
               }
               callDtoArgs.add(valueProvider)
