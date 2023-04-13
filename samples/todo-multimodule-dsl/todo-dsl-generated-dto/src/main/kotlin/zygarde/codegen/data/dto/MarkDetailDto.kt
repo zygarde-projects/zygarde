@@ -5,6 +5,8 @@ import java.io.Serializable
 import kotlin.Int
 import kotlin.String
 import kotlin.collections.Collection
+import kotlin.collections.List
+import kotlin.collections.Map
 import kotlin.collections.emptyList
 
 @Schema
@@ -34,6 +36,11 @@ public data class MarkDetailDto(
     required=true
   )
   public var extraStr: String,
+  @Schema(
+    description="",
+    required=true
+  )
+  public var extraMap: Map<String, List<String>>,
   @Schema(
     description="",
     required=true

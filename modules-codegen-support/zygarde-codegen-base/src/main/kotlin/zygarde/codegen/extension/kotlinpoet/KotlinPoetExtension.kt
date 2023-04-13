@@ -6,6 +6,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import java.lang.reflect.Type
 import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.PrimitiveType
 import javax.lang.model.type.TypeMirror
@@ -83,11 +84,11 @@ fun TypeName.generic(vararg typeName: TypeName): TypeName {
   }
 }
 
-fun KClass<*>.generic(vararg genericClasses: KClass<*>): TypeName {
+fun KClass<*>.generic(vararg genericClasses: Type): TypeName {
   val className = asClassName()
   if (genericClasses.isNotEmpty()) {
     return className.parameterizedBy(
-      *genericClasses.map { it.asTypeName() }.toTypedArray()
+      *genericClasses.map { it.asTypeName().kotlin(it.asTypeName().isNullable) }.toTypedArray()
     )
   }
   return className

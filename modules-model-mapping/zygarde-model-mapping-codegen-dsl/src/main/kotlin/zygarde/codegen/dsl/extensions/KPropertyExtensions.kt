@@ -1,7 +1,7 @@
 package zygarde.codegen.dsl.extensions
 
-import zygarde.core.annotation.Comment
 import zygarde.codegen.meta.ModelMetaField
+import zygarde.core.annotation.Comment
 import java.lang.reflect.ParameterizedType
 import kotlin.jvm.internal.CallableReference
 import kotlin.reflect.KClass
@@ -17,12 +17,8 @@ fun KProperty1<*, *>.asModelMetaField(): ModelMetaField<*, *> {
       val returnTypeClassifier = this.returnType.classifier
       if (returnTypeClassifier is KClass<*>) {
         val returnTypeJavaType = returnType.javaType
-        val genericClasses = if (returnTypeJavaType is ParameterizedType) {
+        val genericTypes = if (returnTypeJavaType is ParameterizedType) {
           returnTypeJavaType.actualTypeArguments
-            .map { ta ->
-              (ta as Class<*>).kotlin
-            }
-            .toTypedArray()
         } else {
           emptyArray()
         }
@@ -32,7 +28,7 @@ fun KProperty1<*, *>.asModelMetaField(): ModelMetaField<*, *> {
           fieldClass = returnTypeClassifier,
           fieldNullable = this.returnType.isMarkedNullable,
           extra = false,
-          genericClasses = genericClasses,
+          genericClasses = genericTypes,
           comment = comment
         )
       }

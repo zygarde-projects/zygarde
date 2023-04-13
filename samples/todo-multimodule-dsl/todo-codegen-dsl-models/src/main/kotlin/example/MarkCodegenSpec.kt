@@ -26,6 +26,7 @@ class MarkCodegenSpec : ModelMappingCodegenSpec({
       )
       fromExtra(
         MarkCodegenSpec::extraStr,
+        MarkCodegenSpec::extraMap,
       )
       fromRef("todo", TodoModelDslCodegen.TodoDtos.TodoDto)
     }
@@ -41,4 +42,5 @@ class MarkCodegenSpec : ModelMappingCodegenSpec({
 }) {
   @Comment("extra string")
   var extraStr: String = ""
+  var extraMap: Map<String, List<String>> = emptyMap()
 }

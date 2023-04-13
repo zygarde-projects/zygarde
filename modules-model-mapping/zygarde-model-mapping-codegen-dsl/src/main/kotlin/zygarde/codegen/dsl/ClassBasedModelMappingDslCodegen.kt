@@ -42,7 +42,7 @@ abstract class ClassBasedModelMappingDslCodegen<E : Any>(val modelClass: KClass<
     nullable: Boolean = false,
     dsl: (ModelMetaField<E, Collection<*>>.() -> Unit) = {},
   ): ModelMetaField<E, Collection<*>> {
-    return ModelMetaField(modelClass, fieldName, Collection::class, nullable, true, arrayOf(F::class))
+    return ModelMetaField(modelClass, fieldName, Collection::class, nullable, true, arrayOf(F::class.java))
       .also(dsl)
   }
 }
