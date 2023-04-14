@@ -244,7 +244,7 @@ class ZygardeApiPropGenerator(
           it
         }
       }
-      refClass.toString() != "java.lang.Object" -> {
+      refClass.toString() != "java.lang.Object" && refClass.toString() != "kotlin.Any" -> {
         if (refCollection) {
           Collection::class.generic(refClass.kotlin(refClass.isNullable))
         } else {

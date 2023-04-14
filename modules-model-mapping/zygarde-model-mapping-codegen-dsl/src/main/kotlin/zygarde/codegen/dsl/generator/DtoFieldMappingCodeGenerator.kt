@@ -11,7 +11,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.Schema
@@ -32,7 +31,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
   var dtoToExtraToDtoMappingMap = dtoFieldMappings
     .filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }
     .filterNot { it.compound }
-    .groupBy { it.modelField.modelClass.java.simpleName }
+    .groupBy { it.modelField.modelClass.simpleName }
     .entries
     .associate {
       it.key to it.value.groupBy { it.dto }
@@ -72,11 +71,11 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
           .filterNot { it.modelField.extra }
           .map { it.modelField.modelClass }
           .toSet()
-          .filter { it != Any::class }
+          .filter { it != Any::class.asClassName() }
           .forEach { modelClass ->
             funcBuilder
               .addParameter(
-                modelClass.java.simpleName.replaceFirstChar { it.lowercase() },
+                modelClass.simpleName.replaceFirstChar { it.lowercase() },
                 modelClass
               )
           }
@@ -101,7 +100,7 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
         val callDtoArgs: MutableList<Any> = mutableListOf(dtoClass)
         val callDtoStatements = mappings
           .map { mapping ->
-            val modelParamName = mapping.modelField.modelClass.java.simpleName.replaceFirstChar { it.lowercase() }
+            val modelParamName = mapping.modelField.modelClass.simpleName.replaceFirstChar { it.lowercase() }
             val fieldName = mapping.modelField.fieldName
             val valueProviderParameterField = mapping.valueProviderParameterField
             val valueProvider = mapping.valueProvider
@@ -305,7 +304,7 @@ $callDtoStatements
             } else if (isExtraField) {
               "  $dtoFieldName = extraValues.$modelFieldName"
             } else if (dtoRef != null) {
-              val modelForToDtoExtensions = mapping.modelField.fieldClass.simpleName
+              val modelForToDtoExtensions = mapping.modelField.fieldClass.toString()
               codeBlockArgs.add(
                 MemberName(
                   "$modelExtensionPackageName.${modelForToDtoExtensions}ToDtoExtensions",
@@ -369,16 +368,16 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         e.value.groupBy { it.dto }.forEach { dto, mappings ->
           val functionBuilder = FunSpec.builder("applyFrom")
             .addParameter("req", ClassName(dtoPackageName, dto.name))
-          if (modelClass.isAbstract) {
-            functionBuilder
-              .addTypeVariable(TypeVariableName("T", modelClass))
-              .receiver(TypeVariableName("T"))
-              .returns(TypeVariableName("T"))
-          } else {
-            functionBuilder
-              .receiver(modelClass)
-              .returns(modelClass)
-          }
+          // if (modelClass.isAbstract) { // TODO check logic
+          //   functionBuilder
+          //     .addTypeVariable(TypeVariableName("T", modelClass))
+          //     .receiver(TypeVariableName("T"))
+          //     .returns(TypeVariableName("T"))
+          // } else {
+          functionBuilder
+            .receiver(modelClass)
+            .returns(modelClass)
+          // }
 
           mappings.forEach { mapping ->
             val modelFieldName = mapping.modelField.fieldName
@@ -414,9 +413,8 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
     }
     return (
       mapping.dtoRefClass
-        ?.generic(*mapping.modelField.genericClasses)
         ?: mapping.dtoRef?.let { ClassName(dtoPackageName, it.name) }
-        ?: mapping.modelField.fieldClass.generic(*mapping.modelField.genericClasses)
+        ?: mapping.modelField.fieldClass
       ).kotlin(!mapping.refCollection && fieldTypeNullable)
       .let { if (mapping.refCollection) Collection::class.generic(it).kotlin(fieldTypeNullable) else it }
   }

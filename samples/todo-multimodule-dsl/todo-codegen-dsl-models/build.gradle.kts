@@ -4,7 +4,6 @@ apply(plugin = "io.spring.dependency-management")
 
 dependencies {
   implementation(project(":todo-src-core"))
-  implementation(project(":todo-kapt-generated-model-meta"))
   implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-model-mapping-codegen-dsl"))
 }

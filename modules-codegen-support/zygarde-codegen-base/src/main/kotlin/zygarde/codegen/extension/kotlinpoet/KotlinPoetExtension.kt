@@ -33,6 +33,7 @@ fun TypeName.kotlin(canBeNullable: Boolean = true): TypeName {
     emptyArray()
   }
   return when (typeString) {
+    "java.lang.Object" -> Any::class.asTypeName()
     "java.lang.String" -> String::class.asTypeName()
     "java.lang.Integer" -> Int::class.asTypeName()
     "java.lang.Long" -> Long::class.asTypeName()

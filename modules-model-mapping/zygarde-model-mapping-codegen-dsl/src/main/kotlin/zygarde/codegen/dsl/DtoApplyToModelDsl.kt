@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl
 
+import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping.ModelApplyFromDtoFieldMappingVo
 import zygarde.codegen.meta.CodegenDto
@@ -17,7 +18,7 @@ class DtoApplyToModelDsl<E : Any>(
   /**
    * generate a field in Dto and also generate extension function for Model.applyFrom for this Dto
    */
-  fun applyTo(vararg fields: ModelMetaField<E, *>, dsl: (ModelApplyFromDtoFieldMappingVo.() -> Unit) = {}) {
+  fun applyTo(vararg fields: ModelMetaField, dsl: (ModelApplyFromDtoFieldMappingVo.() -> Unit) = {}) {
     fields.forEach { f ->
       ModelApplyFromDtoFieldMappingVo(f, dto)
         .also(dsl)
@@ -33,7 +34,7 @@ class DtoApplyToModelDsl<E : Any>(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.DtoFieldNoMapping(
-        modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(modelClass.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
         dto = dto
       )
         .also {
@@ -51,7 +52,7 @@ class DtoApplyToModelDsl<E : Any>(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.DtoFieldNoMapping(
-        modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(modelClass.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
         dto = dto
       )
         .also {

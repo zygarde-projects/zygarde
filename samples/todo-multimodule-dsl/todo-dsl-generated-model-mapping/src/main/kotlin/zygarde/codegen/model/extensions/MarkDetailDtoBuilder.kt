@@ -1,6 +1,8 @@
 package zygarde.codegen.model.extensions
 
 import example.Mark
+import kotlin.Any
+import kotlin.Int
 import kotlin.String
 import kotlin.collections.List
 import kotlin.collections.Map
@@ -12,7 +14,10 @@ public object MarkDetailDtoBuilder {
   public fun build(
     mark: Mark,
     extraStr: String,
-    extraMap: Map<String, List<String>>,
+    extraMap1: Map<String, Any>,
+    extraMap2: Map<String, Int?>,
+    extraMap3: Map<String, List<String>>,
+    extraMap4: Map<String, List<Int?>>,
     todo: TodoDto
   ): MarkDetailDto = MarkDetailDto(
   id = AutoIntIdValueProvider().getValue(mark),
@@ -20,7 +25,10 @@ public object MarkDetailDtoBuilder {
   y = mark.y,
   comments = mark.comments,
   extraStr = extraStr,
-  extraMap = extraMap,
+  extraMap1 = extraMap1,
+  extraMap2 = extraMap2,
+  extraMap3 = extraMap3,
+  extraMap4 = extraMap4,
   todo = todo
   )
 }

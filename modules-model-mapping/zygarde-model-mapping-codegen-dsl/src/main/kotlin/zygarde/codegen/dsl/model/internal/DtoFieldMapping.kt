@@ -10,11 +10,11 @@ import zygarde.codegen.value.ValueProvider
 import kotlin.reflect.KClass
 
 sealed class DtoFieldMapping(
-  open var modelField: ModelMetaField<*, *>,
+  open var modelField: ModelMetaField,
   open var dto: CodegenDto,
   open var comment: String? = null,
   open var dtoRef: CodegenDto? = null,
-  open var dtoRefClass: KClass<*>? = null,
+  open var dtoRefClass: ClassName? = null,
   open var refCollection: Boolean = false,
   open var forceNull: ForceNull = ForceNull.NONE,
   open var validations: MutableList<DtoFieldValidation> = mutableListOf(),
@@ -23,7 +23,7 @@ sealed class DtoFieldMapping(
 ) {
 
   data class DtoFieldNoMapping(
-    override var modelField: ModelMetaField<*, *>,
+    override var modelField: ModelMetaField,
     override var dto: CodegenDto,
   ) : DtoFieldMapping(
     modelField = modelField,
@@ -31,11 +31,11 @@ sealed class DtoFieldMapping(
   )
 
   data class ModelToDtoFieldMappingVo(
-    override var modelField: ModelMetaField<*, *>,
+    override var modelField: ModelMetaField,
     override var dto: CodegenDto,
     override var comment: String? = null,
     override var dtoRef: CodegenDto? = null,
-    override var dtoRefClass: KClass<*>? = null,
+    override var dtoRefClass: ClassName? = null,
     override var refCollection: Boolean = false,
     override var forceNull: ForceNull = ForceNull.NONE,
     var valueProvider: ClassName? = null,
@@ -52,11 +52,11 @@ sealed class DtoFieldMapping(
   )
 
   data class ModelApplyFromDtoFieldMappingVo(
-    override var modelField: ModelMetaField<*, *>,
+    override var modelField: ModelMetaField,
     override var dto: CodegenDto,
     override var comment: String? = null,
     override var dtoRef: CodegenDto? = null,
-    override var dtoRefClass: KClass<*>? = null,
+    override var dtoRefClass: ClassName? = null,
     override var refCollection: Boolean = false,
     override var forceNull: ForceNull = ForceNull.NONE,
     var valueProvider: KClass<out ValueProvider<*, *>>? = null,

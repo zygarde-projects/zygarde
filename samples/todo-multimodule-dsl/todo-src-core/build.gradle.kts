@@ -12,7 +12,6 @@ dependencies {
 kapt {
   arguments {
     arg("zygarde.codegen.base.package", "example.codegen")
-    arg("zygarde.codegen.meta.target.folder", project(":todo-kapt-generated-model-meta").file("src/main/kotlin").absolutePath)
   }
 }
 

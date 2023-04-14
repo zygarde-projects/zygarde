@@ -1,6 +1,7 @@
 package zygarde.codegen.dsl
 
 import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping.ModelToDtoFieldMappingVo
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
@@ -21,7 +22,7 @@ class ModelToDtoDsl<E : Any>(
   /**
    * add a field to Dto and also generate extension function {Model}.toDto
    */
-  fun from(vararg fields: ModelMetaField<*, *>, dsl: (ModelToDtoFieldMappingVo.() -> Unit) = { }) {
+  fun from(vararg fields: ModelMetaField, dsl: (ModelToDtoFieldMappingVo.() -> Unit) = { }) {
     fields.forEach { f ->
       ModelToDtoFieldMappingVo(modelField = f, dto = dto)
         .also(dsl)
@@ -29,7 +30,7 @@ class ModelToDtoDsl<E : Any>(
     }
   }
 
-  fun fieldExtra(vararg fields: ModelMetaField<E, *>, dsl: (ModelToDtoFieldMappingVo.() -> Unit) = {}) {
+  fun fieldExtra(vararg fields: ModelMetaField, dsl: (ModelToDtoFieldMappingVo.() -> Unit) = {}) {
     fields.forEach { f ->
       dtoFieldMappings.add(
         ModelToDtoFieldMappingVo(f.copy(extra = true), dto)
@@ -38,11 +39,11 @@ class ModelToDtoDsl<E : Any>(
     }
   }
 
-  fun fromAutoIntId(vararg fields: ModelMetaField<E, Int>) {
+  fun fromAutoIntId(vararg fields: ModelMetaField) {
     fromObjectProvider<AutoIntIdValueProvider>(*fields)
   }
 
-  fun fromAutoLongId(vararg fields: ModelMetaField<E, Long>) {
+  fun fromAutoLongId(vararg fields: ModelMetaField) {
     fromObjectProvider<AutoLongIdValueProvider>(*fields)
   }
 
@@ -54,7 +55,7 @@ class ModelToDtoDsl<E : Any>(
   ) {
     dtoFieldMappings.add(
       ModelToDtoFieldMappingVo(
-        modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(modelClass.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
         dto = dto
       )
         .also {
@@ -72,7 +73,7 @@ class ModelToDtoDsl<E : Any>(
   ) {
     dtoFieldMappings.add(
       ModelToDtoFieldMappingVo(
-        modelField = ModelMetaField(modelClass, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(modelClass.asTypeName(), fieldName, Any::class.asClassName(), nullable, extra = true),
         dto = dto
       )
         .also {
@@ -84,7 +85,7 @@ class ModelToDtoDsl<E : Any>(
   }
 
   inline fun <reified P : ValueProvider<*, *>> fromObjectProvider(
-    vararg fields: ModelMetaField<E, *>,
+    vararg fields: ModelMetaField,
   ) {
     from(*fields) {
       valueProvider = P::class.asClassName()
@@ -93,7 +94,7 @@ class ModelToDtoDsl<E : Any>(
   }
 
   inline fun <reified P : ValueProvider<*, *>> fromFieldProvider(
-    vararg fields: ModelMetaField<E, *>,
+    vararg fields: ModelMetaField,
   ) {
     from(*fields) {
       valueProvider = P::class.asClassName()

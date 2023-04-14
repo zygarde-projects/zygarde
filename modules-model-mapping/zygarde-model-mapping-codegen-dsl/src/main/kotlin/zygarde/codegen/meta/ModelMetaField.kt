@@ -1,14 +1,13 @@
 package zygarde.codegen.meta
 
-import java.lang.reflect.Type
-import kotlin.reflect.KClass
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.TypeName
 
-data class ModelMetaField<E : Any, F : Any>(
-  val modelClass: KClass<E>,
+data class ModelMetaField(
+  val modelClass: ClassName,
   val fieldName: String,
-  val fieldClass: KClass<F>,
+  val fieldClass: TypeName,
   val fieldNullable: Boolean,
   val extra: Boolean = false,
-  val genericClasses: Array<Type> = emptyArray(),
   var comment: String = "",
 )

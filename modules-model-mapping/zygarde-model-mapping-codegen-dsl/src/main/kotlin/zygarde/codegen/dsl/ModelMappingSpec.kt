@@ -1,6 +1,7 @@
 package zygarde.codegen.dsl
 
 import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.dsl.extensions.asModelMetaField
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.type.ForceNull
@@ -43,7 +44,7 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.ModelToDtoFieldMappingVo(
-        modelField = ModelMetaField(Any::class, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
         dto = dto
       )
         .also {
@@ -62,7 +63,7 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.ModelToDtoFieldMappingVo(
-        modelField = ModelMetaField(Any::class, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
         dto = dto
       )
         .also {
@@ -159,7 +160,7 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.DtoFieldNoMapping(
-        modelField = ModelMetaField(Any::class, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
         dto = dto
       )
         .also {
@@ -177,7 +178,7 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.DtoFieldNoMapping(
-        modelField = ModelMetaField(Any::class, fieldName, Any::class, nullable, extra = true),
+        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
         dto = dto
       )
         .also {

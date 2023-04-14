@@ -36,14 +36,14 @@ class ZygardeApiGenerator(
           val (serviceName, serviceMethod) = genApi.service.split(".").let { it[0] to it[1] }
           val reqRefTypeName = if (genApi.reqRef.isEmpty()) {
             safeGetTypeFromAnnotation { genApi.reqRefClass.asTypeName() }.kotlin(false)
-              .takeIf { it.toString() != "java.lang.Object" }
+              .takeIf { it.toString() != "kotlin.Any" }
           } else {
             ClassName(dtoPackage, genApi.reqRef)
           }
 
           val resRefTypeName = if (genApi.resRef.isEmpty()) {
             safeGetTypeFromAnnotation { genApi.resRefClass.asTypeName() }.kotlin(false)
-              .takeIf { it.toString() != "java.lang.Object" }
+              .takeIf { it.toString() != "kotlin.Any" }
           } else {
             ClassName(dtoPackage, genApi.resRef)
           }
@@ -57,11 +57,11 @@ class ZygardeApiGenerator(
 
           val authenticationDetailType = safeGetTypeFromAnnotation { genApi.authenticationDetail.asTypeName() }
             .kotlin(false)
-            .takeIf { it.toString() != "java.lang.Object" }
+            .takeIf { it.toString() != "kotlin.Any" }
 
           val servicePostProcessingParamType = safeGetTypeFromAnnotation { genApi.servicePostProcessingParam.asTypeName() }
             .kotlin(false)
-            .takeIf { it.toString() != "java.lang.Object" }
+            .takeIf { it.toString() != "kotlin.Any" }
 
           val apiFunctionVo = ApiFunctionToGenerateVo(
             method = genApi.method,

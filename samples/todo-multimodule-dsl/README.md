@@ -13,46 +13,49 @@ class Todo(
 ) : AutoIntIdEntity()
 ```
 
-* Create module `todo-kapt-generated-model-meta` 
-* Config `todo-src-core/build.gradle.kts` to define model-meta codegen target
-```
-kapt {
-  arguments {
-    arg("zygarde.codegen.meta.target.folder", project(":todo-kapt-generated-model-meta").file("src/main/kotlin").absolutePath)
-  }
-}
-```
-
-* Then run `./gradlew :todo-src-core:kaptkotlin`
-* The dsl codegen base class `AbstractTodoCodegen` will be generated to `todo-kapt-generated-model-meta/src/main/kotlin`
-
 ## Write DSL to define model relationship for `Todo`
 
 * Create module `todo-codegen-dsl-models` and write `TodoModelDslCodegen`
 
 ```
-class TodoModelDslCodegen : AbstractTodoCodegen() {
+class TodoModelDslCodegen : ModelMappingCodegenSpec({
+  TodoDtos.TodoDto {
+    fromAutoIntId(Todo::id)
+    from(Todo::description)
+  }
+
+  TodoDtos.CreateTodoReq {
+    applyTo(Todo::description)
+  }
+
+  TodoDtos.UpdateTodoReq {
+    applyTo(Todo::description)
+  }
+
+  TodoDtos.TodoDetailDto {
+    fromAutoIntId(Todo::id)
+    from(
+      Todo::description,
+      Note::title,
+    )
+    fromExtra(
+      TodoExtraModel::remark
+    )
+  }
+}) {
+
+  class TodoExtraModel {
+    var remark: String = ""
+  }
 
   enum class TodoDtos : CodegenDtoSimple {
     TodoDto,
     CreateTodoReq,
     UpdateTodoReq,
-  }
-
-  override fun codegen() {
-    id {
-      toDto(TodoDtos.TodoDto) {
-        valueProvider = AutoIntIdValueProvider::class
-        valueProviderParameterType = ValueProviderParameterType.OBJECT
-      }
-    }
-
-    description {
-      toDto(TodoDtos.TodoDto)
-      applyFrom(TodoDtos.CreateTodoReq, TodoDtos.UpdateTodoReq)
-    }
+    TodoDetailDto,
   }
 }
+
 
 ```
 

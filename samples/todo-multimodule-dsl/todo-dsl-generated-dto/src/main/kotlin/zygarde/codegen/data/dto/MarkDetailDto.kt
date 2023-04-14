@@ -2,6 +2,7 @@ package zygarde.codegen.`data`.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.io.Serializable
+import kotlin.Any
 import kotlin.Int
 import kotlin.String
 import kotlin.collections.Collection
@@ -40,7 +41,22 @@ public data class MarkDetailDto(
     description="",
     required=true
   )
-  public var extraMap: Map<String, List<String>>,
+  public var extraMap1: Map<String, Any>,
+  @Schema(
+    description="",
+    required=true
+  )
+  public var extraMap2: Map<String, Int?>,
+  @Schema(
+    description="",
+    required=true
+  )
+  public var extraMap3: Map<String, List<String>>,
+  @Schema(
+    description="",
+    required=true
+  )
+  public var extraMap4: Map<String, List<Int?>>,
   @Schema(
     description="",
     required=true
