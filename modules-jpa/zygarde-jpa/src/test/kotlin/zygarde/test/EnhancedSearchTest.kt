@@ -29,14 +29,14 @@ import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.action.dateRange
 import zygarde.data.jpa.search.action.dateTimeRange
-import zygarde.data.jpa.search.action.numRange
+import zygarde.data.jpa.search.action.range
 import zygarde.data.jpa.search.crossJoin
 import zygarde.data.search.SearchDateRange
 import zygarde.data.search.SearchDateTimeRange
-import zygarde.data.search.SearchIntRange
 import zygarde.data.search.SearchKeyword
 import zygarde.data.search.SearchKeywordType
 import zygarde.data.search.range.SearchIntRangeOverlap
+import zygarde.data.search.range.SearchRange
 import zygarde.test.dao.TestAuthorDao
 import zygarde.test.dao.TestAuthorGroupDao
 import zygarde.test.dao.TestBookDao
@@ -392,8 +392,14 @@ class EnhancedSearchTest {
   @Test
   fun `search by int range`() {
     bookDao.search {
-      comparableField<Int>("price") numRange SearchIntRange(100, 500)
-    }.size shouldBeGreaterThan 0
+      comparableField<Int>("price") range SearchRange.Number.SearchRangeInt(100, 500)
+    }.all { it.price in 100..500 } shouldBe true
+    bookDao.search {
+      comparableField<Int>("price") range SearchRange.Number.SearchRangeInt(100, 101).also { it.toExclusive = true }
+    }.all { it.price == 100 } shouldBe true
+    bookDao.search {
+      comparableField<Int>("price") range SearchRange.Number.SearchRangeInt(99, 100).also { it.fromExclusive = true }
+    }.all { it.price == 100 } shouldBe true
   }
 
   @Order(9000)
