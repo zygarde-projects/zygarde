@@ -1,5 +1,6 @@
 package zygarde.test
 
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -382,10 +383,12 @@ class EnhancedSearchTest {
 
   @Order(1900)
   @Test
-  fun `select one`() {
+  fun `select for prop`() {
     bookDao.selectOne(Book::name) {
       field(Book::name) eq "zygarde"
     } shouldBe "zygarde"
+
+    bookDao.select(Book::name) { distinct() } shouldContain "zygarde"
   }
 
   @Order(2000)
