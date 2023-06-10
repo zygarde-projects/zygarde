@@ -30,8 +30,8 @@ open class ZygardeJpaRepository<T, ID>(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun <P> select(p: KProperty1<T, P>, searchContent: EnhancedSearch<T>.() -> Unit): Collection<P> {
-    return queryForProp(searchContent, p).resultList as Collection<P>
+  override fun <P> select(p: KProperty1<T, P>, searchContent: EnhancedSearch<T>.() -> Unit): List<P> {
+    return queryForProp(searchContent, p).resultList as List<P>
   }
 
   private fun <P> queryForProp(

@@ -17,5 +17,5 @@ interface ZygardeEnhancedDao<T, ID> : BaseDao<T, ID> {
   fun <P> select(
     p: KProperty1<T, P>,
     searchContent: EnhancedSearch<T>.() -> Unit
-  ): Collection<P>
+  ): List<P>
 }
