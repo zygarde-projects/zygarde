@@ -11,6 +11,20 @@ data class CurrentUser(val id: Int)
   [
     GenApi(
       method = RequestMethod.POST,
+      path = "/api/book",
+      api = "BookApi.createBook",
+      apiDescription = "create a book",
+      service = "BookService.createBook",
+      servicePostProcessing = true,
+      reqRef = "BookCreateRequest",
+      resRef = BookApiSpec.DTO_BOOK_DETAIL,
+      authenticationDetail = CurrentUser::class,
+      deprecated = true,
+      deprecatedMessage = "use AuthorApi.createBook instead",
+      deprecatedReplacement = ReplaceWith("AuthorApi.createBook"),
+    ),
+    GenApi(
+      method = RequestMethod.POST,
       path = "/api/author/{authorId}/book",
       pathVariable = [
         ApiPathVariable("authorId", Long::class)

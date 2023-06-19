@@ -20,4 +20,5 @@ data class ApiFunctionToGenerateVo(
   var postProcessingParamType: TypeName? = null,
   var authenticationDetailName: String = "auth",
   var authenticationDetailType: TypeName? = null,
+  var deprecated: Deprecated? = null,
 )

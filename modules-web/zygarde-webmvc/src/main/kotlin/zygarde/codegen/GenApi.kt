@@ -22,4 +22,7 @@ annotation class GenApi(
   val resCollection: Boolean = false,
   val resPage: Boolean = false,
   val authenticationDetail: KClass<*> = Any::class,
+  val deprecated: Boolean = false,
+  val deprecatedMessage: String = "",
+  val deprecatedReplacement: ReplaceWith = ReplaceWith(""),
 )

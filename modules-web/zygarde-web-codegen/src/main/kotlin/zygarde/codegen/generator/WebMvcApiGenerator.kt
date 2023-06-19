@@ -357,6 +357,12 @@ class WebMvcApiGenerator(
         webMvcFuncBuilder.addStatement("return result")
       }
 
+      func.deprecated?.also {
+        apiFuncBuilder.applyDeprecatedAnnotation(it)
+        feignApiFuncBuilder.applyDeprecatedAnnotation(it)
+        webMvcFuncBuilder.applyDeprecatedAnnotation(it)
+      }
+
       apiInterfaceBuilder.addFunction(apiFuncBuilder.build())
       feignApiInterfaceBuilder.addFunction(feignApiFuncBuilder.build())
       webMvcControllerBuilder.addFunction(webMvcFuncBuilder.build())
@@ -367,5 +373,15 @@ class WebMvcApiGenerator(
 
       servicePostProcessingFuncBuilder?.build()?.let(serviceInterfaceBuilder::addFunction)
     }
+  }
+
+  private fun FunSpec.Builder.applyDeprecatedAnnotation(deprecated: Deprecated) {
+    addAnnotation(
+      AnnotationSpec.builder(Deprecated::class)
+        .addMember("message = %S", deprecated.message)
+        .addMember("replaceWith = %T(%S)", ReplaceWith::class, deprecated.replaceWith.expression)
+        // .addMember("level = %T.WARNING", DeprecationLevel::class)
+        .build()
+    )
   }
 }

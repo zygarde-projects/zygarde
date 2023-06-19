@@ -89,7 +89,12 @@ class ZygardeApiGenerator(
             postProcessing = genApi.servicePostProcessing,
             postProcessingParamType = servicePostProcessingParamType,
             authenticationDetailName = "authenticationDetail",
-            authenticationDetailType = authenticationDetailType
+            authenticationDetailType = authenticationDetailType,
+            deprecated = Deprecated(
+              message = genApi.deprecatedMessage,
+              replaceWith = genApi.deprecatedReplacement,
+              level = DeprecationLevel.WARNING,
+            ).takeIf { genApi.deprecated },
           )
 
           val apiVo = apiVoMap.getOrPut(apiName) {
