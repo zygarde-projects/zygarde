@@ -391,6 +391,37 @@ class EnhancedSearchTest {
     bookDao.select(Book::name) { distinct() } shouldContain "zygarde"
   }
 
+  interface IBookProjection {
+    val id: Int
+    var name: String
+  }
+
+  @Order(1901)
+  @Test
+  fun `select for projection interface`() {
+    bookDao
+      .select(IBookProjection::class) {
+        field(Book::name) eq "zygarde"
+      }
+      .also { it.size shouldBeGreaterThan 0 }
+      .forEach { it.name shouldBe "zygarde" }
+  }
+
+  class CBookProjection(val id: Long) {
+    var name: String = ""
+  }
+
+  @Order(1902)
+  @Test
+  fun `select for projection class`() {
+    bookDao
+      .select(CBookProjection::class) {
+        field(Book::name) eq "zygarde"
+      }
+      .also { it.size shouldBeGreaterThan 0 }
+      .forEach { it.name shouldBe "zygarde" }
+  }
+
   @Order(2000)
   @Test
   fun `search by int range`() {
