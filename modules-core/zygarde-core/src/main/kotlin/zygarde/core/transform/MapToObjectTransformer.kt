@@ -2,52 +2,64 @@ package zygarde.core.transform
 
 import java.lang.reflect.Proxy
 import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
+import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
+import kotlin.reflect.jvm.javaType
 
 class MapToObjectTransformer<T : Any>(
   private val clz: KClass<T>
 ) {
 
   private val propertyMap = clz.memberProperties.associateBy { it.name }
+  private val propertyGetterToNameMap = clz.memberProperties.associate { it.javaGetter to it.name }
 
   @Suppress("UNCHECKED_CAST")
   fun transform(map: Map<String, Any?>): T {
-
     return if (clz.isAbstract) {
       // Handle the interface case
       return Proxy.newProxyInstance(clz.java.classLoader, arrayOf(clz.java)) { _, method, _ ->
-        map[propertyMap.entries.find { it.value.javaGetter == method }?.key]
+        val value = propertyGetterToNameMap[method]?.let { map[it] }
+        value.resolveByType(method.returnType)
       } as T
     } else {
       // Handle the class case
       val primaryConstructor = clz.primaryConstructor
-      if (primaryConstructor != null) {
+      val excludeSetterPropNames = mutableListOf<String>()
+      val instance = if (primaryConstructor != null) {
         primaryConstructor.isAccessible = true
-        val primaryConstructorArgMap = primaryConstructor.parameters.associateWith { map[it.name] }
-        val primaryConstructorArgNames = primaryConstructorArgMap.keys.mapNotNull { it.name }
-        val instance = primaryConstructor.callBy(primaryConstructorArgMap)
-        propertyMap.forEach { (name, prop) ->
-          if (prop is KMutableProperty1 && !primaryConstructorArgNames.contains(name)) {
-            prop.isAccessible = true
-            prop.setter.call(instance, map[name])
-          }
+        val primaryConstructorArgMap = primaryConstructor.parameters.associateWith {
+          val value = map[it.name]
+          value.resolveByType(it.type.javaType as Class<*>)
         }
-        instance
+        excludeSetterPropNames.addAll(primaryConstructorArgMap.keys.mapNotNull { it.name })
+        primaryConstructor.callBy(primaryConstructorArgMap)
       } else {
-        val instance = clz.createInstance()
-        propertyMap.forEach { (name, prop) ->
-          if (map[name] != null && prop is KMutableProperty1) {
-            prop.isAccessible = true
-            prop.setter.call(instance, map[name])
-          }
-        }
-        instance
+        clz.createInstance()
       }
+      propertyMap.filterKeys { !excludeSetterPropNames.contains(it) }.forEach { (name, prop) ->
+        prop.applyValue(instance, map[name].resolveByType(prop.returnType.javaType as Class<*>))
+      }
+      instance
+    }
+  }
+
+  private fun Any?.resolveByType(targetType: Class<*>): Any? {
+    return if (targetType.isEnum) {
+      targetType.enumConstants.find { (it as Enum<*>).name == this }
+    } else {
+      this
+    }
+  }
+
+  private fun KProperty1<*, *>.applyValue(instance: Any, value: Any?) {
+    this.javaField?.let {
+      it.isAccessible = true
+      it.set(instance, value)
     }
   }
 }
