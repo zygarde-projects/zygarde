@@ -49,8 +49,16 @@ class MapToObjectTransformer<T : Any>(
   }
 
   private fun Any?.resolveByType(targetType: Class<*>): Any? {
+    val thisValue = this
     return if (targetType.isEnum) {
-      targetType.enumConstants.find { (it as Enum<*>).name == this }
+      targetType.enumConstants.find {
+        val enum = (it as Enum<*>)
+        if (thisValue is String) {
+          enum.name == thisValue
+        } else {
+          enum == thisValue
+        }
+      }
     } else {
       this
     }

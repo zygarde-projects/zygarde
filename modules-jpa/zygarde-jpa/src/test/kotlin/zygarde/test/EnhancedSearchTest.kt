@@ -45,6 +45,7 @@ import zygarde.test.dao.TestComputerDao
 import zygarde.test.entity.Author
 import zygarde.test.entity.AuthorGroup
 import zygarde.test.entity.Book
+import zygarde.test.entity.BookStatus
 import zygarde.test.entity.Computer
 import zygarde.test.entity.Gpu
 import java.time.LocalDate
@@ -409,6 +410,7 @@ class EnhancedSearchTest {
 
   class CBookProjection(val id: Long) {
     var name: String = ""
+    var status: BookStatus = BookStatus.ON_SALE
   }
 
   @Order(1902)
@@ -419,7 +421,10 @@ class EnhancedSearchTest {
         field(Book::name) eq "zygarde"
       }
       .also { it.size shouldBeGreaterThan 0 }
-      .forEach { it.name shouldBe "zygarde" }
+      .forEach {
+        it.name shouldBe "zygarde"
+        it.status shouldBe BookStatus.ON_SALE
+      }
   }
 
   @Order(2000)

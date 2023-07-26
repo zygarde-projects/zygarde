@@ -18,4 +18,9 @@ open class Book(
   var aId: Int? = null,
   var minPrice: Int = (price * 0.8).toInt(),
   var maxPrice: Int = (price * 1.2).toInt(),
+  var status: BookStatus = BookStatus.ON_SALE
 ) : AutoLongIdEntity()
+
+enum class BookStatus {
+  ON_SALE, SOLD_OUT
+}
