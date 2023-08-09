@@ -7,9 +7,11 @@ import kotlin.jvm.internal.CallableReference
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.javaField
+import org.hibernate.annotations.Comment as HibernateComment
 
 fun KProperty1<*, *>.asModelMetaField(): ModelMetaField {
-  val comment = this.javaField?.getAnnotation(Comment::class.java)?.comment.orEmpty()
+  val comment = this.javaField?.getAnnotation(HibernateComment::class.java)?.value
+    ?: this.javaField?.getAnnotation(Comment::class.java)?.comment
   if (this is CallableReference) {
     val owner = this.owner
     if (owner is KClass<*>) {
@@ -19,7 +21,7 @@ fun KProperty1<*, *>.asModelMetaField(): ModelMetaField {
         fieldClass = this.returnType.asTypeName(),
         fieldNullable = this.returnType.isMarkedNullable,
         extra = false,
-        comment = comment
+        comment = comment.orEmpty(),
       )
     }
   }

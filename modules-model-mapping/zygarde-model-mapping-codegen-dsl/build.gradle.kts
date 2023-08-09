@@ -10,6 +10,7 @@ dependencies {
   implementation("com.squareup:kotlinpoet")
   implementation("com.squareup:kotlinpoet-metadata")
   implementation("com.google.auto.service:auto-service")
+  implementation("org.hibernate:hibernate-core")
 
   kapt(platform(project(":zygarde-bom-codegen")))
   kapt("com.google.auto.service:auto-service")
