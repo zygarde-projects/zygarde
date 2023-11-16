@@ -14,9 +14,11 @@ annotation class GenApi(
   val service: String,
   val servicePostProcessing: Boolean = false,
   val servicePostProcessingParam: KClass<*> = Any::class,
+  @Deprecated("use reqRefClass")
   val reqRef: String = "",
   val reqRefClass: KClass<*> = Any::class,
   val reqCollection: Boolean = false,
+  @Deprecated("use resRefClass")
   val resRef: String = "",
   val resRefClass: KClass<*> = Any::class,
   val resCollection: Boolean = false,

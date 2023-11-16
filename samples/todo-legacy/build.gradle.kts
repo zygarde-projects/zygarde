@@ -18,3 +18,25 @@ dependencies {
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true
 tasks.getByName("printCoverage").enabled = false
+
+
+kapt {
+  val apiGenFile = File(".api-gen.json")
+  apiGenFile.writeText(
+
+    """
+{
+  "todo-api": {
+"generateApiInterfacesTo":  "${projectDir.absolutePath}/generated/api-interfaces",
+"generateFeignApiInterfacesTo": "${projectDir.absolutePath}/generated/api-feign",
+"generateControllersTo":  "${projectDir.absolutePath}/generated/controllers",
+"generateServiceInterfacesTo": "${projectDir.absolutePath}/generated/services"  
+  }
+}    
+  """.trimIndent()
+  )
+
+  arguments {
+    arg("zygarde.webmvc_codegen.grouped_api_config_json", apiGenFile.absolutePath)
+  }
+}

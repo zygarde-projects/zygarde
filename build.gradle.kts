@@ -8,14 +8,14 @@ buildscript {
 
 plugins {
   id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
-  id("org.jetbrains.dokka") version "1.6.10"
+  id("org.jetbrains.dokka") version "1.8.20"
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
   id("de.jansauer.printcoverage") version "2.0.0"
-  id("org.springframework.boot") version "2.6.3"
-  id("io.spring.dependency-management") version "1.0.11.RELEASE"
-  kotlin("jvm") version "1.6.10"
-  kotlin("plugin.spring") version "1.6.10"
-  kotlin("kapt") version "1.6.10"
+  id("org.springframework.boot") version "2.7.14"
+  id("io.spring.dependency-management") version "1.1.3"
+  kotlin("jvm") version "1.8.20"
+  kotlin("plugin.spring") version "1.8.20"
+  kotlin("kapt") version "1.8.20"
   `maven-publish`
   jacoco
   application
@@ -84,7 +84,7 @@ subprojects {
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.0")
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.8")
     }
   }
 

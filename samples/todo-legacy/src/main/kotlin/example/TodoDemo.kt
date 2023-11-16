@@ -85,6 +85,7 @@ class MyTodoService(@Autowired val todoDao: TodoDao) : TodoService {
 }
 
 @ZyApi(
+  group = "todo",
   api = [
     GenApi(
       method = RequestMethod.GET,

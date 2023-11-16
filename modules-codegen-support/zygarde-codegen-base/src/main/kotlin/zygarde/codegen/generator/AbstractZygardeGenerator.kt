@@ -14,7 +14,7 @@ import javax.lang.model.element.Element
 import javax.lang.model.type.MirroredTypeException
 
 abstract class AbstractZygardeGenerator(
-  val processingEnv: ProcessingEnvironment
+  val processingEnv: ProcessingEnvironment,
 ) {
 
   fun packageName(pack: String) = processingEnv.options.getOrDefault(BASE_PACKAGE, "zygarde.generated") + ".$pack"
