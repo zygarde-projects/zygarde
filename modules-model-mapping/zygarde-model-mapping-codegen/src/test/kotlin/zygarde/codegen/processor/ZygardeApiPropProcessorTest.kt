@@ -23,7 +23,7 @@ class ZygardeApiPropProcessorTest {
       messageOutputStream = System.out
       kaptArgs.put(ZygardeKaptOptions.MODEL_META_GENERATE_TARGET, tempDirectory.absolutePath)
     }.compile()
-    for (generatedFile in result.generatedFiles) {
+    for (generatedFile in result.generatedFiles.filter { it.name.endsWith(".kt") }) {
       println(generatedFile.readText())
     }
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK

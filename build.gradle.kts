@@ -8,14 +8,14 @@ buildscript {
 
 plugins {
   id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
-  id("org.jetbrains.dokka") version "1.8.20"
+  // id("org.jetbrains.dokka") version "1.8.22"
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
   id("de.jansauer.printcoverage") version "2.0.0"
   id("org.springframework.boot") version "2.7.14"
   id("io.spring.dependency-management") version "1.1.3"
-  kotlin("jvm") version "1.8.20"
-  kotlin("plugin.spring") version "1.8.20"
-  kotlin("kapt") version "1.8.20"
+  kotlin("jvm") version "1.8.22"
+  kotlin("plugin.spring") version "1.8.22"
+  kotlin("kapt") version "1.8.22"
   `maven-publish`
   jacoco
   application
@@ -38,7 +38,7 @@ allprojects {
 subprojects {
   if (isPublishingProject()) {
     apply(plugin = "org.gradle.maven-publish")
-    apply(plugin = "org.jetbrains.dokka")
+    // apply(plugin = "org.jetbrains.dokka")
     apply(plugin = "io.gitlab.arturbosch.detekt")
 
     publishing {

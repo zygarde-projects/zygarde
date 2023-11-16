@@ -24,6 +24,7 @@ dependencies {
   testImplementation(project(":zygarde-webmvc-security"))
   testImplementation("com.github.tschuchortdev:kotlin-compile-testing")
   testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+  testImplementation("org.jetbrains.kotlin:kotlin-annotation-processing-embeddable")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

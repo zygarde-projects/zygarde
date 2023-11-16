@@ -18,6 +18,7 @@ dependencies {
   testImplementation(platform(project(":zygarde-bom-codegen-test")))
   testImplementation("com.github.tschuchortdev:kotlin-compile-testing")
   testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+  testImplementation("org.jetbrains.kotlin:kotlin-annotation-processing-embeddable")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
