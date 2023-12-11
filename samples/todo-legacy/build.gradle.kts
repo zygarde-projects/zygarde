@@ -39,3 +39,21 @@ tasks.getByName("printCoverage").enabled = false
 //     arg("zygarde.webmvc_codegen.grouped_api_config_json", apiGenFile.absolutePath)
 //   }
 // }
+
+// kapt {
+//   val apiGenFile = File(".static-option.json")
+//   apiGenFile.writeText(
+//
+//     """
+// {
+// "generateDtosTo":  "${projectDir.absolutePath}/generated/dtos",
+// "generateFeignApiInterfacesTo": "${projectDir.absolutePath}/generated/api-feign",
+// "generateControllersTo":  "${projectDir.absolutePath}/generated/controllers"
+// }
+//     """.trimIndent()
+//   )
+//
+//   arguments {
+//     arg("zygarde.webmvc_codegen.static_option_api_config_json", apiGenFile.absolutePath)
+//   }
+// }

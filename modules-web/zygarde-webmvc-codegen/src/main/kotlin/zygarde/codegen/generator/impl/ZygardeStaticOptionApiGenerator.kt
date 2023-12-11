@@ -19,17 +19,20 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import zygarde.codegen.StaticOptionApi
 import zygarde.codegen.ZygardeKaptOptions.Companion.API_STATIC_OPTION_PACKAGE
+import zygarde.codegen.ZygardeStaticOptionApiGeneratorTargetFolder
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
 import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.data.option.OptionDto
 import zygarde.data.option.OptionEnum
+import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 
 class ZygardeStaticOptionApiGenerator(
-  processingEnv: ProcessingEnvironment
+  processingEnv: ProcessingEnvironment,
+  val targetFolderConfig: ZygardeStaticOptionApiGeneratorTargetFolder?,
 ) : AbstractZygardeGenerator(processingEnv) {
 
   private val optionPackage: String by lazy {
@@ -52,12 +55,24 @@ class ZygardeStaticOptionApiGenerator(
     if (filtered.isEmpty()) {
       return
     }
+
+    val getFolderToGenerate = fun(resolveFoldertarget: (ZygardeStaticOptionApiGeneratorTargetFolder) -> String?): File {
+      val defaultKaptFolder = folderToGenerate()
+      return targetFolderConfig
+        ?.let { resolveFoldertarget(it) }
+        ?.let { File(it) }
+        ?: defaultKaptFolder
+    }
+
     generateStaticOptionDto(filtered)
+      .writeTo(getFolderToGenerate(ZygardeStaticOptionApiGeneratorTargetFolder::generateDtosTo))
     generateStaticOptionApiInterface(filtered)
+      .writeTo(getFolderToGenerate(ZygardeStaticOptionApiGeneratorTargetFolder::generateFeignApiInterfacesTo))
     generateStaticOptionController(filtered)
+      .writeTo(getFolderToGenerate(ZygardeStaticOptionApiGeneratorTargetFolder::generateControllersTo))
   }
 
-  private fun generateStaticOptionDto(elements: Collection<Element>) {
+  private fun generateStaticOptionDto(elements: Collection<Element>): FileSpec {
     val fileSpec = FileSpec.builder(optionDtoPackage, optionDtoName)
     val staticOptionDtoBuilder = TypeSpec.classBuilder(optionDtoName)
       .addModifiers(KModifier.DATA)
@@ -82,15 +97,14 @@ class ZygardeStaticOptionApiGenerator(
             .build()
         ).build().also { staticOptionDtoBuilder.addProperty(it) }
     }
-    fileSpec
+    return fileSpec
       .addType(
         staticOptionDtoBuilder.primaryConstructor(constructorBuilder.build()).build()
       )
       .build()
-      .writeTo(folderToGenerate())
   }
 
-  private fun generateStaticOptionApiInterface(elements: Collection<Element>) {
+  private fun generateStaticOptionApiInterface(elements: Collection<Element>): FileSpec {
     val fileSpec = FileSpec.builder(optionPackage, optionApiName)
     val springPropertyPath = """\${'$'}{zygarde.api.static-option-api.path}"""
     val staticOptionApiBuilder = TypeSpec.interfaceBuilder(optionApiName)
@@ -150,13 +164,12 @@ class ZygardeStaticOptionApiGenerator(
         )
     }
 
-    fileSpec
+    return fileSpec
       .addType(staticOptionApiBuilder.build())
       .build()
-      .writeTo(folderToGenerate())
   }
 
-  private fun generateStaticOptionController(elements: Collection<Element>) {
+  private fun generateStaticOptionController(elements: Collection<Element>): FileSpec {
     val fileSpec = FileSpec.builder(optionControllerPackage, optionControllerName)
     val staticOptionControllerBuilder = TypeSpec.classBuilder(optionControllerName)
       .addSuperinterface(
@@ -189,9 +202,8 @@ class ZygardeStaticOptionApiGenerator(
         )
     }
 
-    fileSpec
+    return fileSpec
       .addType(staticOptionControllerBuilder.build())
       .build()
-      .writeTo(folderToGenerate())
   }
 }

@@ -10,11 +10,13 @@ import zygarde.codegen.ApiProp
 import zygarde.codegen.Dto
 import zygarde.codegen.GenApi
 import zygarde.codegen.RequestDto
+import zygarde.codegen.StaticOptionApi
 import zygarde.codegen.ZyApi
 import zygarde.codegen.ZyModel
 import zygarde.codegen.value.AutoIntIdValueProvider
 import zygarde.data.jpa.dao.search
 import zygarde.data.jpa.entity.AutoIntIdEntity
+import zygarde.data.option.OptionEnum
 import zygarde.generated.data.dao.TodoDao
 import zygarde.generated.data.dto.CreateToDoReq
 import zygarde.generated.data.dto.TodoDto
@@ -118,3 +120,12 @@ class MyTodoService(@Autowired val todoDao: TodoDao) : TodoService {
   ]
 )
 object TodoApiSpec
+
+@StaticOptionApi
+enum class TodoStatus(
+  override val label: String
+) : OptionEnum {
+  DOING("doing"),
+  DONE("done"),
+  ;
+}
