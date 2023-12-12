@@ -57,3 +57,10 @@ tasks.getByName("printCoverage").enabled = false
 //     arg("zygarde.webmvc_codegen.static_option_api_config_json", apiGenFile.absolutePath)
 //   }
 // }
+
+// kapt {
+//   arguments {
+//     arg("zygarde.model_mapping.dto.write_to", "${projectDir.absolutePath}/generated/dtos")
+//     arg("zygarde.model_mapping.extension.write_to", "${projectDir.absolutePath}/generated/dtos-extensions")
+//   }
+// }

@@ -17,6 +17,7 @@ import javax.lang.model.element.Element
 
 class ZygardeApiGenerator(
   processingEnv: ProcessingEnvironment,
+  val apiToGenerateTargetFolder: ZygardeApiGeneratorTargetFolder?,
   val apiGroupToGenerateTargetFolder: Map<String, ZygardeApiGeneratorTargetFolder> = emptyMap(),
 ) : AbstractZygardeGenerator(processingEnv) {
 
@@ -119,7 +120,10 @@ class ZygardeApiGenerator(
 
       val result = WebMvcApiGenerator(apiVoMap.values).generateApis()
       val getFolderToGenerate = fun(resolveFoldertarget: (ZygardeApiGeneratorTargetFolder) -> String?): File {
-        val defaultKaptFolder = folderToGenerate()
+        val defaultKaptFolder = apiToGenerateTargetFolder
+          ?.let(resolveFoldertarget)
+          ?.let { File(it) }
+          ?: folderToGenerate()
         return if (apiGroup.isEmpty()) {
           defaultKaptFolder
         } else {

@@ -28,13 +28,16 @@ import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.codegen.value.NoOpValueProvider
 import zygarde.data.jpa.search.EnhancedSearch
+import java.io.File
 import java.io.Serializable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.persistence.Transient
 
 class ZygardeApiPropGenerator(
-  processingEnv: ProcessingEnvironment
+  processingEnv: ProcessingEnvironment,
+  private val dtoWriteTo: String?,
+  private val extensionWriteTo: String?,
 ) : AbstractZygardeGenerator(processingEnv) {
 
   data class DtoFieldDescriptionVo(
@@ -215,10 +218,14 @@ class ZygardeApiPropGenerator(
             dtoBuilder.primaryConstructor(constructorBuilder.build()).build()
           )
           .build()
-          .writeTo(folderToGenerate())
+          .writeTo(
+            dtoWriteTo?.let { File(it) } ?: folderToGenerate()
+          )
       }
 
-    fileBuilderForExtension.build().writeTo(folderToGenerate())
+    fileBuilderForExtension.build().writeTo(
+      extensionWriteTo?.let { File(it) } ?: folderToGenerate()
+    )
   }
 
   private fun toDtoFieldDescription(
@@ -244,6 +251,7 @@ class ZygardeApiPropGenerator(
           it
         }
       }
+
       refClass.toString() != "java.lang.Object" && refClass.toString() != "kotlin.Any" -> {
         if (refCollection) {
           Collection::class.generic(refClass.kotlin(refClass.isNullable))
@@ -251,6 +259,7 @@ class ZygardeApiPropGenerator(
           refClass
         }
       }
+
       else -> fieldElement.nullableTypeName()
     }
     val entityFieldName = fieldElement.fieldName()
@@ -401,11 +410,13 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
             fieldExtensionMember,
             MemberName("zygarde.data.jpa.search.action", "dateRange")
           )
+
           SearchType.DATE_TIME_RANGE -> functionBuilder.addStatement(
             "%M() %M req.$fieldName",
             fieldExtensionMember,
             MemberName("zygarde.data.jpa.search.action", "dateTimeRange")
           )
+
           else -> {
           }
         }
