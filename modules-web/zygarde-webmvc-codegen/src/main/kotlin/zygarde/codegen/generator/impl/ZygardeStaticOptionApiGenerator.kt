@@ -18,7 +18,7 @@ import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import zygarde.codegen.StaticOptionApi
-import zygarde.codegen.ZygardeKaptOptions.Companion.API_STATIC_OPTION_PACKAGE
+import zygarde.codegen.ZygardeApiGeneratorKaptOptions.API_STATIC_OPTION_PACKAGE
 import zygarde.codegen.ZygardeStaticOptionApiGeneratorTargetFolder
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name

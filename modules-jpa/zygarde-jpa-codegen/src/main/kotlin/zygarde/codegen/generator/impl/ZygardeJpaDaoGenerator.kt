@@ -12,27 +12,29 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Component
-import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_COMBINE
-import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_INHERIT
-import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_PACKAGE
-import zygarde.codegen.ZygardeKaptOptions.Companion.DAO_SUFFIX
+import zygarde.codegen.ZygardeJpaCodegenKaptOptions.DAO_COMBINE
+import zygarde.codegen.ZygardeJpaCodegenKaptOptions.DAO_INHERIT
+import zygarde.codegen.ZygardeJpaCodegenKaptOptions.DAO_PACKAGE
+import zygarde.codegen.ZygardeJpaCodegenKaptOptions.DAO_SUFFIX
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
-import zygarde.codegen.extension.kotlinpoet.ElementExtensions.resolveGenericFieldTypeMap
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.notNullTypeName
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.resolveGenericFieldTypeMap
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
 import zygarde.codegen.generator.AbstractZygardeGenerator
 import zygarde.core.exception.CommonErrorCode
 import zygarde.core.extension.exception.errWhenNull
+import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.persistence.Id
 import javax.persistence.IdClass
 
 class ZygardeJpaDaoGenerator(
-  processingEnv: ProcessingEnvironment
+  processingEnv: ProcessingEnvironment,
+  val daoGenerateTo: String?,
 ) : AbstractZygardeGenerator(processingEnv) {
 
   private val daoInherit by lazy {
@@ -45,6 +47,7 @@ class ZygardeJpaDaoGenerator(
     }
     val daoPackage = packageName(processingEnv.options.getOrDefault(DAO_PACKAGE, "data.dao"))
     val daoSuffix = processingEnv.options.getOrDefault(DAO_SUFFIX, "Dao")
+    val folderToGenerate = daoGenerateTo?.let(::File) ?: folderToGenerate()
     elements.map { element ->
       "${element.name()}$daoSuffix".also { daoName ->
         FileSpec.builder(daoPackage, daoName)
@@ -68,7 +71,7 @@ class ZygardeJpaDaoGenerator(
               .build()
           )
           .build()
-          .writeTo(folderToGenerate())
+          .writeTo(folderToGenerate)
       }
     }
 
@@ -100,7 +103,7 @@ class ZygardeJpaDaoGenerator(
             .build()
         )
         .build()
-        .writeTo(folderToGenerate())
+        .writeTo(folderToGenerate)
     }
   }
 

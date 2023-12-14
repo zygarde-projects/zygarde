@@ -7,7 +7,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asClassName
-import zygarde.codegen.ZygardeKaptOptions.Companion.ENTITY_PACKAGE_SEARCH
+import zygarde.codegen.ZygardeJpaCodegenKaptOptions.ENTITY_PACKAGE_SEARCH
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.allFieldsIncludeSuper
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.notNullTypeName
@@ -17,6 +17,7 @@ import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
+import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -27,7 +28,8 @@ import javax.persistence.OneToMany
 import javax.persistence.Transient
 
 class ZygardeEntityFieldGenerator(
-  processingEnv: ProcessingEnvironment
+  processingEnv: ProcessingEnvironment,
+  val targetFolder: String?,
 ) : AbstractZygardeGenerator(processingEnv) {
 
   val erasuredComparable: TypeMirror by lazy {
@@ -105,7 +107,8 @@ class ZygardeEntityFieldGenerator(
     //     }
     //   }
 
-    fileBuilderForExtension.build().writeTo(folderToGenerate())
+    val folderToGenerate = targetFolder?.let(::File) ?: folderToGenerate()
+    fileBuilderForExtension.build().writeTo(folderToGenerate)
   }
 
   private fun Element.allSearchableFields(): List<Element> {
@@ -172,6 +175,7 @@ class ZygardeEntityFieldGenerator(
           currentEntityTypeName
         )
       }
+
       this.isComparable() -> {
         ComparableConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,
@@ -179,6 +183,7 @@ class ZygardeEntityFieldGenerator(
           nonNullableFieldType.kotlin(false),
         )
       }
+
       else -> {
         ConditionAction::class.asClassName().parameterizedBy(
           rootEntityTypeName,

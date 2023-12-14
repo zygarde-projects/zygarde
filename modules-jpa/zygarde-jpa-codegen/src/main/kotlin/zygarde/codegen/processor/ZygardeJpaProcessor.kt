@@ -2,6 +2,7 @@ package zygarde.codegen.processor
 
 import com.google.auto.service.AutoService
 import zygarde.codegen.ZyModel
+import zygarde.codegen.ZygardeJpaCodegenKaptOptions
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.generator.impl.ZygardeEntityFieldGenerator
 import zygarde.codegen.generator.impl.ZygardeJpaDaoGenerator
@@ -21,10 +22,12 @@ import javax.persistence.MappedSuperclass
 @SupportedOptions(
   "kapt.kotlin.generated",
   ZygardeKaptOptions.BASE_PACKAGE,
-  ZygardeKaptOptions.DAO_SUFFIX,
-  ZygardeKaptOptions.DAO_PACKAGE,
-  ZygardeKaptOptions.DAO_INHERIT,
-  ZygardeKaptOptions.DAO_COMBINE,
+  ZygardeJpaCodegenKaptOptions.DAO_SUFFIX,
+  ZygardeJpaCodegenKaptOptions.DAO_PACKAGE,
+  ZygardeJpaCodegenKaptOptions.DAO_INHERIT,
+  ZygardeJpaCodegenKaptOptions.DAO_COMBINE,
+  ZygardeJpaCodegenKaptOptions.DAO_GENERATE_TO,
+  ZygardeJpaCodegenKaptOptions.ENTITY_FIELD_GENERATE_TO,
 )
 class ZygardeJpaProcessor : AbstractProcessor() {
 
@@ -37,14 +40,20 @@ class ZygardeJpaProcessor : AbstractProcessor() {
     val elementsAnnotatedWithEmbeddable = roundEnv.getElementsAnnotatedWith(Embeddable::class.java)
     val elementsAnnotatedWithMappedSuperclass = roundEnv.getElementsAnnotatedWith(MappedSuperclass::class.java)
     val elementsAnnotatedWithZyModel = roundEnv.getElementsAnnotatedWith(ZyModel::class.java)
-    ZygardeEntityFieldGenerator(processingEnv).generateSearchFieldForEntityElements(
+    ZygardeEntityFieldGenerator(
+      processingEnv,
+      processingEnv.options[ZygardeJpaCodegenKaptOptions.ENTITY_FIELD_GENERATE_TO],
+    ).generateSearchFieldForEntityElements(
       elementsAnnotatedWithZyModel.filter {
         elementsAnnotatedWithEntity.contains(it) ||
           elementsAnnotatedWithEmbeddable.contains(it) ||
           elementsAnnotatedWithMappedSuperclass.contains(it)
       }
     )
-    ZygardeJpaDaoGenerator(processingEnv).generateDaoForEntityElements(
+    ZygardeJpaDaoGenerator(
+      processingEnv,
+      processingEnv.options[ZygardeJpaCodegenKaptOptions.DAO_GENERATE_TO],
+    ).generateDaoForEntityElements(
       elementsAnnotatedWithZyModel.filter { elementsAnnotatedWithEntity.contains(it) }
     )
     return false
