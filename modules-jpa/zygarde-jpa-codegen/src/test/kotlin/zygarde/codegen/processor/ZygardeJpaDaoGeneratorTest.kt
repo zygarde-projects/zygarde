@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldContain
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
+import zygarde.codegen.ZygardeJpaCodegenKaptOptions
 import zygarde.codegen.ZygardeKaptOptions
 
 class ZygardeJpaDaoGeneratorTest {
@@ -44,8 +45,8 @@ class ZygardeJpaDaoGeneratorTest {
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
-      kaptArgs.put(ZygardeKaptOptions.DAO_INHERIT, "zygarde.data.jpa.dao.ZygardeEnhancedDao")
-      kaptArgs.put(ZygardeKaptOptions.DAO_COMBINE, "false")
+      kaptArgs.put(ZygardeJpaCodegenKaptOptions.DAO_INHERIT, "zygarde.data.jpa.dao.ZygardeEnhancedDao")
+      kaptArgs.put(ZygardeJpaCodegenKaptOptions.DAO_COMBINE, "false")
     }.compile()
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
     result.generatedFiles.filter { it.name.endsWith("Dao") }.forEach {
@@ -64,9 +65,9 @@ class ZygardeJpaDaoGeneratorTest {
       inheritClassPath = true
       messageOutputStream = System.out
       kaptArgs.put(ZygardeKaptOptions.BASE_PACKAGE, "foo.generated")
-      kaptArgs.put(ZygardeKaptOptions.DAO_PACKAGE, "daos")
-      kaptArgs.put(ZygardeKaptOptions.DAO_SUFFIX, "BaseDao")
-      kaptArgs.put(ZygardeKaptOptions.DAO_COMBINE, "false")
+      kaptArgs.put(ZygardeJpaCodegenKaptOptions.DAO_PACKAGE, "daos")
+      kaptArgs.put(ZygardeJpaCodegenKaptOptions.DAO_SUFFIX, "BaseDao")
+      kaptArgs.put(ZygardeJpaCodegenKaptOptions.DAO_COMBINE, "false")
     }.compile()
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
     val generatedFileNames = result.generatedFiles.map { it.name }
