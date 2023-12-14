@@ -16,7 +16,7 @@ import zygarde.codegen.AdditionalDtoProps
 import zygarde.codegen.ApiProp
 import zygarde.codegen.DtoInherits
 import zygarde.codegen.SearchType
-import zygarde.codegen.ZygardeKaptOptions
+import zygarde.codegen.ZygardeModelMappingKaptOptions.ENTITY_PACKAGE_SEARCH
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.isNullable
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
@@ -389,7 +389,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         val searchForField = it.searchForField ?: it.entityFieldName
         val fieldName = it.dtoFieldName
         val fieldExtensionMember = MemberName(
-          packageName(processingEnv.options.getOrDefault(ZygardeKaptOptions.ENTITY_PACKAGE_SEARCH, "entity.search")),
+          packageName(processingEnv.options.getOrDefault(ENTITY_PACKAGE_SEARCH, "entity.search")),
           searchForField
         )
         when (it.searchType) {
