@@ -18,7 +18,8 @@ public object MarkDetailDtoBuilder {
     extraMap2: Map<String, Int?>,
     extraMap3: Map<String, List<String>>,
     extraMap4: Map<String, List<Int?>>,
-    todo: TodoDto
+    todo: TodoDto,
+    longRemark: String
   ): MarkDetailDto = MarkDetailDto(
   id = AutoIntIdValueProvider().getValue(mark),
   x = mark.x,
@@ -29,6 +30,7 @@ public object MarkDetailDtoBuilder {
   extraMap2 = extraMap2,
   extraMap3 = extraMap3,
   extraMap4 = extraMap4,
-  todo = todo
+  todo = todo,
+  longRemark = longRemark
   )
 }

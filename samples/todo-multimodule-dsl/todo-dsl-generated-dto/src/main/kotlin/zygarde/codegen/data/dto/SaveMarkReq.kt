@@ -3,6 +3,7 @@ package zygarde.codegen.`data`.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import java.io.Serializable
 import kotlin.Int
+import kotlin.String
 
 @Schema
 public data class SaveMarkReq(
@@ -20,5 +21,10 @@ public data class SaveMarkReq(
     description="",
     required=true
   )
-  public var todo: TodoDto
+  public var todo: TodoDto,
+  @Schema(
+    description="",
+    required=true
+  )
+  public var longRemark: String
 ) : Serializable

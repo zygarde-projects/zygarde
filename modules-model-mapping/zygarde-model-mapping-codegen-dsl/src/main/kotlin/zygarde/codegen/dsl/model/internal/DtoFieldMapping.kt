@@ -22,6 +22,14 @@ sealed class DtoFieldMapping(
   open var additionalAnnotations: List<AnnotationSpec> = emptyList(),
 ) {
 
+  fun nullable() {
+    forceNull = ForceNull.NULL
+  }
+
+  fun nonNull() {
+    forceNull = ForceNull.NOT_NULL
+  }
+
   data class DtoFieldNoMapping(
     override var modelField: ModelMetaField,
     override var dto: CodegenDto,

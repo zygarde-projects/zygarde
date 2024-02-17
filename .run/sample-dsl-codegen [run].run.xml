@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="zygarde:samples:v2-dsl-sample:sample-codegen [run]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="sample-dsl-codegen [run]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
-      <option name="externalProjectPath" value="$PROJECT_DIR$/samples/v2-dsl-sample/sample-codegen" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$/samples/todo-multimodule-dsl/todo-codegen-dsl-models" />
       <option name="externalSystemIdString" value="GRADLE" />
       <option name="scriptParameters" value="" />
       <option name="taskDescriptions">
@@ -13,7 +13,7 @@
           <option value="run" />
         </list>
       </option>
-      <option name="vmOptions" value="" />
+      <option name="vmOptions" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>

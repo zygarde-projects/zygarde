@@ -36,6 +36,23 @@ open class ModelMappingSpec(
     }
   }
 
+  inline fun <reified T> fromExtra(propName: String, nullable: Boolean = false, dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = {}) {
+    dtoFieldMappings.add(
+      DtoFieldMapping
+        .ModelToDtoFieldMappingVo(
+          modelField = ModelMetaField(
+            modelClass = T::class.asTypeName(),
+            fieldName = propName,
+            fieldClass = T::class.asTypeName(),
+            fieldNullable = nullable,
+            extra = true
+          ),
+          dto = dto
+        )
+        .also { it.compound = true }
+    )
+  }
+
   fun fromRef(
     fieldName: String,
     dtoRef: CodegenDto,
@@ -125,10 +142,26 @@ open class ModelMappingSpec(
     }
   }
 
+  inline fun <reified T> field(propName: String, nullable: Boolean = false, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+    dtoFieldMappings.add(
+      DtoFieldMapping.DtoFieldNoMapping(
+        modelField = ModelMetaField(
+          modelClass = T::class.asTypeName(),
+          fieldName = propName,
+          fieldClass = T::class.asTypeName(),
+          fieldNullable = nullable
+        ),
+        dto = dto
+      )
+        .also(dsl)
+        .also { it.compound = true }
+    )
+  }
+
   fun fieldNullable(vararg props: KProperty1<*, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     field(*props) {
       dsl(this)
-      forceNull = ForceNull.NULL
+      nullable()
     }
   }
 
@@ -148,7 +181,7 @@ open class ModelMappingSpec(
   fun fieldCollectionNullable(vararg props: KProperty1<*, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
     fieldCollection(*props) {
       dsl(this)
-      forceNull = ForceNull.NULL
+      nullable()
     }
   }
 

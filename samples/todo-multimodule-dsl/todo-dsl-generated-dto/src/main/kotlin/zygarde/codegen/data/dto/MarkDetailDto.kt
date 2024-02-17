@@ -61,5 +61,10 @@ public data class MarkDetailDto(
     description="",
     required=true
   )
-  public var todo: TodoDto
+  public var todo: TodoDto,
+  @Schema(
+    description="",
+    required=true
+  )
+  public var longRemark: String
 ) : Serializable

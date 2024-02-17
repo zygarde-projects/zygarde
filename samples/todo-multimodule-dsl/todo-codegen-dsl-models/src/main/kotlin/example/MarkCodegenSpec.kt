@@ -33,6 +33,7 @@ class MarkCodegenSpec : ModelMappingCodegenSpec({
       )
       fromRef("todo", TodoModelDslCodegen.TodoDtos.TodoDto)
     }
+    fromExtra<String>("longRemark")
   }
 
   SaveMarkReq {
@@ -41,6 +42,7 @@ class MarkCodegenSpec : ModelMappingCodegenSpec({
       Mark::y,
     )
     fieldRef("todo", TodoModelDslCodegen.TodoDtos.TodoDto)
+    field<String>("longRemark")
   }
 }) {
   @Comment("extra string")
