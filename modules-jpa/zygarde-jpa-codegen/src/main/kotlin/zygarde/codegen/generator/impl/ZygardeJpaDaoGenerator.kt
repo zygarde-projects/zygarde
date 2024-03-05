@@ -20,6 +20,7 @@ import zygarde.codegen.extension.kotlinpoet.ElementExtensions.fieldName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.name
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.notNullTypeName
 import zygarde.codegen.extension.kotlinpoet.ElementExtensions.resolveGenericFieldTypeMap
+import zygarde.codegen.extension.kotlinpoet.ElementExtensions.typeName
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.extension.kotlinpoet.kotlinTypeName
@@ -79,7 +80,7 @@ class ZygardeJpaDaoGenerator(
       val classBuilder = TypeSpec.classBuilder("Dao").addAnnotation(Component::class)
       val constructorBuilder = FunSpec.constructorBuilder()
 
-      elements.forEach {
+      elements.sortedBy { it.typeName().toString() }.forEach {
         val daoFieldName = "${it.fieldName()}$daoSuffix"
         val daoClass = ClassName(daoPackage, "${it.name()}$daoSuffix")
         classBuilder.addProperty(
