@@ -8,7 +8,6 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import zygarde.api.exception.ApiExceptionFilter
 import zygarde.api.exception.ApiExceptionHandler
 import zygarde.api.exception.mapper.MissingKotlinParameterExceptionMapper
 import zygarde.api.tracing.ApiTracingFilter
@@ -36,13 +35,6 @@ class ZygardeSpringWebmvcConfig : WebMvcConfigurer {
   @Order(Ordered.HIGHEST_PRECEDENCE)
   @Bean
   fun apiTracingFilter(): ApiTracingFilter = ApiTracingFilter()
-
-  @Bean
-  @ConditionalOnMissingBean
-  fun apiExceptionFilter(
-    apiExceptionHandler: ApiExceptionHandler,
-    objectMapper: ObjectMapper
-  ): ApiExceptionFilter = ApiExceptionFilter(apiExceptionHandler, objectMapper)
 
   override fun addInterceptors(registry: InterceptorRegistry) {
     registry.addInterceptor(apiTracingHandlerInterceptor())
