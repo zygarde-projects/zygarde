@@ -96,6 +96,8 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     applyNonNullAction(values?.takeIf { it.isNotEmpty() }) { path, v ->
       if (v.size > 500) {
         cb.or(*v.chunked(500).map { chunkedValues -> path.`in`(chunkedValues) }.toTypedArray())
+      } else if (v.size == 1) {
+        cb.equal(path, v.first())
       } else {
         path.`in`(v)
       }
@@ -105,6 +107,8 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     applyNonNullAction(values?.takeIf { it.isNotEmpty() }) { path, v ->
       if (v.size > 500) {
         cb.and(*v.chunked(500).map { chunkedValues -> path.`in`(chunkedValues).not() }.toTypedArray())
+      } else if (v.size == 1) {
+        cb.notEqual(path, v.first())
       } else {
         path.`in`(v).not()
       }
