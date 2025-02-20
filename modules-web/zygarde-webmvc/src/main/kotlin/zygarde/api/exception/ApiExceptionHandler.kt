@@ -47,7 +47,7 @@ class ApiExceptionHandler : Loggable {
               LOGGER.debug(ex.message)
             }
           }
-        "${objectError.field} ${objectError.defaultMessage}"
+        "${objectError.objectName}.${objectError.field} ${objectError.defaultMessage}"
       }
 
     return ResponseEntity(
