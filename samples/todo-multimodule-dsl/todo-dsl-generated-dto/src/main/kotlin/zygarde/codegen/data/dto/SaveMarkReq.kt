@@ -13,8 +13,8 @@ public data class SaveMarkReq(
     description="x",
     required=true
   )
-  @NotEmpty
-  @DecimalMax(value = "100")
+  @field:NotEmpty
+  @field:DecimalMax(value = "100")
   public var x: Int,
   @Schema(
     description="y",

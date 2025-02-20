@@ -11,10 +11,10 @@ import zygarde.codegen.`data`.dto.TodoDto
 import zygarde.core.di.DiServiceContext.bean
 
 @RestController
-@Tag(name="TodoApi2")
+@Tag(name = "TodoApi2")
 public class TodoApi2Controller : TodoApi2 {
-  @GetMapping(value=["api/todo2"])
-  @Operation(summary="getTodoList")
+  @GetMapping(value = ["api/todo2"])
+  @Operation(summary = "getTodoList")
   public override fun getTodoList(): Collection<TodoDto> {
     val service = bean<TodoApiService>()
     val result = service.getTodoList()
