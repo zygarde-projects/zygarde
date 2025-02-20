@@ -5,6 +5,7 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
   implementation(project(":todo-src-core"))
   implementation(project(":zygarde-model-mapping"))
+  implementation("jakarta.validation:jakarta.validation-api")
 }
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true

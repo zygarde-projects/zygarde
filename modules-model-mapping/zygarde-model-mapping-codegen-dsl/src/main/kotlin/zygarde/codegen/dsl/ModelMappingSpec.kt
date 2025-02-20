@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl
 
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.dsl.extensions.asModelMetaField
@@ -12,6 +13,7 @@ import zygarde.codegen.value.AutoIntIdValueProvider
 import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.codegen.value.ValueProvider
 import kotlin.reflect.KProperty1
+import kotlin.reflect.jvm.javaField
 
 open class ModelMappingSpec(
   val dto: CodegenDto,
@@ -36,7 +38,11 @@ open class ModelMappingSpec(
     }
   }
 
-  inline fun <reified T> fromExtra(propName: String, nullable: Boolean = false, dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = {}) {
+  inline fun <reified T> fromExtra(
+    propName: String,
+    nullable: Boolean = false,
+    dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = {}
+  ) {
     dtoFieldMappings.add(
       DtoFieldMapping
         .ModelToDtoFieldMappingVo(
@@ -61,7 +67,13 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.ModelToDtoFieldMappingVo(
-        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
+        modelField = ModelMetaField(
+          Any::class.asTypeName(),
+          fieldName,
+          Any::class.asTypeName(),
+          nullable,
+          extra = true
+        ),
         dto = dto
       )
         .also {
@@ -80,7 +92,13 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.ModelToDtoFieldMappingVo(
-        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
+        modelField = ModelMetaField(
+          Any::class.asTypeName(),
+          fieldName,
+          Any::class.asTypeName(),
+          nullable,
+          extra = true
+        ),
         dto = dto
       )
         .also {
@@ -127,6 +145,7 @@ open class ModelMappingSpec(
   fun applyTo(vararg props: KProperty1<*, *>, dsl: (DtoFieldMapping.ModelApplyFromDtoFieldMappingVo.() -> Unit) = {}) {
     props.forEach { p ->
       DtoFieldMapping.ModelApplyFromDtoFieldMappingVo(p.asModelMetaField(), dto)
+        .also { it.applyValidationAnnotations(p) }
         .also(dsl)
         .also(dtoFieldMappings::add)
     }
@@ -136,13 +155,18 @@ open class ModelMappingSpec(
     props.forEach { p ->
       dtoFieldMappings.add(
         DtoFieldMapping.DtoFieldNoMapping(p.asModelMetaField(), dto)
+          .also { it.applyValidationAnnotations(p) }
           .also(dsl)
           .also { it.compound = true }
       )
     }
   }
 
-  inline fun <reified T> field(propName: String, nullable: Boolean = false, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+  inline fun <reified T> field(
+    propName: String,
+    nullable: Boolean = false,
+    dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}
+  ) {
     dtoFieldMappings.add(
       DtoFieldMapping.DtoFieldNoMapping(
         modelField = ModelMetaField(
@@ -169,6 +193,7 @@ open class ModelMappingSpec(
     props.forEach { p ->
       dtoFieldMappings.add(
         DtoFieldMapping.DtoFieldNoMapping(p.asModelMetaField(), dto)
+          .also { it.applyValidationAnnotations(p) }
           .also(dsl)
           .also {
             it.compound = true
@@ -178,7 +203,10 @@ open class ModelMappingSpec(
     }
   }
 
-  fun fieldCollectionNullable(vararg props: KProperty1<*, *>, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {
+  fun fieldCollectionNullable(
+    vararg props: KProperty1<*, *>,
+    dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}
+  ) {
     fieldCollection(*props) {
       dsl(this)
       nullable()
@@ -193,7 +221,13 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.DtoFieldNoMapping(
-        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
+        modelField = ModelMetaField(
+          Any::class.asTypeName(),
+          fieldName,
+          Any::class.asTypeName(),
+          nullable,
+          extra = true
+        ),
         dto = dto
       )
         .also {
@@ -211,7 +245,13 @@ open class ModelMappingSpec(
   ) {
     dtoFieldMappings.add(
       DtoFieldMapping.DtoFieldNoMapping(
-        modelField = ModelMetaField(Any::class.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true),
+        modelField = ModelMetaField(
+          Any::class.asTypeName(),
+          fieldName,
+          Any::class.asTypeName(),
+          nullable,
+          extra = true
+        ),
         dto = dto
       )
         .also {
@@ -220,5 +260,16 @@ open class ModelMappingSpec(
         }
         .also(dsl)
     )
+  }
+
+  fun DtoFieldMapping.applyValidationAnnotations(p: KProperty1<*, *>) {
+    additionalAnnotations = buildList {
+      addAll(additionalAnnotations)
+      p.javaField?.declaredAnnotations
+        ?.filter { a -> a.annotationClass.asClassName().packageName.startsWith("javax.validation") }
+        ?.forEach {
+          add(AnnotationSpec.get(it))
+        }
+    }
   }
 }

@@ -7,6 +7,8 @@ import zygarde.jpa.converter.StringListToJsonStringConverter
 import javax.persistence.Convert
 import javax.persistence.Entity
 import javax.persistence.MappedSuperclass
+import javax.validation.constraints.DecimalMax
+import javax.validation.constraints.NotEmpty
 
 @Entity
 @ZyModel
@@ -26,6 +28,8 @@ abstract class AbstractNote(
 
 @Entity
 class Mark(
+  @field:NotEmpty
+  @field:DecimalMax("100")
   @Comment("x")
   var x: Int,
   @Comment("y")
