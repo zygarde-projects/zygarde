@@ -2,3 +2,13 @@ build
 .idea
 .gradle
 out
+
+# Documentation build artifacts
+site/
+docs/api/
+
+# Python virtual environment and bytecode
+.venv/
+venv/
+*.pyc
+__pycache__/

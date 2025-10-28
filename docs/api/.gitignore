@@ -1,0 +1,6 @@
+# Ignore all generated API docs
+*
+# But keep this .gitignore
+!.gitignore
+# And keep the placeholder
+!index.html
