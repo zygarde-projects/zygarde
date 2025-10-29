@@ -23,7 +23,6 @@ docs/
 
 - Python 3.7+
 - pip (Python package manager)
-- JDK 17+ (for generating API docs)
 
 ### Installation
 
@@ -70,17 +69,6 @@ mkdocs build
 ```
 
 Output will be in the `site/` directory.
-
-### Generating API Documentation
-
-Generate Dokka API documentation:
-
-```bash
-cd ..
-./gradlew dokkaHtmlMultiModule
-```
-
-API docs will be generated in `docs/api/` and integrated with the MkDocs site.
 
 ## Writing Documentation
 
@@ -187,9 +175,8 @@ mkdocs gh-deploy --force
 
 This will:
 1. Build the documentation
-2. Generate API docs with Dokka
-3. Push to the `gh-pages` branch
-4. GitHub Pages will serve the site
+2. Push to the `gh-pages` branch
+3. GitHub Pages will serve the site
 
 ## Documentation Guidelines
 
@@ -242,16 +229,6 @@ mkdocs serve --dev-addr=127.0.0.1:8080
 pip install --force-reinstall -r ../requirements.txt
 ```
 
-### API Docs Not Showing
-
-```bash
-# Regenerate Dokka docs
-cd ..
-./gradlew clean dokkaHtmlMultiModule
-cd docs
-mkdocs serve
-```
-
 ### Changes Not Appearing
 
 - Hard refresh browser (Ctrl+Shift+R or Cmd+Shift+R)
@@ -263,7 +240,6 @@ mkdocs serve
 - [MkDocs Documentation](https://www.mkdocs.org/)
 - [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
 - [Markdown Guide](https://www.markdownguide.org/)
-- [Dokka Documentation](https://kotlinlang.org/docs/dokka-introduction.html)
 
 ## Contributing
 

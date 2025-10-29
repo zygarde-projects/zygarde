@@ -140,9 +140,6 @@ Check out the sample applications:
 # Run tests
 ./gradlew test
 
-# Generate API docs
-./gradlew dokkaHtmlMultiModule
-
 # Run sample application
 ./gradlew :samples:todo-legacy:bootRun
 ```
