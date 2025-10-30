@@ -13,20 +13,27 @@
         }
         h1 { color: #3f51b5; }
         p { color: #666; margin: 20px 0; }
-        code {
-            background: #f5f5f5;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Monaco', 'Menlo', monospace;
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 30px 0;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <h1>API Documentation</h1>
-    <p>The Kotlin API documentation is generated during the build process.</p>
-    <p>When deployed via GitHub Actions, this page will be replaced with the full Dokka-generated API documentation.</p>
-    <p>To generate locally, run:</p>
-    <code>./gradlew dokkaHtmlMultiModule</code>
+    <div class="note">
+        <strong>Note:</strong> API documentation generation via Dokka has been disabled.
+        <br><br>
+        For API reference, please refer to:
+        <ul>
+            <li>Source code in the <a href="https://github.com/zygarde-projects/zygarde" target="_blank">GitHub repository</a></li>
+            <li>KDoc comments in the Kotlin source files</li>
+            <li>Module-specific documentation in the guides section</li>
+        </ul>
+    </div>
     <p style="margin-top: 40px;">
         <a href="../">← Back to Documentation</a>
     </p>
