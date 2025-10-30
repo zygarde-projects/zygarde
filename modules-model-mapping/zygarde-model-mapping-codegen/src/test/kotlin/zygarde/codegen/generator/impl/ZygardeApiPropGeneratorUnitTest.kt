@@ -96,7 +96,7 @@ class ZygardeApiPropGeneratorUnitTest {
   fun `validValueProvider should return null for NoOpValueProvider`() {
     // This tests the private function indirectly through data class behavior
     val noOpType = NoOpValueProvider::class.asTypeName()
-    
+
     // When NoOpValueProvider is used, it should be treated as null
     noOpType.toString() shouldBe NoOpValueProvider::class.asTypeName().toString()
   }

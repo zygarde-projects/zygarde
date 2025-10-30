@@ -14,7 +14,7 @@ class ZygardeApiPropGeneratorComprehensiveTest {
   fun `should generate DTO with toDto extension for simple entity`() {
     val result = compileFile("codegen-input/comprehensive/SimpleEntity.kt")
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
-    
+
     // Print generated files for debugging
     result.generatedFiles.filter { it.name.endsWith(".kt") }.forEach {
       println("Generated: ${it.name}")
