@@ -6,11 +6,11 @@ dependencies {
   implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-codegen-base"))
   implementation("org.springframework.boot:spring-boot-starter-validation")
+  implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("io.github.classgraph:classgraph")
   implementation("com.squareup:kotlinpoet")
   implementation("com.squareup:kotlinpoet-metadata")
   implementation("com.google.auto.service:auto-service")
-  implementation("org.hibernate:hibernate-core")
 
   kapt(platform(project(":zygarde-bom-codegen")))
   kapt("com.google.auto.service:auto-service")

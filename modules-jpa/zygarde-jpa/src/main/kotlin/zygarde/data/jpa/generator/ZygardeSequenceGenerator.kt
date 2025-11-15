@@ -14,6 +14,6 @@ class ZygardeSequenceGenerator : SequenceStyleGenerator() {
         return id
       }
     }
-    return super.generate(session, obj)
+    return super.generate(session, obj) as Serializable
   }
 }

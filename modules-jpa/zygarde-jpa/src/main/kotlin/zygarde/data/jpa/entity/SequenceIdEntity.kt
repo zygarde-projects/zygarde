@@ -19,7 +19,7 @@ abstract class SequenceIdEntity<T : Serializable> : Serializable {
     name = "sequenceGenerator",
     strategy = "zygarde.data.jpa.generator.ZygardeSequenceGenerator",
     parameters = [
-      Parameter(name = SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, value = "true"),
+      Parameter(name = "prefer_sequence_per_entity", value = "true"),
       Parameter(name = SequenceStyleGenerator.OPT_PARAM, value = "pooled"),
       Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "1"),
       Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1")

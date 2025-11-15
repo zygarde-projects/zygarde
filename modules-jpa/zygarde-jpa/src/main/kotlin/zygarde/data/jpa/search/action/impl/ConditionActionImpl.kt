@@ -1,6 +1,5 @@
 package zygarde.data.jpa.search.action.impl
 
-import org.hibernate.query.criteria.internal.path.SingularAttributePath
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
@@ -13,6 +12,7 @@ import jakarta.persistence.criteria.Path
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import jakarta.persistence.metamodel.Attribute
+import jakarta.persistence.metamodel.Bindable
 
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
@@ -168,9 +168,10 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     }
     if (isCountQuery) {
       val initialPath = enhancedSearch.root.get<Any>(splited[0])
+      val model = initialPath.model
       if (
-        initialPath is SingularAttributePath<*> &&
-        initialPath.attribute.persistentAttributeType in COUNT_QUERY_ALLOW_GET_ATTRIBUTE_TYPE
+        model is Attribute<*, *> &&
+        model.persistentAttributeType in COUNT_QUERY_ALLOW_GET_ATTRIBUTE_TYPE
       ) {
         return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
           join.get<Any>(foldedColumn)

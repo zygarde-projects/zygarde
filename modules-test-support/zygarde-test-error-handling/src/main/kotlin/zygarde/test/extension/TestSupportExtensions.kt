@@ -14,5 +14,6 @@ fun errCodeMatches(errorCode: ErrorCode, block: () -> Unit) {
 }
 
 fun errMessageMatches(message: String, block: () -> Unit) {
-  shouldThrow<BusinessException> { block() }.message shouldBe message
+  val exception = shouldThrow<BusinessException> { block() }
+  exception.message shouldBe message
 }

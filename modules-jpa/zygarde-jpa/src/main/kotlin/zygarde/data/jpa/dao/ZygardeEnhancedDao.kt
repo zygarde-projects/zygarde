@@ -8,7 +8,7 @@ import kotlin.reflect.KProperty1
 
 @NoRepositoryBean
 interface ZygardeEnhancedDao<T, ID> : BaseDao<T, ID> {
-  fun delete(spec: Specification<T>)
+  override fun delete(spec: Specification<T>): Long
 
   fun <P> selectOne(
     p: KProperty1<T, P>,
