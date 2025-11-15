@@ -1,7 +1,7 @@
 package zygarde.api.tracing
 
 import zygarde.json.toJsonString
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 object ApiTracingContext {
   private val tracingDataThreadLocal: ThreadLocal<ApiTracingData> = ThreadLocal.withInitial { ApiTracingData() }

@@ -13,7 +13,6 @@ import zygarde.test.extension.errCodeMatches
 import zygarde.test.extension.errMessageMatches
 
 class ExceptionExtensionsTest {
-
   @Test
   fun `should able to catch errorCode`() {
     errCodeMatches(CommonErrorCode.ERROR) {
@@ -65,11 +64,12 @@ class ExceptionExtensionsTest {
 
   @Test
   fun `should able to getStackTraceString`() {
-    val s = try {
-      throw RuntimeException("test")
-    } catch (e: Throwable) {
-      e.getStackTraceString()
-    }
+    val s =
+      try {
+        throw RuntimeException("test")
+      } catch (e: Throwable) {
+        e.getStackTraceString()
+      }
     s shouldNotBe ""
   }
 }

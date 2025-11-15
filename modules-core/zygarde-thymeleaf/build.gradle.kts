@@ -8,6 +8,6 @@ dependencies {
   kapt("org.springframework.boot:spring-boot-configuration-processor")
 }
 
-tasks.getByName("printCoverage").enabled = false
+// tasks.getByName("printCoverage").enabled = false
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true

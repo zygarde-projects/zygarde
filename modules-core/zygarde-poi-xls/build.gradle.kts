@@ -4,4 +4,4 @@ dependencies {
   testImplementation(project(":zygarde-test"))
 }
 
-tasks.getByName("printCoverage").enabled = false
+// tasks.getByName("printCoverage").enabled = false

@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SortFieldTest {
-
   @Test
   fun `should create SortField with default values`() {
     // given & when
@@ -18,10 +17,11 @@ class SortFieldTest {
   @Test
   fun `should create SortField with ascending sort`() {
     // given & when
-    val sortField = SortField(
-      sort = SortDirection.ASC,
-      field = "name"
-    )
+    val sortField =
+      SortField(
+        sort = SortDirection.ASC,
+        field = "name",
+      )
 
     // then
     sortField.sort shouldBe SortDirection.ASC
@@ -31,10 +31,11 @@ class SortFieldTest {
   @Test
   fun `should create SortField with descending sort`() {
     // given & when
-    val sortField = SortField(
-      sort = SortDirection.DESC,
-      field = "createdAt"
-    )
+    val sortField =
+      SortField(
+        sort = SortDirection.DESC,
+        field = "createdAt",
+      )
 
     // then
     sortField.sort shouldBe SortDirection.DESC

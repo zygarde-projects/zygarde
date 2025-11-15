@@ -7,7 +7,7 @@ open class PageDto<T>(
   val atPage: Int,
   val totalPages: Int,
   val items: List<T>,
-  val totalCount: Long
+  val totalCount: Long,
 ) {
   companion object {
     fun <T> empty(): PageDto<T> {

@@ -21,11 +21,11 @@ import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
-import javax.persistence.Convert
-import javax.persistence.ElementCollection
-import javax.persistence.ManyToMany
-import javax.persistence.OneToMany
-import javax.persistence.Transient
+import jakarta.persistence.Convert
+import jakarta.persistence.ElementCollection
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Transient
 
 class ZygardeEntityFieldGenerator(
   processingEnv: ProcessingEnvironment,

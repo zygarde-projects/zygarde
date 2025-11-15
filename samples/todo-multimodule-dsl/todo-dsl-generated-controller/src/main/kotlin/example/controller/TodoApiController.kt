@@ -5,7 +5,7 @@ import example.service.TodoApiService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.lang.ThreadLocal
-import javax.validation.Valid
+import jakarta.validation.Valid
 import kotlin.Int
 import kotlin.String
 import kotlin.collections.Collection

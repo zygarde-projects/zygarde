@@ -1,7 +1,7 @@
 package zygarde.codegen.dsl.model.internal
 
 import com.squareup.kotlinpoet.AnnotationSpec
-import javax.validation.constraints.Pattern
+import jakarta.validation.constraints.Pattern
 
 sealed class DtoFieldValidation(
   open val message: String,
@@ -22,6 +22,6 @@ sealed class DtoFieldValidation(
   data class Email(
     override val message: String,
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Email::class).build()
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Email::class).build()
   }
 }

@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class MapToObjectTransformerTest {
-
   enum class Status {
-    ON, OFF
+    ON,
+    OFF,
   }
 
   interface TestInterface {
@@ -29,7 +29,7 @@ class MapToObjectTransformerTest {
 
   data class TestDataClz(
     override val id: Int,
-    override val name: String
+    override val name: String,
   ) : AbstractTestClz() {
     val status: Status? = null
   }
@@ -41,11 +41,12 @@ class MapToObjectTransformerTest {
     var name: String = ""
   }
 
-  private val inputMap = mapOf(
-    "id" to 1,
-    "name" to "test",
-    "status" to "ON"
-  )
+  private val inputMap =
+    mapOf(
+      "id" to 1,
+      "name" to "test",
+      "status" to "ON",
+    )
 
   @Test
   fun `transform to interface`() {
@@ -78,12 +79,13 @@ class MapToObjectTransformerTest {
 
   @Test
   fun `transform to class`() {
-    val obj = MapToObjectTransformer(TestClz::class).transform(
-      buildMap {
-        putAll(inputMap)
-        put("status", "OFF")
-      }
-    )
+    val obj =
+      MapToObjectTransformer(TestClz::class).transform(
+        buildMap {
+          putAll(inputMap)
+          put("status", "OFF")
+        },
+      )
     obj.id shouldBe 1
     obj.name shouldBe "test"
     obj.status shouldBe Status.OFF
@@ -91,12 +93,13 @@ class MapToObjectTransformerTest {
 
   @Test
   fun `transform to class with null prop`() {
-    val obj = MapToObjectTransformer(TestClz::class).transform(
-      buildMap {
-        putAll(inputMap)
-        put("status", null)
-      }
-    )
+    val obj =
+      MapToObjectTransformer(TestClz::class).transform(
+        buildMap {
+          putAll(inputMap)
+          put("status", null)
+        },
+      )
     obj.id shouldBe 1
     obj.name shouldBe "test"
     obj.status shouldBe null

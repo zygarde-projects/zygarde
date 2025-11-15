@@ -14,10 +14,10 @@ import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.api.PagingAndSortingRequest
 import zygarde.data.search.SearchDateTimeRange
 import java.time.LocalDateTime
-import javax.persistence.Entity
-import javax.persistence.Lob
-import javax.persistence.ManyToOne
-import javax.persistence.Transient
+import jakarta.persistence.Entity
+import jakarta.persistence.Lob
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Transient
 
 @Entity
 @AdditionalDtoProps(

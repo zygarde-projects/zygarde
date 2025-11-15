@@ -11,5 +11,5 @@ open class SearchDateRange(
   @Schema(description = "開始日期")
   var from: LocalDate? = null,
   @Schema(description = "結束日期（包含）")
-  var to: LocalDate? = null
+  var to: LocalDate? = null,
 )

@@ -9,6 +9,9 @@ abstract class SearchRangeOverlap<T>(
 )
 
 class SearchIntRangeOverlap(start: Int, end: Int) : SearchRangeOverlap<Int>(start, end)
+
 class SearchLongRangeOverlap(start: Long, end: Long) : SearchRangeOverlap<Long>(start, end)
+
 class SearchDateRangeOverlap(start: LocalDate, end: LocalDate) : SearchRangeOverlap<LocalDate>(start, end)
+
 class SearchDateTimeRangeOverlap(start: LocalDateTime, end: LocalDateTime) : SearchRangeOverlap<LocalDateTime>(start, end)

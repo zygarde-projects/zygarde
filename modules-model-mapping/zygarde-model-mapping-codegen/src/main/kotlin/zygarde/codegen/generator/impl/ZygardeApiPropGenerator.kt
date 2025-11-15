@@ -32,7 +32,7 @@ import java.io.File
 import java.io.Serializable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
-import javax.persistence.Transient
+import jakarta.persistence.Transient
 
 class ZygardeApiPropGenerator(
   processingEnv: ProcessingEnvironment,

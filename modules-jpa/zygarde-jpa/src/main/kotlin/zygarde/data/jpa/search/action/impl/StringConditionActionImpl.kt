@@ -5,9 +5,9 @@ import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
 import zygarde.data.search.SearchKeyword
 import zygarde.data.search.SearchKeywordType
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.Expression
-import javax.persistence.criteria.Predicate
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.Expression
+import jakarta.persistence.criteria.Predicate
 
 open class StringConditionActionImpl<RootEntityType, EntityType>(
   val enhancedSearch: EnhancedSearchImpl<RootEntityType>,

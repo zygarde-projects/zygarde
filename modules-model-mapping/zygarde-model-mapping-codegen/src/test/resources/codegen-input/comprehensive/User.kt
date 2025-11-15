@@ -8,7 +8,7 @@ import zygarde.codegen.DtoInherits
 import zygarde.codegen.RequestDto
 import zygarde.codegen.SearchType
 import zygarde.codegen.ZyModel
-import javax.persistence.Transient
+import jakarta.persistence.Transient
 
 @ZyModel
 @DtoInherits(

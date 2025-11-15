@@ -6,5 +6,5 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class OptionDto(
   val key: String,
   val label: String,
-  val active: Boolean = true
+  val active: Boolean = true,
 )

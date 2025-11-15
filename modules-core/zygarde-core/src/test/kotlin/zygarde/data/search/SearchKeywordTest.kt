@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SearchKeywordTest {
-
   @Test
   fun `should create SearchKeyword with default values`() {
     // given & when
@@ -18,9 +17,10 @@ class SearchKeywordTest {
   @Test
   fun `should create SearchKeyword with keyword`() {
     // given & when
-    val search = SearchKeyword(
-      keyword = "test"
-    )
+    val search =
+      SearchKeyword(
+        keyword = "test",
+      )
 
     // then
     search.keyword shouldBe "test"
@@ -30,10 +30,11 @@ class SearchKeywordTest {
   @Test
   fun `should create SearchKeyword with all fields`() {
     // given & when
-    val search = SearchKeyword(
-      keyword = "example",
-      type = SearchKeywordType.CONTAINS
-    )
+    val search =
+      SearchKeyword(
+        keyword = "example",
+        type = SearchKeywordType.CONTAINS,
+      )
 
     // then
     search.keyword shouldBe "example"
@@ -42,12 +43,13 @@ class SearchKeywordTest {
 
   @Test
   fun `should support all search types`() {
-    val types = listOf(
-      SearchKeywordType.STARTS_WITH,
-      SearchKeywordType.ENDS_WITH,
-      SearchKeywordType.CONTAINS,
-      SearchKeywordType.MATCH
-    )
+    val types =
+      listOf(
+        SearchKeywordType.STARTS_WITH,
+        SearchKeywordType.ENDS_WITH,
+        SearchKeywordType.CONTAINS,
+        SearchKeywordType.MATCH,
+      )
 
     types.forEach { type ->
       val search = SearchKeyword(keyword = "test", type = type)

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class SearchDateTimeRangeTest {
-
   @Test
   fun `should create SearchDateTimeRange with default values`() {
     // given & when
@@ -23,10 +22,11 @@ class SearchDateTimeRangeTest {
     val until = LocalDateTime.of(2023, 12, 31, 23, 59)
 
     // when
-    val range = SearchDateTimeRange(
-      from = from,
-      until = until
-    )
+    val range =
+      SearchDateTimeRange(
+        from = from,
+        until = until,
+      )
 
     // then
     range.from shouldBe from

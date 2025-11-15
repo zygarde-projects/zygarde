@@ -7,5 +7,5 @@ open class SearchKeyword(
   @Schema(description = "關鍵字")
   var keyword: String? = null,
   @Schema(description = "關鍵字查詢類型")
-  var type: SearchKeywordType = SearchKeywordType.STARTS_WITH
+  var type: SearchKeywordType = SearchKeywordType.STARTS_WITH,
 )

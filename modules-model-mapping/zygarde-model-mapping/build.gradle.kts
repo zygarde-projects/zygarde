@@ -10,6 +10,6 @@ dependencies {
   testImplementation(project(":zygarde-test"))
 }
 
-tasks.getByName("printCoverage").enabled = false
+// tasks.getByName("printCoverage").enabled = false
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true

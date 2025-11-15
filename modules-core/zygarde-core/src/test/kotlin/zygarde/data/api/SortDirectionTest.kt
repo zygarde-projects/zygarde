@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SortDirectionTest {
-
   @Test
   fun `should have ASC and DESC values`() {
     // given & when

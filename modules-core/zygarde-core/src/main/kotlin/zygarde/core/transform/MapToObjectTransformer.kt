@@ -12,9 +12,8 @@ import kotlin.reflect.jvm.javaGetter
 import kotlin.reflect.jvm.javaType
 
 class MapToObjectTransformer<T : Any>(
-  private val clz: KClass<T>
+  private val clz: KClass<T>,
 ) {
-
   private val propertyMap = clz.memberProperties.associateBy { it.name }
   private val propertyGetterToNameMap = clz.memberProperties.associate { it.javaGetter to it.name }
 
@@ -30,17 +29,19 @@ class MapToObjectTransformer<T : Any>(
       // Handle the class case
       val primaryConstructor = clz.primaryConstructor
       val excludeSetterPropNames = mutableListOf<String>()
-      val instance = if (primaryConstructor != null) {
-        primaryConstructor.isAccessible = true
-        val primaryConstructorArgMap = primaryConstructor.parameters.associateWith {
-          val value = map[it.name]
-          value.resolveByType(it.type.javaType as Class<*>)
+      val instance =
+        if (primaryConstructor != null) {
+          primaryConstructor.isAccessible = true
+          val primaryConstructorArgMap =
+            primaryConstructor.parameters.associateWith {
+              val value = map[it.name]
+              value.resolveByType(it.type.javaType as Class<*>)
+            }
+          excludeSetterPropNames.addAll(primaryConstructorArgMap.keys.mapNotNull { it.name })
+          primaryConstructor.callBy(primaryConstructorArgMap)
+        } else {
+          clz.createInstance()
         }
-        excludeSetterPropNames.addAll(primaryConstructorArgMap.keys.mapNotNull { it.name })
-        primaryConstructor.callBy(primaryConstructorArgMap)
-      } else {
-        clz.createInstance()
-      }
       propertyMap.filterKeys { !excludeSetterPropNames.contains(it) }.forEach { (name, prop) ->
         prop.applyValue(instance, map[name].resolveByType(prop.returnType.javaType as Class<*>))
       }
@@ -64,7 +65,10 @@ class MapToObjectTransformer<T : Any>(
     }
   }
 
-  private fun KProperty1<*, *>.applyValue(instance: Any, value: Any?) {
+  private fun KProperty1<*, *>.applyValue(
+    instance: Any,
+    value: Any?,
+  ) {
     this.javaField?.let {
       it.isAccessible = true
       it.set(instance, value)

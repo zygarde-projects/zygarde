@@ -6,9 +6,9 @@ import org.springframework.web.filter.OncePerRequestFilter
 import zygarde.core.exception.ApiErrorCode
 import zygarde.core.exception.BusinessException
 import zygarde.security.ApiRole
-import javax.servlet.FilterChain
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.FilterChain
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 /**
  * @author leo

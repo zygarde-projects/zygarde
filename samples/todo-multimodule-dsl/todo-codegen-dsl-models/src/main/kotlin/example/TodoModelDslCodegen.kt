@@ -24,11 +24,10 @@ class TodoModelDslCodegen : ModelMappingCodegenSpec({
       Note::title,
     )
     fromExtra(
-      TodoExtraModel::remark
+      TodoExtraModel::remark,
     )
   }
 }) {
-
   class TodoExtraModel {
     var remark: String = ""
   }

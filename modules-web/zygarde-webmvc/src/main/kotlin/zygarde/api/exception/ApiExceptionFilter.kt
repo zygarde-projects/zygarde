@@ -3,11 +3,11 @@ package zygarde.api.exception
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.filter.GenericFilterBean
-import javax.servlet.FilterChain
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.FilterChain
+import jakarta.servlet.ServletRequest
+import jakarta.servlet.ServletResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 /**
  * @author leo
@@ -23,7 +23,7 @@ open class ApiExceptionFilter(
     } catch (t: Throwable) {
       val responseEntity = apiExceptionHandler.handleThrowable(t, req as HttpServletRequest)
       (res as HttpServletResponse).also {
-        it.status = responseEntity.statusCodeValue
+        it.status = responseEntity.statusCode.value()
         it.contentType = "application/json;charset=UTF-8"
         it.writer.write(objectMapper.writeValueAsString(responseEntity.body))
       }

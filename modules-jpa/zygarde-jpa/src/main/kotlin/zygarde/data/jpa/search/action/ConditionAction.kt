@@ -1,8 +1,8 @@
 package zygarde.data.jpa.search.action
 
 import zygarde.data.jpa.search.EnhancedSearch
-import javax.persistence.criteria.Expression
-import javax.persistence.criteria.JoinType
+import jakarta.persistence.criteria.Expression
+import jakarta.persistence.criteria.JoinType
 import kotlin.reflect.KProperty1
 
 interface ConditionAction<RootEntityType, EntityType, FieldType> {

@@ -10,5 +10,5 @@ data class PagingRequest(
   @Schema(description = "頁次（從1開始）", required = true)
   var page: Int = 1,
   @Schema(description = "每頁數量", required = true)
-  var pageSize: Int = 10
+  var pageSize: Int = 10,
 )

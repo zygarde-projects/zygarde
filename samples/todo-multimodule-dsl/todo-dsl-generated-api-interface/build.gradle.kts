@@ -7,6 +7,6 @@ dependencies {
 }
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true
-tasks.getByName("printCoverage").enabled = false
+// tasks.getByName("printCoverage").enabled = false
 tasks.getByName("ktlintMainSourceSetCheck").enabled = false
 tasks.getByName("ktlintMainSourceSetFormat").enabled = false

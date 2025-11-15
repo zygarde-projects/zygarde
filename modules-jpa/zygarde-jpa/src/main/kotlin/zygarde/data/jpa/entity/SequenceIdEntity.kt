@@ -6,10 +6,10 @@ import org.hibernate.annotations.Parameter
 import org.hibernate.id.enhanced.SequenceStyleGenerator
 import java.io.Serializable
 import java.util.*
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.MappedSuperclass
 
 @MappedSuperclass
 abstract class SequenceIdEntity<T : Serializable> : Serializable {

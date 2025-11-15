@@ -4,14 +4,14 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class OptionDtoTest {
-
   @Test
   fun `should create OptionDto with required fields`() {
     // given & when
-    val option = OptionDto(
-      key = "active",
-      label = "Active"
-    )
+    val option =
+      OptionDto(
+        key = "active",
+        label = "Active",
+      )
 
     // then
     option.key shouldBe "active"
@@ -22,11 +22,12 @@ class OptionDtoTest {
   @Test
   fun `should create OptionDto with all fields`() {
     // given & when
-    val option = OptionDto(
-      key = "inactive",
-      label = "Inactive",
-      active = false
-    )
+    val option =
+      OptionDto(
+        key = "inactive",
+        label = "Inactive",
+        active = false,
+      )
 
     // then
     option.key shouldBe "inactive"

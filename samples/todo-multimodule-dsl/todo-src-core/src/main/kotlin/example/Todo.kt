@@ -4,11 +4,11 @@ import zygarde.codegen.ZyModel
 import zygarde.core.annotation.Comment
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.jpa.converter.StringListToJsonStringConverter
-import javax.persistence.Convert
-import javax.persistence.Entity
-import javax.persistence.MappedSuperclass
-import javax.validation.constraints.DecimalMax
-import javax.validation.constraints.NotEmpty
+import jakarta.persistence.Convert
+import jakarta.persistence.Entity
+import jakarta.persistence.MappedSuperclass
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.NotEmpty
 
 @Entity
 @ZyModel

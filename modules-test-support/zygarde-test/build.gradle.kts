@@ -6,4 +6,4 @@ dependencies {
   api("io.mockk:mockk:1.12.0")
 }
 
-tasks.getByName("printCoverage").enabled = false
+// tasks.getByName("printCoverage").enabled = false

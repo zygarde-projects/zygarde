@@ -4,4 +4,4 @@ dependencies {
   api("io.jsonwebtoken:jjwt-jackson:0.11.0")
 }
 
-tasks.getByName("printCoverage").enabled = false
+// tasks.getByName("printCoverage").enabled = false

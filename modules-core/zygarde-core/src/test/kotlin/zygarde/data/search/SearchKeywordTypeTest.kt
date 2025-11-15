@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SearchKeywordTypeTest {
-
   @Test
   fun `should have all keyword types`() {
     // given & when
@@ -12,12 +11,13 @@ class SearchKeywordTypeTest {
 
     // then
     values.size shouldBe 4
-    values shouldBe arrayOf(
-      SearchKeywordType.STARTS_WITH,
-      SearchKeywordType.ENDS_WITH,
-      SearchKeywordType.CONTAINS,
-      SearchKeywordType.MATCH
-    )
+    values shouldBe
+      arrayOf(
+        SearchKeywordType.STARTS_WITH,
+        SearchKeywordType.ENDS_WITH,
+        SearchKeywordType.CONTAINS,
+        SearchKeywordType.MATCH,
+      )
   }
 
   @Test

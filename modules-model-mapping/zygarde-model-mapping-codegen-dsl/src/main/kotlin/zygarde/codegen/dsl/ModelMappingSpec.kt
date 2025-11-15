@@ -268,7 +268,7 @@ open class ModelMappingSpec(
       p.javaField?.declaredAnnotations
         ?.filter { a ->
           val packageName = a.annotationClass.asClassName().packageName
-          packageName.startsWith("javax.validation") || packageName.startsWith("org.hibernate.validator")
+          packageName.startsWith("jakarta.validation") || packageName.startsWith("org.hibernate.validator")
         }
         ?.forEach {
           add(AnnotationSpec.get(it).toBuilder().useSiteTarget(AnnotationSpec.UseSiteTarget.FIELD).build())

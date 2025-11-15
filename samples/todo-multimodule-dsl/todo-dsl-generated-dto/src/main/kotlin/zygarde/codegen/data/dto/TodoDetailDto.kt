@@ -8,23 +8,23 @@ import kotlin.String
 @Schema
 public data class TodoDetailDto(
   @Schema(
-    description="",
-    required=true
+    description = "",
+    required = true,
   )
   public var id: Int,
   @Schema(
-    description="",
-    required=true
+    description = "",
+    required = true,
   )
   public var description: String,
   @Schema(
-    description="",
-    required=true
+    description = "",
+    required = true,
   )
   public var title: String,
   @Schema(
-    description="",
-    required=true
+    description = "",
+    required = true,
   )
-  public var remark: String
+  public var remark: String,
 ) : Serializable

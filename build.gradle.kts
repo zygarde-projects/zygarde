@@ -7,20 +7,21 @@ buildscript {
 }
 
 plugins {
-  id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
-  id("io.gitlab.arturbosch.detekt") version "1.18.1"
-  id("de.jansauer.printcoverage") version "2.0.0"
-  id("org.springframework.boot") version "2.7.14"
-  id("io.spring.dependency-management") version "1.1.3"
-  kotlin("jvm") version "1.8.22"
-  kotlin("plugin.spring") version "1.8.22"
-  kotlin("kapt") version "1.8.22"
+  id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+  id("io.gitlab.arturbosch.detekt") version "1.23.6"
+  // Temporarily disabled printcoverage due to Gradle 8.10 compatibility issues
+  // id("de.jansauer.printcoverage") version "2.0.0"
+  id("org.springframework.boot") version "3.2.0"
+  id("io.spring.dependency-management") version "1.1.4"
+  kotlin("jvm") version "2.0.21"
+  kotlin("plugin.spring") version "2.0.21"
+  kotlin("kapt") version "2.0.21"
   `maven-publish`
-  jacoco
   application
 }
 
 fun Project.isBomProject() = this.name.startsWith("zygarde-bom")
+
 fun Project.isPublishingProject() = this.name.startsWith("zygarde")
 
 allprojects {
@@ -73,28 +74,28 @@ subprojects {
     return@subprojects
   }
 
-  apply(plugin = "de.jansauer.printcoverage")
+  // Temporarily disabled printcoverage due to Gradle 8.10 compatibility issues
+  // apply(plugin = "de.jansauer.printcoverage")
   apply(plugin = "io.spring.dependency-management")
-  apply(plugin = "kotlin")
-  apply(plugin = "kotlin-kapt")
   apply(plugin = "org.jetbrains.kotlin.jvm")
+  apply(plugin = "org.jetbrains.kotlin.kapt")
   apply(plugin = "org.gradle.jacoco")
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.8")
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2023.0.0")
     }
   }
 
   configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = "1.8"
+      jvmTarget = "17"
     }
   }
 
@@ -102,17 +103,17 @@ subprojects {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("io.kotest:kotest-assertions-shared-jvm:4.6.3")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.6.3")
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("io.kotest:kotest-assertions-shared-jvm:5.9.0")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.0")
+    testImplementation("io.mockk:mockk:1.13.10")
   }
 
   configurations.all {
     resolutionStrategy {
       eachDependency {
         when (requested.module.name) {
-          "kotlinx-coroutines-core" -> useVersion("1.5.1")
-          "kotlinx-coroutines-jdk8" -> useVersion("1.5.1")
+          "kotlinx-coroutines-core" -> useVersion("1.8.0")
+          "kotlinx-coroutines-jdk8" -> useVersion("1.8.0")
         }
       }
     }
@@ -126,14 +127,18 @@ subprojects {
 
   tasks.getByName("clean").finalizedBy("housekeeping")
   tasks.getByName("test").finalizedBy("jacocoTestReport")
-  tasks.getByName("jacocoTestReport").finalizedBy("printCoverage")
+  // tasks.named("jacocoTestReport") {
+  //   finalizedBy("printCoverage")
+  // }
 
   tasks.withType<Test> {
     useJUnitPlatform()
   }
 
-  jacoco {
-    toolVersion = "0.8.7"
+  if (project.plugins.hasPlugin("org.gradle.jacoco")) {
+    configure<org.gradle.testing.jacoco.plugins.JacocoPluginExtension> {
+      toolVersion = "0.8.12"
+    }
   }
 
   tasks.withType<JacocoReport> {
@@ -194,12 +199,20 @@ subprojects {
   }
 }
 
-val jacocoIgnoreProjects = listOf(
-  "zygarde-bom-codegen",
-  "zygarde-bom-codegen-test"
-)
-val subProjectsForJacoco = subprojects.filterNot {
-  it.name in jacocoIgnoreProjects
+val jacocoIgnoreProjects =
+  listOf(
+    "zygarde-bom-codegen",
+    "zygarde-bom-codegen-test",
+  )
+val subProjectsForJacoco =
+  subprojects.filterNot {
+    it.name in jacocoIgnoreProjects
+  }
+
+apply(plugin = "org.gradle.jacoco")
+
+tasks.named("jacocoTestReport") {
+  enabled = false
 }
 
 task("covAll", JacocoReport::class) {
@@ -207,15 +220,15 @@ task("covAll", JacocoReport::class) {
     fileTree(rootDir.absolutePath).include(
       *subProjectsForJacoco
         .map { "${it.name}/build/jacoco/*.exec" }
-        .toTypedArray()
-    )
+        .toTypedArray(),
+    ),
   )
   sourceSets(
     *subProjectsForJacoco
       .map {
         it.sourceSets.getByName("main")
       }
-      .toTypedArray()
+      .toTypedArray(),
   )
   reports {
     html.required.set(true)
@@ -223,7 +236,7 @@ task("covAll", JacocoReport::class) {
   }
 
   dependsOn(
-    *subProjectsForJacoco.map { it.tasks.getByName("test") }.toTypedArray()
+    *subProjectsForJacoco.map { it.tasks.getByName("test") }.toTypedArray(),
   )
 
   task("lint") {
@@ -236,13 +249,14 @@ task("lintc") {
 }
 
 tasks.getByName("publish").enabled = false
-tasks.getByName("printCoverage").enabled = false
+// tasks.getByName("printCoverage").enabled = false
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = false
 
 task("collectJacocoSourcePath", Exec::class) {
-  val paths = subProjectsForJacoco
-    .flatMap { it.sourceSets.getByName("main").allJava.srcDirs }
-    .joinToString(" ")
+  val paths =
+    subProjectsForJacoco
+      .flatMap { it.sourceSets.getByName("main").allJava.srcDirs }
+      .joinToString(" ")
   commandLine = listOf("echo", paths)
 }
