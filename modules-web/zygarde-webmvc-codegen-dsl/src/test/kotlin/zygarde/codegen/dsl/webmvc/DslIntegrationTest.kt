@@ -8,9 +8,10 @@ import org.junit.jupiter.api.Test
  * Additional tests to improve coverage by exercising various DSL combinations
  */
 class DslIntegrationTest {
-
   data class UserRequest(val name: String, val email: String)
+
   data class UserResponse(val id: Long, val name: String)
+
   data class AuthDetails(val userId: String, val roles: List<String>)
 
   @Test

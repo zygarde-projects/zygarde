@@ -3,7 +3,6 @@ package zygarde.core.extension.string
 import java.util.concurrent.atomic.AtomicInteger
 
 object StringSqlExtensions {
-
   private val PATTERN_SQL_SELECT = "select (.*) from ".toRegex(RegexOption.IGNORE_CASE).toPattern()
   private val PATTERN_SQL_TABLE_AND_COL = "\\(?(\\w+)\\.(\\w+)\\)? as (\\w+)".toRegex(RegexOption.IGNORE_CASE).toPattern()
 

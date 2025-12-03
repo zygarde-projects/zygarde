@@ -37,7 +37,6 @@ class ZygardeJpaDaoGenerator(
   processingEnv: ProcessingEnvironment,
   val daoGenerateTo: String?,
 ) : AbstractZygardeGenerator(processingEnv) {
-
   private val daoInherit by lazy {
     processingEnv.options[DAO_INHERIT]
   }

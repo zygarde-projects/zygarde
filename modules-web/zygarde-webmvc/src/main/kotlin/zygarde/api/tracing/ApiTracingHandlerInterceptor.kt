@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class ApiTracingHandlerInterceptor : HandlerInterceptor {
-
   override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
     if (handler is HandlerMethod) {
       ApiTracingContext.setApiId(

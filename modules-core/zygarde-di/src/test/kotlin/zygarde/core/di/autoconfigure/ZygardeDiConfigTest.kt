@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import zygarde.core.di.DiServiceContext
 
 class ZygardeDiConfigTest {
-
   @Test
   fun `should create DiServiceContext bean`() {
     // given

@@ -11,10 +11,9 @@ class DtoApplyToModelDsl<E : Any>(
   modelClass: KClass<E>,
   dto: CodegenDto,
 ) : ModelFieldDsl<E>(
-  modelClass,
-  dto,
-) {
-
+    modelClass,
+    dto,
+  ) {
   /**
    * generate a field in Dto and also generate extension function for Model.applyFrom for this Dto
    */

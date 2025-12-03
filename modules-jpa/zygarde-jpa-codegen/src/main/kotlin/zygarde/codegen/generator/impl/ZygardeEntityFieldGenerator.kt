@@ -31,7 +31,6 @@ class ZygardeEntityFieldGenerator(
   processingEnv: ProcessingEnvironment,
   val targetFolder: String?,
 ) : AbstractZygardeGenerator(processingEnv) {
-
   val erasuredComparable: TypeMirror by lazy {
     val comparableType = processingEnv.elementUtils.getTypeElement("java.lang.Comparable").asType()
     processingEnv.typeUtils.erasure(comparableType)

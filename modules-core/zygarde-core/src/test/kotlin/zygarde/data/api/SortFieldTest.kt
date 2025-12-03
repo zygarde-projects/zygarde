@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SortFieldTest {
-
   @Test
   fun `should create SortField with default values`() {
     // given & when

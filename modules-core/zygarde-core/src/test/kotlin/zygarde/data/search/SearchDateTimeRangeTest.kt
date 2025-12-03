@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class SearchDateTimeRangeTest {
-
   @Test
   fun `should create SearchDateTimeRange with default values`() {
     // given & when

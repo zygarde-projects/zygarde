@@ -15,7 +15,6 @@ import zygarde.test.entity.SequenceLongBook
 @ActiveProfiles("test", "test-oracle")
 @DirtiesContext
 class AuditedSequenceLongIdEntityTest {
-
   @Autowired
   lateinit var sequenceLongBookDao: SequenceLongBookDao
 

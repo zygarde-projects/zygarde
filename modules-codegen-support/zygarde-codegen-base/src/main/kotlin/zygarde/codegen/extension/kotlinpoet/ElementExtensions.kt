@@ -9,7 +9,6 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 
 object ElementExtensions {
-
   fun Element.name() = simpleName.toString()
 
   fun Element.fieldName() = simpleName.toString().replaceFirstChar { it.lowercase() }
@@ -75,7 +74,9 @@ object ElementExtensions {
       val stTypeMirror = st.asType()
       st.toString() to if (stTypeMirror is DeclaredType) {
         stTypeMirror.typeArguments.map { ta -> ta.toString() }
-      } else emptyList()
+      } else {
+        emptyList()
+      }
     }
 
     val genericTypeMap = mutableMapOf<String, TypeName>()

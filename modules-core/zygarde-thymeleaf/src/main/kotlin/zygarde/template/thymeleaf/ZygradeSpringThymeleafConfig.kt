@@ -13,7 +13,6 @@ import zygarde.template.thymeleaf.impl.TemplateServiceImpl
 @Configuration
 @ConditionalOnBean(TemplateEngine::class)
 class ZygradeSpringThymeleafConfig {
-
   @Bean("stringTemplateEngine")
   fun stringTemplateEngine(): TemplateEngine {
     val templateEngine = TemplateEngine()

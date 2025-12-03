@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class MapToObjectTransformerTest {
-
   enum class Status {
-    ON, OFF
+    ON,
+    OFF
   }
 
   interface TestInterface {

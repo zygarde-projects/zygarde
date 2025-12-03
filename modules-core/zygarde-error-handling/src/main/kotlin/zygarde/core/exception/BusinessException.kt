@@ -3,7 +3,6 @@ package zygarde.core.exception
 import zygarde.core.extension.string.replaceByArgs
 
 class BusinessException : RuntimeException {
-
   val code: ErrorCode
 
   constructor(code: ErrorCode) : super(code.message) {

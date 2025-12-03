@@ -6,7 +6,6 @@ import javax.persistence.criteria.JoinType
 import kotlin.reflect.KProperty1
 
 interface ConditionAction<RootEntityType, EntityType, FieldType> {
-
   fun <AnotherFieldType> field(
     fieldName: String
   ): ConditionAction<RootEntityType, FieldType, AnotherFieldType>

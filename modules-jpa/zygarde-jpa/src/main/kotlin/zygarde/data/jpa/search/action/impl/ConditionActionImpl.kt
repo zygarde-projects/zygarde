@@ -20,7 +20,6 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val join: Boolean = false,
   private val isCountQuery: Boolean = enhancedSearch.query.resultType.canonicalName == "java.lang.Long",
 ) : ConditionAction<RootEntityType, EntityType, FieldType> {
-
   companion object {
     private val COUNT_QUERY_ALLOW_GET_ATTRIBUTE_TYPE = listOf(
       Attribute.PersistentAttributeType.ONE_TO_MANY,

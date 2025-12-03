@@ -21,16 +21,16 @@ public object MarkDetailDtoBuilder {
     todo: TodoDto,
     longRemark: String
   ): MarkDetailDto = MarkDetailDto(
-  id = AutoIntIdValueProvider().getValue(mark),
-  x = mark.x,
-  y = mark.y,
-  comments = mark.comments,
-  extraStr = extraStr,
-  extraMap1 = extraMap1,
-  extraMap2 = extraMap2,
-  extraMap3 = extraMap3,
-  extraMap4 = extraMap4,
-  todo = todo,
-  longRemark = longRemark
+    id = AutoIntIdValueProvider().getValue(mark),
+    x = mark.x,
+    y = mark.y,
+    comments = mark.comments,
+    extraStr = extraStr,
+    extraMap1 = extraMap1,
+    extraMap2 = extraMap2,
+    extraMap3 = extraMap3,
+    extraMap4 = extraMap4,
+    todo = todo,
+    longRemark = longRemark
   )
 }

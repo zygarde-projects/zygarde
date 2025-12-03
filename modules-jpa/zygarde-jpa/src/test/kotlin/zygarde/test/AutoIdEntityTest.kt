@@ -19,7 +19,6 @@ import java.util.*
 @ActiveProfiles("test")
 @DirtiesContext
 class AutoIdEntityTest {
-
   @Autowired
   lateinit var groupDao: TestAuthorGroupDao
 

@@ -28,7 +28,6 @@ class TodoModelDslCodegen : ModelMappingCodegenSpec({
     )
   }
 }) {
-
   class TodoExtraModel {
     var remark: String = ""
   }

@@ -8,8 +8,8 @@ import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
 
 class WebMvcApiGeneratorTest {
-
   data class CreateTodoReq(val description: String)
+
   data class TodoDto(val id: Int, val description: String)
 
   @Test

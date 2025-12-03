@@ -7,10 +7,12 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
 class WebMvcDslCodegenTest : WebMvcDslCodegen() {
-
   data class CreateTodoReq(val description: String)
+
   data class UpdateTodoReq(val description: String)
+
   data class TodoDto(val id: Int, val description: String)
+
   data class GetTodoByIdReq(val id: Int)
 
   override fun codegen() {
@@ -58,7 +60,9 @@ class WebMvcDslCodegenTest : WebMvcDslCodegen() {
   }
 
   @Test
-  fun `test webmvc dsl codegen with file output`(@TempDir tempDir: Path) {
+  fun `test webmvc dsl codegen with file output`(
+    @TempDir tempDir: Path
+  ) {
     // given - set system properties to write to temp directory
     System.setProperty("zygarde.codegen.dsl.webmvc.api-interface.write-to", tempDir.resolve("api").toString())
     System.setProperty("zygarde.codegen.dsl.webmvc.feign-interface.write-to", tempDir.resolve("feign").toString())

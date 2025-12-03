@@ -18,7 +18,7 @@ import javax.persistence.Entity
 import javax.persistence.MappedSuperclass
 
 @AutoService(Processor::class)
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 @SupportedOptions(
   "kapt.kotlin.generated",
   ZygardeKaptOptions.BASE_PACKAGE,
@@ -30,7 +30,6 @@ import javax.persistence.MappedSuperclass
   ZygardeJpaCodegenKaptOptions.ENTITY_FIELD_GENERATE_TO,
 )
 class ZygardeJpaProcessor : AbstractProcessor() {
-
   override fun getSupportedAnnotationTypes(): MutableSet<String> {
     return mutableSetOf(ZyModel::class.java.name)
   }

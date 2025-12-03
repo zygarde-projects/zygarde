@@ -16,7 +16,6 @@ open class ApiExceptionFilter(
   @Autowired val apiExceptionHandler: ApiExceptionHandler,
   @Autowired val objectMapper: ObjectMapper
 ) : GenericFilterBean() {
-
   override fun doFilter(req: ServletRequest, res: ServletResponse, chain: FilterChain) {
     try {
       chain.doFilter(req, res)

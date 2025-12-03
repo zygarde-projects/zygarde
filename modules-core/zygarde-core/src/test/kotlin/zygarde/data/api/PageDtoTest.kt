@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class PageDtoTest {
-
   data class Item(val id: Int, val name: String)
 
   @Test

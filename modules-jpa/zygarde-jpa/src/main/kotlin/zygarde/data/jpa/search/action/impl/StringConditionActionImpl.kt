@@ -14,7 +14,6 @@ open class StringConditionActionImpl<RootEntityType, EntityType>(
   val columnName: String,
   val pathExpressionProcessor: (cb: CriteriaBuilder, exp: Expression<String>) -> Expression<String> = { _, exp -> exp },
 ) : ComparableConditionActionImpl<RootEntityType, EntityType, String>(enhancedSearch, columnName), StringConditionAction<RootEntityType, EntityType> {
-
   override fun keyword(value: SearchKeyword?): EnhancedSearch<RootEntityType> = applyNonNullAction(value?.keyword) { path, keyword ->
     when (value!!.type) {
       SearchKeywordType.CONTAINS -> cb.like(path, "%$keyword%")

@@ -12,7 +12,6 @@ import zygarde.codegen.data.dto.UpdateTodoReq
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 class TodoApiTest {
-
   @Test
   fun `todo crud test`() {
     val todoApi = api<TodoApi>()

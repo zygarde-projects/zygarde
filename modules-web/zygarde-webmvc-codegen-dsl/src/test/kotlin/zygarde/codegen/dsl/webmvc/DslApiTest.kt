@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
 
 class DslApiTest {
-
   data class TestRequest(val name: String)
+
   data class TestResponse(val id: Int, val name: String)
 
   private fun createConfig() = WebMvcDslCodegenConfig(

@@ -10,7 +10,6 @@ open class ComparableConditionActionImpl<RootEntityType, EntityType, FieldType :
   columnName: String
 ) : ConditionActionImpl<RootEntityType, EntityType, FieldType>(enhancedSearch, columnName),
   ComparableConditionAction<RootEntityType, EntityType, FieldType> {
-
   override fun gt(value: FieldType?): EnhancedSearch<RootEntityType> = applyNonNullAction(value) { path, v ->
     cb.greaterThan(path, v)
   }

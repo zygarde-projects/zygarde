@@ -14,7 +14,6 @@ import kotlin.reflect.jvm.javaType
 class MapToObjectTransformer<T : Any>(
   private val clz: KClass<T>
 ) {
-
   private val propertyMap = clz.memberProperties.associateBy { it.name }
   private val propertyGetterToNameMap = clz.memberProperties.associate { it.javaGetter to it.name }
 

@@ -14,7 +14,6 @@ import org.springframework.mail.javamail.MimeMessagePreparator
  */
 @SpringBootApplication
 class EmailTestApp {
-
   @Primary
   @Bean(name = ["mockJavaMailSender"])
   fun javaMailSender(): JavaMailSender {

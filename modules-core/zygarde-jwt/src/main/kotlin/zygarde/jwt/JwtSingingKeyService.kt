@@ -13,7 +13,6 @@ open class JwtSingingKeyService(
   private val jwtKey: String,
   private val signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.HS512,
 ) : BaseJwtService() {
-
   private val signingKeyBytes: ByteArray by lazy {
     jwtKey.toByteArray()
   }

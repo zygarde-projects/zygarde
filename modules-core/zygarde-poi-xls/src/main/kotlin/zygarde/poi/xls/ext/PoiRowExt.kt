@@ -8,7 +8,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 object PoiRowExt {
-
   fun Row.getCellString(
     col: String,
     scaleWhenNumeric: Int = 0,

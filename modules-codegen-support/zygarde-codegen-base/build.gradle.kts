@@ -5,7 +5,6 @@ dependencies {
   implementation(platform(project(":zygarde-bom-codegen")))
   implementation("com.squareup:kotlinpoet")
   implementation("com.squareup:kotlinpoet-metadata")
-  implementation("com.squareup:kotlinpoet-metadata-specs")
   implementation("com.google.auto.service:auto-service")
 
   kapt(platform(project(":zygarde-bom-codegen")))
@@ -25,5 +24,4 @@ dependencies {
 // }
 
 tasks.getByName("bootJar").enabled = false
-tasks.getByName("printCoverage").enabled = false
 tasks.getByName("jar").enabled = true

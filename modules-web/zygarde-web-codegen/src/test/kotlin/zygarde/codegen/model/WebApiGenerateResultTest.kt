@@ -7,7 +7,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class WebApiGenerateResultTest {
-
   @Test
   fun `should create empty WebApiGenerateResult`() {
     // given & when

@@ -8,7 +8,6 @@ import zygarde.codegen.dsl.webmvc.WebMvcDslCodegen
 
 class TodoApiCodegen : WebMvcDslCodegen() {
   override fun codegen() {
-
     api("TodoApi", "/api/todo") {
       fun DslApiFunction.todoIdPathVariable() {
         pathVariable<Int>("todoId")

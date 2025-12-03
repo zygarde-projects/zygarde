@@ -10,7 +10,6 @@ import java.util.function.Consumer
  * @author leo
  */
 class SmtpEmailServiceImpl(val javaMailSender: JavaMailSender) : EmailService {
-
   override fun sendEmail(request: SendEmailRequest, extraMimeMessageProcessor: Consumer<MimeMessageHelper>?) {
     javaMailSender.send { mimeMessage ->
       val mimeMessageHelper = if (request.attachments.isNotEmpty() || request.inlineResources.isNotEmpty()) {

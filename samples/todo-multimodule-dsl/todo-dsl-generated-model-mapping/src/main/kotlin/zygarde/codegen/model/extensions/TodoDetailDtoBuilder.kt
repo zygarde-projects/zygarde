@@ -12,9 +12,9 @@ public object TodoDetailDtoBuilder {
     note: Note,
     remark: String
   ): TodoDetailDto = TodoDetailDto(
-  id = AutoIntIdValueProvider().getValue(todo),
-  description = todo.description,
-  title = note.title,
-  remark = remark
+    id = AutoIntIdValueProvider().getValue(todo),
+    description = todo.description,
+    title = note.title,
+    remark = remark
   )
 }

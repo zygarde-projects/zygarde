@@ -3,7 +3,6 @@ package zygarde.codegen.dsl
 import zygarde.codegen.meta.CodegenDto
 
 abstract class ModelMappingCodegenSpec(buildMapping: ModelMappingCodegenSpec.() -> Unit) : ModelMappingDslCodegen() {
-
   companion object {
     val groupInvokingDto: ThreadLocal<CodegenDto?> = ThreadLocal.withInitial { null }
   }

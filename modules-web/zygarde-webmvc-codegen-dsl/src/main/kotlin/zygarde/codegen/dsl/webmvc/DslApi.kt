@@ -12,7 +12,6 @@ class DslApi(
   private val apiName: String,
   private val basePath: String? = null,
 ) {
-
   var feignUrlProperty: String? = null
   private val functions: MutableList<ApiFunctionToGenerateVo> = mutableListOf()
 

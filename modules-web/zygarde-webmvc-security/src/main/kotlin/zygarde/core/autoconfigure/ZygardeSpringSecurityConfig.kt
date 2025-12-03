@@ -7,7 +7,6 @@ import zygarde.api.exception.mapper.AccessDeniedExceptionMapper
 
 @Configuration
 class ZygardeSpringSecurityConfig {
-
   @ConditionalOnMissingBean
   @Bean
   fun accessDeniedExceptionMapper() = AccessDeniedExceptionMapper()

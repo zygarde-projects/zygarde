@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import zygarde.codegen.value.NoOpValueProvider
 
 class ZygardeApiPropGeneratorUnitTest {
-
   @Test
   fun `DtoFieldDescriptionVo should create with all fields`() {
     // given/when

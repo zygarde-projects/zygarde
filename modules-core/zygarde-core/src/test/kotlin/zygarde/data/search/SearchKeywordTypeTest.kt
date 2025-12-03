@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SearchKeywordTypeTest {
-
   @Test
   fun `should have all keyword types`() {
     // given & when

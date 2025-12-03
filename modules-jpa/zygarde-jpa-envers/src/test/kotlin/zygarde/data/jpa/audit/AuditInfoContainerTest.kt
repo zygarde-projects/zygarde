@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class AuditInfoContainerTest {
-
   class TestAuditContainer : AuditInfoContainer {
     override fun auditContainerKey(): String = "test-key"
+
     override var createdAt: LocalDateTime = LocalDateTime.now()
     override var updatedAt: LocalDateTime? = null
     override var createdBy: String? = null

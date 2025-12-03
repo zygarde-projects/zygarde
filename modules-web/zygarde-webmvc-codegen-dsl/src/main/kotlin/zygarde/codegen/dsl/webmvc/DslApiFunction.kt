@@ -12,7 +12,6 @@ class DslApiFunction(
   val path: String,
   val method: RequestMethod,
 ) {
-
   var description: String = ""
   var requestName: String = "req"
   var serviceName: String? = null

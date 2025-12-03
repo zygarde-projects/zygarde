@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletResponse
 class AuthFilter(
   val apiRoles: List<ApiRole>
 ) : OncePerRequestFilter() {
-
   val antPathMatcher = AntPathMatcher()
 
   override fun doFilterInternal(req: HttpServletRequest, res: HttpServletResponse, chain: FilterChain) {

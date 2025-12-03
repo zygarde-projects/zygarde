@@ -25,7 +25,6 @@ class EnhancedSearchImpl<EntityType>(
   val joinMap: MutableMap<String, Join<Any, Any>> = mutableMapOf(),
   val fetchMap: MutableMap<String, Fetch<Any, Any>> = mutableMapOf(),
 ) : EnhancedSearch<EntityType> {
-
   override fun <FieldType> field(fieldName: String): ConditionAction<EntityType, EntityType, FieldType> {
     return ConditionActionImpl(this, fieldName)
   }

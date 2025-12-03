@@ -19,7 +19,6 @@ import java.time.LocalDateTime
 @ActiveProfiles("test", "test-oracle")
 @DirtiesContext
 class AuditedSequenceIdEntityTest {
-
   @Autowired
   lateinit var sequenceIntAuthorDao: SequenceIntAuthorDao
 

@@ -34,7 +34,6 @@ class ZygardeStaticOptionApiGenerator(
   processingEnv: ProcessingEnvironment,
   val targetFolderConfig: ZygardeStaticOptionApiGeneratorTargetFolder?,
 ) : AbstractZygardeGenerator(processingEnv) {
-
   private val optionPackage: String by lazy {
     packageName(processingEnv.options.getOrDefault(API_STATIC_OPTION_PACKAGE, "api.option"))
   }

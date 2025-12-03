@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import zygarde.core.extension.collection.ArrayExtensions.takeUntilFirstOccur
 
 class ArrayExtensionsTest {
-
   @Test
   fun `Array takeUntilFirstOccur`() {
     arrayOf(1, 2, 3).takeUntilFirstOccur { it == 1 }.size shouldBe 1

@@ -55,7 +55,6 @@ class Todo(
     ]
   )
   var description: String = "123",
-
   @ApiProp(
     requestDto = [
       RequestDto(updateToDoReq, sinceApiVersion = 20220901),
@@ -65,8 +64,9 @@ class Todo(
 ) : AutoIntIdEntity()
 
 @Service
-class MyTodoService(@Autowired val todoDao: TodoDao) : TodoService {
-
+class MyTodoService(
+  @Autowired val todoDao: TodoDao
+) : TodoService {
   fun searchTodoByDescription(description: String): Collection<Todo> {
     return todoDao.search {
       description() eq description
@@ -127,5 +127,4 @@ enum class TodoStatus(
 ) : OptionEnum {
   DOING("doing"),
   DONE("done"),
-  ;
 }

@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.data.api.PageDto
 
 class DslApiFunctionTest {
-
   data class TestRequest(val name: String)
+
   data class TestResponse(val id: Int, val name: String)
+
   data class TestAuth(val userId: String)
 
   @Test

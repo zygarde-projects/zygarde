@@ -13,10 +13,11 @@ import zygarde.mail.service.impl.SmtpEmailServiceImpl
  */
 @Configuration
 class ZygardeSmtpMailConfig {
-
   @ConditionalOnBean(JavaMailSender::class)
   @Bean
-  fun emailService(@Autowired javaMailSender: JavaMailSender): EmailService {
+  fun emailService(
+    @Autowired javaMailSender: JavaMailSender
+  ): EmailService {
     return SmtpEmailServiceImpl(javaMailSender)
   }
 }

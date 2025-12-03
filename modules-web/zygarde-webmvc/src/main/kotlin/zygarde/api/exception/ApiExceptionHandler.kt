@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest
  */
 @ControllerAdvice
 class ApiExceptionHandler : Loggable {
-
   @Autowired
   private lateinit var messageSource: MessageSource
 
@@ -124,7 +123,8 @@ class ApiExceptionHandler : Loggable {
     val tracingData = ApiTracingContext.getTracingData()
     LOGGER.info(
       """${tracingData.apiId} ${e.code} ${e.message}
-${tracingData.data.toJsonString()}""".trimMargin(),
+${tracingData.data.toJsonString()}
+      """.trimMargin(),
       e
     )
   }

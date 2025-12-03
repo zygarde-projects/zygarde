@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwt
 import io.jsonwebtoken.Jwts
 
 open class BaseJwtService {
-
   private val jwtParser = Jwts.parserBuilder().build()
 
   fun parseWithoutKey(token: String): Jwt<out Header<*>, *> {

@@ -14,7 +14,6 @@ class CorsFilter(
   allowHeaders: List<String> = emptyList(),
   exposeHeaders: List<String> = emptyList(),
 ) : GenericFilterBean() {
-
   private val allowHeadersFlatted = allowHeaders.toSet().joinToString(", ")
   private val exposeHeadersFlatted = exposeHeaders.toSet().joinToString(", ")
 

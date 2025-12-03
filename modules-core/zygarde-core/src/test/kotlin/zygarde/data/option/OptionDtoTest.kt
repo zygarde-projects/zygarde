@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class OptionDtoTest {
-
   @Test
   fun `should create OptionDto with required fields`() {
     // given & when

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.context.support.GenericApplicationContext
 
 class DiServiceContextUnitTest {
-
   class TestBean
 
   @Test

@@ -15,7 +15,6 @@ import zygarde.core.di.DiServiceContext.bean
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [DiServiceContextTest.DiServiceContextTestApp::class])
 class DiServiceContextTest {
-
   class MyBean
 
   class AnotherBean

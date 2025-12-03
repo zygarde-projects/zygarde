@@ -7,7 +7,6 @@ import java.io.File
 import java.nio.file.Files
 
 class FileBasedPropertyLoaderTest {
-
   @Test
   fun testLoadProperty() {
     val dir = Files.createTempDirectory("secret").toFile()

@@ -13,7 +13,6 @@ import zygarde.test.extension.errCodeMatches
 import zygarde.test.extension.errMessageMatches
 
 class ExceptionExtensionsTest {
-
   @Test
   fun `should able to catch errorCode`() {
     errCodeMatches(CommonErrorCode.ERROR) {

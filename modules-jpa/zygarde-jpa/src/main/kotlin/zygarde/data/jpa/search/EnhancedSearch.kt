@@ -7,7 +7,6 @@ import zygarde.data.search.range.SearchRangeOverlap
 import kotlin.reflect.KProperty1
 
 interface EnhancedSearch<EntityType> {
-
   fun <FieldType> field(
     fieldName: String
   ): ConditionAction<EntityType, EntityType, FieldType>

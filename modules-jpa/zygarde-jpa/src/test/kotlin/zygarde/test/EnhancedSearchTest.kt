@@ -56,7 +56,6 @@ import java.time.LocalDateTime
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @DirtiesContext
 class EnhancedSearchTest {
-
   @Autowired
   lateinit var groupDao: TestAuthorGroupDao
 

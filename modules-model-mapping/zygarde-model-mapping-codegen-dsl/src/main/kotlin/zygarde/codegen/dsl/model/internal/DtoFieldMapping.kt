@@ -21,7 +21,6 @@ sealed class DtoFieldMapping(
   open var compound: Boolean = false,
   open var additionalAnnotations: List<AnnotationSpec> = emptyList(),
 ) {
-
   fun nullable() {
     forceNull = ForceNull.NULL
   }
@@ -34,9 +33,9 @@ sealed class DtoFieldMapping(
     override var modelField: ModelMetaField,
     override var dto: CodegenDto,
   ) : DtoFieldMapping(
-    modelField = modelField,
-    dto = dto,
-  )
+      modelField = modelField,
+      dto = dto,
+    )
 
   data class ModelToDtoFieldMappingVo(
     override var modelField: ModelMetaField,
@@ -50,14 +49,14 @@ sealed class DtoFieldMapping(
     var valueProviderParameterType: ValueProviderParameterType = ValueProviderParameterType.FIELD,
     var valueProviderParameterField: String = modelField.fieldName,
   ) : DtoFieldMapping(
-    modelField,
-    dto,
-    comment,
-    dtoRef,
-    dtoRefClass,
-    refCollection,
-    forceNull,
-  )
+      modelField,
+      dto,
+      comment,
+      dtoRef,
+      dtoRefClass,
+      refCollection,
+      forceNull,
+    )
 
   data class ModelApplyFromDtoFieldMappingVo(
     override var modelField: ModelMetaField,
@@ -69,12 +68,12 @@ sealed class DtoFieldMapping(
     override var forceNull: ForceNull = ForceNull.NONE,
     var valueProvider: KClass<out ValueProvider<*, *>>? = null,
   ) : DtoFieldMapping(
-    modelField,
-    dto,
-    comment,
-    dtoRef,
-    dtoRefClass,
-    refCollection,
-    forceNull,
-  )
+      modelField,
+      dto,
+      comment,
+      dtoRef,
+      dtoRefClass,
+      refCollection,
+      forceNull,
+    )
 }

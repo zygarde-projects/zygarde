@@ -15,7 +15,6 @@ import zygarde.test.entity.AutoIntAuthor
 @ActiveProfiles("test")
 @DirtiesContext
 class AuditedAutoIntIdEntityTest {
-
   @Autowired
   lateinit var autoIntAuthorDao: AutoIntAuthorDao
 

@@ -3,13 +3,14 @@ package zygarde.codegen.processor
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import io.kotest.matchers.shouldBe
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import zygarde.codegen.ZygardeKaptOptions
 
+@OptIn(ExperimentalCompilerApi::class)
 class ZygardeApiGeneratorTest {
-
   @Test
   fun `should able to generate api`() {
     val result = KotlinCompilation().apply {
@@ -21,7 +22,7 @@ class ZygardeApiGeneratorTest {
         ClassPathResource("input/model/BookTagsValueProvider.kt").file,
         ClassPathResource("input/model/User.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_1_8.description
+      jvmTarget = JvmTarget.JVM_17.description
       annotationProcessors = listOf(ZygardeApiProcessor(), ZygardeApiPropProcessor(), ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

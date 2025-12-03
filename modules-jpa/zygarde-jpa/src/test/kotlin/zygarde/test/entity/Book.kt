@@ -22,5 +22,6 @@ open class Book(
 ) : AutoLongIdEntity()
 
 enum class BookStatus {
-  ON_SALE, SOLD_OUT
+  ON_SALE,
+  SOLD_OUT
 }

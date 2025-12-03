@@ -17,7 +17,6 @@ import zygarde.test.entity.AutoLongBook
 @ActiveProfiles("test")
 @DirtiesContext
 class AuditedAutoIdEntityTest {
-
   @Autowired
   lateinit var autoIntAuthorDao: AutoIntAuthorDao
 

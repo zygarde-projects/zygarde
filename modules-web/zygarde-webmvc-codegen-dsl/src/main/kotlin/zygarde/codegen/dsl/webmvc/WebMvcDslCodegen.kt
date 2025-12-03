@@ -3,7 +3,6 @@ package zygarde.codegen.dsl.webmvc
 import zygarde.codegen.model.ApiToGenerateVo
 
 abstract class WebMvcDslCodegen {
-
   private val config: WebMvcDslCodegenConfig = WebMvcDslCodegenConfig(
     apiInterfacePackage = System.getProperty("zygarde.codegen.dsl.webmvc.api-interface.package") ?: "zygarde.generated.api",
     controllerPackage = System.getProperty("zygarde.codegen.dsl.webmvc.controller.package") ?: "zygarde.generated.api.impl",

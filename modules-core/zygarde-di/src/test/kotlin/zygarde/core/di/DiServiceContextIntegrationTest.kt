@@ -12,11 +12,11 @@ import org.springframework.context.annotation.Bean
 
 @SpringBootTest(classes = [DiServiceContextIntegrationTest.TestApp::class])
 class DiServiceContextIntegrationTest {
-
   @Autowired
   lateinit var applicationContext: ApplicationContext
 
   class ServiceA
+
   class ServiceB(val serviceA: ServiceA)
 
   @SpringBootApplication

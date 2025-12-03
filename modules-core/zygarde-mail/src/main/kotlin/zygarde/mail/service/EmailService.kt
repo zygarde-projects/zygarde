@@ -8,6 +8,5 @@ import java.util.function.Consumer
  * @author leo
  */
 interface EmailService {
-
   fun sendEmail(request: SendEmailRequest, extraMimeMessageProcessor: Consumer<MimeMessageHelper>? = null)
 }

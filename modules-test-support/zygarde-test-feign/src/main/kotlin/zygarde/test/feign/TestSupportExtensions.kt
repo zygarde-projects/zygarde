@@ -37,7 +37,8 @@ inline fun <reified ERR_RES> httpStatusMatches(httpStatus: HttpStatus, block: ()
       throw failure(
         """Expected httpStatus $httpStatus(${httpStatus.value()}) but got ${feignException.status()}
         |responseBody=
-        |$responseBody""".trimMargin()
+        |$responseBody
+        """.trimMargin()
       )
     }
     if (ERR_RES::class == Unit::class) {

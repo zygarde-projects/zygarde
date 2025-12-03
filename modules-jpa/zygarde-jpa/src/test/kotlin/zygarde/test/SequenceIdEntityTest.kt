@@ -13,7 +13,6 @@ import zygarde.test.entity.SequenceAuthor
 @ActiveProfiles("test", "test-oracle")
 @DirtiesContext
 class SequenceIdEntityTest {
-
   @Autowired
   lateinit var sequenceAuthorDao: SequenceAuthorDao
 

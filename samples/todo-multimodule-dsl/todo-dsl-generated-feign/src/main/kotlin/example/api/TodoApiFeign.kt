@@ -20,18 +20,24 @@ public interface TodoApiFeign : TodoApi {
   public override fun getTodoList(): Collection<TodoDto>
 
   @GetMapping(value = ["/api/todo/{todoId}"])
-  public override fun getTodo(@PathVariable(value = "todoId") todoId: Int): TodoDto
+  public override fun getTodo(
+    @PathVariable(value = "todoId") todoId: Int
+  ): TodoDto
 
   @PostMapping(value = ["/api/todo"])
-  public override fun createTodo(@RequestBody req: CreateTodoReq): TodoDto
+  public override fun createTodo(
+    @RequestBody req: CreateTodoReq
+  ): TodoDto
 
   @PutMapping(value = ["/api/todo/{todoId}"])
   public override fun updateTodo(
     @PathVariable(value = "todoId") todoId: Int,
-    @RequestBody    
+    @RequestBody
     req: UpdateTodoReq
   ): TodoDto
 
   @DeleteMapping(value = ["/api/todo/{todoId}"])
-  public override fun deleteTodo(@PathVariable(value = "todoId") todoId: Int): Unit
+  public override fun deleteTodo(
+    @PathVariable(value = "todoId") todoId: Int
+  ): Unit
 }

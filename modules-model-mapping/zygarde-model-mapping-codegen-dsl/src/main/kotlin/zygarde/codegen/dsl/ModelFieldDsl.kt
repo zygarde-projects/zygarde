@@ -10,7 +10,6 @@ abstract class ModelFieldDsl<E : Any>(
   val modelClass: KClass<E>,
   val dto: CodegenDto,
 ) {
-
   val dtoFieldMappings: MutableList<DtoFieldMapping> = mutableListOf()
 
   fun field(vararg fields: ModelMetaField, dsl: (DtoFieldMapping.DtoFieldNoMapping.() -> Unit) = {}) {

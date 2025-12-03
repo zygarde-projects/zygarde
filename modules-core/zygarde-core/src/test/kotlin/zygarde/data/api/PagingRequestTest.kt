@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class PagingRequestTest {
-
   @Test
   fun `should create PagingRequest with default values`() {
     // given & when

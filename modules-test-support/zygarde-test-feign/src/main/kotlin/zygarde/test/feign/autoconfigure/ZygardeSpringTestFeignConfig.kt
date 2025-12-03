@@ -25,7 +25,6 @@ class ZygardeSpringTestFeignConfig(
   @Value("\${server.port}")
   val serverPort: Int
 ) : Loggable {
-
   @ConditionalOnMissingBean
   @Bean
   fun feignBuilder(): Feign.Builder {
@@ -83,8 +82,8 @@ class ZygardeSpringTestFeignConfig(
         super.isHandler(beanType) && (
           findAnnotation(beanType, RestController::class.java) != null ||
             findAnnotation(beanType, Controller::class.java) != null
-          )
         )
+      )
     }
   }
 }

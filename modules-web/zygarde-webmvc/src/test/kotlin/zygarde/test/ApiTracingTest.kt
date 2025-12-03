@@ -11,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = [ZygardeWebMvcTestApplication::class])
 @ActiveProfiles("test")
 class ApiTracingTest {
-
   @Autowired
   lateinit var testRestTemplate: TestRestTemplate
 

@@ -7,7 +7,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class SearchRangeTest {
-
   @Test
   fun `should create SearchRangeInt with values`() {
     // given & when

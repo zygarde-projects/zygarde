@@ -9,7 +9,6 @@ import zygarde.fixture.FixtureRunner
 
 @Configuration
 class ZygardeSpringFixtureConfig {
-
   @Bean
   @ConditionalOnProperty("zygarde.fixture.enabled", havingValue = "true")
   @ConditionalOnMissingBean

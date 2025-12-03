@@ -3,10 +3,12 @@ package zygarde.codegen.processor
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import io.kotest.matchers.shouldBe
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 
+@OptIn(ExperimentalCompilerApi::class)
 class ZygardeApiPropProcessorTest {
   @Test
   fun `should able to generate model meta`() {
@@ -14,7 +16,7 @@ class ZygardeApiPropProcessorTest {
       sources = listOf(
         ClassPathResource("codegen-input/model-meta/Item.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_1_8.description
+      jvmTarget = JvmTarget.JVM_17.description
       annotationProcessors = listOf(ZygardeApiPropProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

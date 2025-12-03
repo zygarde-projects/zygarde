@@ -1,7 +1,6 @@
 package zygarde.poi.xls.ext
 
 object XlsColIdxExt {
-
   /**
    * A~Z 0~25
    * AA~AB 26~51

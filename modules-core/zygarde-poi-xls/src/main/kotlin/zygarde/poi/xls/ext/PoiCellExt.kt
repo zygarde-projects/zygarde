@@ -6,7 +6,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 object PoiCellExt {
-
   fun Cell.getString(
     scaleWhenNumeric: Int = 0,
     scaleRoundingWhenNumeric: RoundingMode = RoundingMode.HALF_UP,

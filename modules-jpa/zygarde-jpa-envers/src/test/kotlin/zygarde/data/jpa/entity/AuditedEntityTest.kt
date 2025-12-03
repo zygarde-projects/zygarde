@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class AuditedEntityTest {
-
   class TestEntity : AuditedEntity() {
     override fun auditContainerKey(): String = "test"
   }

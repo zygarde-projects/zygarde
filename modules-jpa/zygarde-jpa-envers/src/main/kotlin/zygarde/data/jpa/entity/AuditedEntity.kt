@@ -15,7 +15,6 @@ import javax.persistence.MappedSuperclass
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
 abstract class AuditedEntity : AuditInfoContainer {
-
   @CreatedDate
   override var createdAt: LocalDateTime = LocalDateTime.now()
 

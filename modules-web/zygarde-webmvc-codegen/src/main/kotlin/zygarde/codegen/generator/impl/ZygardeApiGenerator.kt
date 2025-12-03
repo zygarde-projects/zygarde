@@ -21,7 +21,6 @@ class ZygardeApiGenerator(
   val apiToGenerateTargetFolder: ZygardeApiGeneratorTargetFolder?,
   val apiGroupToGenerateTargetFolder: Map<String, ZygardeApiGeneratorTargetFolder> = emptyMap(),
 ) : AbstractZygardeGenerator(processingEnv) {
-
   data class ApiPathVariableVo(
     val value: String,
     val type: TypeName
@@ -33,7 +32,6 @@ class ZygardeApiGenerator(
   private val apiImplPackage = packageName("api.impl")
 
   fun generateApi(elements: Collection<Element>) {
-
     elements
       .sortedBy { it.typeName().toString() }
       .mapNotNull { it.getAnnotation(ZyApi::class.java) }
@@ -84,7 +82,9 @@ class ZygardeApiGenerator(
               requestName = "req",
               requestType = if (genApi.reqCollection) {
                 Collection::class.asTypeName()
-              } else reqRefTypeName,
+              } else {
+                reqRefTypeName
+              },
               requestTypeGenericArguments = listOfNotNull(reqRefTypeName.takeIf { genApi.reqCollection }),
               responseType = if (genApi.resCollection) {
                 Collection::class.asTypeName()

@@ -11,7 +11,6 @@ import zygarde.core.log.Loggable
 class FixtureRunner(
   private val applicationContext: ApplicationContext
 ) : Loggable, ApplicationListener<ApplicationReadyEvent> {
-
   var fixtureRan = false
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {

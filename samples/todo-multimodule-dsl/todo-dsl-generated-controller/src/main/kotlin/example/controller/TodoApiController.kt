@@ -36,7 +36,9 @@ public class TodoApiController : TodoApi {
 
   @GetMapping(value = ["/api/todo/{todoId}"])
   @Operation(summary = "getTodo")
-  public override fun getTodo(@PathVariable(value = "todoId") todoId: Int): TodoDto {
+  public override fun getTodo(
+    @PathVariable(value = "todoId") todoId: Int
+  ): TodoDto {
     val service = bean<TodoApiService>()
     val result = service.getTodo(todoId)
     return result
@@ -44,7 +46,9 @@ public class TodoApiController : TodoApi {
 
   @PostMapping(value = ["/api/todo"])
   @Operation(summary = "createTodo")
-  public override fun createTodo(@RequestBody @Valid req: CreateTodoReq): TodoDto {
+  public override fun createTodo(
+    @RequestBody @Valid req: CreateTodoReq
+  ): TodoDto {
     val service = bean<TodoApiService>()
     val result = service.createTodo(req, { createTodoThreadLocal.set(it) })
     val extraParam = createTodoThreadLocal.get()
@@ -56,7 +60,7 @@ public class TodoApiController : TodoApi {
   @Operation(summary = "updateTodo")
   public override fun updateTodo(
     @PathVariable(value = "todoId") todoId: Int,
-    @RequestBody @Valid    
+    @RequestBody @Valid
     req: UpdateTodoReq
   ): TodoDto {
     val service = bean<TodoApiService>()
@@ -66,7 +70,9 @@ public class TodoApiController : TodoApi {
 
   @DeleteMapping(value = ["/api/todo/{todoId}"])
   @Operation(summary = "deleteTodo")
-  public override fun deleteTodo(@PathVariable(value = "todoId") todoId: Int) {
+  public override fun deleteTodo(
+    @PathVariable(value = "todoId") todoId: Int
+  ) {
     val service = bean<TodoApiService>()
     service.deleteTodo(todoId)
   }

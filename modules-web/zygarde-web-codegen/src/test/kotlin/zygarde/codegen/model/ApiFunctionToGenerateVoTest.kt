@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
 
 class ApiFunctionToGenerateVoTest {
-
   @Test
   fun `should create ApiFunctionToGenerateVo with required fields`() {
     // given & when

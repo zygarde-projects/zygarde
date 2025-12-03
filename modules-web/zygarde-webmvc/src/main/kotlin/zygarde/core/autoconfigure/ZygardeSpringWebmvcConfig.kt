@@ -16,7 +16,6 @@ import zygarde.json.JacksonCommon
 
 @Configuration
 class ZygardeSpringWebmvcConfig : WebMvcConfigurer {
-
   @Bean
   fun apiTracingHandlerInterceptor() = ApiTracingHandlerInterceptor()
 

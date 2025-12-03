@@ -6,7 +6,6 @@ import zygarde.api.tracing.ApiTracingContext
 
 @RestController
 class TestApi {
-
   @GetMapping("/apiId")
   fun getApiId(): String {
     return ApiTracingContext.getTracingData().apiId

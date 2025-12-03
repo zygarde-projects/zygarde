@@ -6,7 +6,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
 class WebMvcDslCodegenExtendedTest {
-
   data class TestDto(val value: String)
 
   @AfterEach

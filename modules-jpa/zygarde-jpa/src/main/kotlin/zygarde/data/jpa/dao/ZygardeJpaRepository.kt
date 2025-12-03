@@ -19,7 +19,6 @@ open class ZygardeJpaRepository<T, ID>(
   entityInformation: JpaEntityInformation<T, ID>,
   val entityManager: EntityManager
 ) : SimpleJpaRepository<T, ID>(entityInformation, entityManager), ZygardeEnhancedDao<T, ID> {
-
   override fun delete(spec: Specification<T>) {
     val cb = entityManager.criteriaBuilder
     val criteriaDelete = cb.createCriteriaDelete(domainClass)

@@ -4,7 +4,6 @@ import zygarde.core.log.Loggable
 import java.io.File
 
 object FileBasedPropertyLoader : Loggable {
-
   fun loadFromDirectory(directoryPath: String) {
     val resolvedProps = File(directoryPath)
       .takeIf { it.exists() && it.isDirectory }

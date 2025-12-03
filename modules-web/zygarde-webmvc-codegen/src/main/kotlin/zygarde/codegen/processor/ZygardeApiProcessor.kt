@@ -18,14 +18,13 @@ import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
 
 @AutoService(Processor::class)
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 @SupportedOptions(
   ZygardeKaptOptions.KAPT_KOTLIN_GENERATED_OPTION_NAME,
   ZygardeApiGeneratorKaptOptions.API_GENERATE_CONFIG,
   ZygardeApiGeneratorKaptOptions.GROUPED_API_GENERATE_CONFIG,
 )
 class ZygardeApiProcessor : AbstractProcessor() {
-
   override fun getSupportedAnnotationTypes(): MutableSet<String> {
     return mutableSetOf(ZyApi::class.java.name)
   }

@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class WebMvcDslCodegenConfigTest {
-
   @Test
   fun `should create config with all required fields`() {
     // when

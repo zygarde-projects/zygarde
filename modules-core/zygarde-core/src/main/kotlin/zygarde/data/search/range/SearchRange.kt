@@ -20,13 +20,17 @@ open class SearchRange<T : Comparable<T>> {
 
   class Number {
     class SearchRangeDouble(override var from: Double?, override var to: Double?) : SearchRange<Double>()
+
     class SearchRangeInt(override var from: Int?, override var to: Int?) : SearchRange<Int>()
+
     class SearchRangeLong(override var from: Long?, override var to: Long?) : SearchRange<Long>()
+
     class SearchRangeBigDecimal(override var from: BigDecimal?, override var to: BigDecimal?) : SearchRange<BigDecimal>()
   }
 
   class Date {
     class SearchRangeLocalDate(override var from: LocalDate?, override var to: LocalDate?) : SearchRange<LocalDate>()
+
     class SearchRangeLocalDateTime(override var from: LocalDateTime?, override var to: LocalDateTime?) : SearchRange<LocalDateTime>()
   }
 }

@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class ZygardeModelMappingKaptOptionsTest {
-
   @Test
   fun `should have correct MODEL_MAPPING_DTO_WRITE_TO value`() {
     ZygardeModelMappingKaptOptions.MODEL_MAPPING_DTO_WRITE_TO shouldBe "zygarde.model_mapping.dto.write_to"

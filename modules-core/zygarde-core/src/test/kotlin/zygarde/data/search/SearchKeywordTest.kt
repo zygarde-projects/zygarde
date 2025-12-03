@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SearchKeywordTest {
-
   @Test
   fun `should create SearchKeyword with default values`() {
     // given & when

@@ -7,20 +7,20 @@ buildscript {
 }
 
 plugins {
-  id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
-  id("io.gitlab.arturbosch.detekt") version "1.18.1"
-  id("de.jansauer.printcoverage") version "2.0.0"
-  id("org.springframework.boot") version "2.7.14"
+  id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+  id("io.gitlab.arturbosch.detekt") version "1.23.5"
+  id("org.springframework.boot") version "2.7.18"
   id("io.spring.dependency-management") version "1.1.3"
-  kotlin("jvm") version "1.8.22"
-  kotlin("plugin.spring") version "1.8.22"
-  kotlin("kapt") version "1.8.22"
+  kotlin("jvm") version "1.9.25"
+  kotlin("plugin.spring") version "1.9.25"
+  kotlin("kapt") version "1.9.25"
   `maven-publish`
   jacoco
   application
 }
 
 fun Project.isBomProject() = this.name.startsWith("zygarde-bom")
+
 fun Project.isPublishingProject() = this.name.startsWith("zygarde")
 
 allprojects {
@@ -73,7 +73,6 @@ subprojects {
     return@subprojects
   }
 
-  apply(plugin = "de.jansauer.printcoverage")
   apply(plugin = "io.spring.dependency-management")
   apply(plugin = "kotlin")
   apply(plugin = "kotlin-kapt")
@@ -82,19 +81,18 @@ subprojects {
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.8")
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.9")
     }
   }
 
   configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = "1.8"
+      jvmTarget = "17"
     }
   }
 
@@ -102,17 +100,17 @@ subprojects {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("io.kotest:kotest-assertions-shared-jvm:4.6.3")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.6.3")
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("io.kotest:kotest-assertions-shared-jvm:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.8.0")
+    testImplementation("io.mockk:mockk:1.13.8")
   }
 
   configurations.all {
     resolutionStrategy {
       eachDependency {
         when (requested.module.name) {
-          "kotlinx-coroutines-core" -> useVersion("1.5.1")
-          "kotlinx-coroutines-jdk8" -> useVersion("1.5.1")
+          "kotlinx-coroutines-core" -> useVersion("1.8.0")
+          "kotlinx-coroutines-jdk8" -> useVersion("1.8.0")
         }
       }
     }
@@ -126,14 +124,13 @@ subprojects {
 
   tasks.getByName("clean").finalizedBy("housekeeping")
   tasks.getByName("test").finalizedBy("jacocoTestReport")
-  tasks.getByName("jacocoTestReport").finalizedBy("printCoverage")
 
   tasks.withType<Test> {
     useJUnitPlatform()
   }
 
   jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.11"
   }
 
   tasks.withType<JacocoReport> {
@@ -236,7 +233,6 @@ task("lintc") {
 }
 
 tasks.getByName("publish").enabled = false
-tasks.getByName("printCoverage").enabled = false
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = false
 

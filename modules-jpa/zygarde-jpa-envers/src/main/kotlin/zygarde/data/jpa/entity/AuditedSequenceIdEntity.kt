@@ -14,7 +14,6 @@ import javax.persistence.MappedSuperclass
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
 abstract class AuditedSequenceIdEntity<T : Serializable> : SequenceIdEntity<T>(), AuditInfoContainer {
-
   override fun auditContainerKey(): String = "${this::javaClass.name}:$id"
 
   @CreatedDate

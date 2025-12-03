@@ -25,7 +25,6 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 
 class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapping>) {
-
   val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
   var dtoToExtraToDtoMappingMap = dtoFieldMappings
@@ -342,7 +341,8 @@ $callDtoStatements
               .addStatement(
                 """return %T(
 ${dtoFieldSetterStatements.joinToString(",\r\n")}              
-)""".trimMargin(),
+)
+                """.trimMargin(),
                 *codeBlockArgs.toTypedArray()
               )
               .build()
@@ -415,7 +415,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
       mapping.dtoRefClass
         ?: mapping.dtoRef?.let { ClassName(dtoPackageName, it.name) }
         ?: mapping.modelField.fieldClass
-      ).kotlin(!mapping.refCollection && fieldTypeNullable)
+    ).kotlin(!mapping.refCollection && fieldTypeNullable)
       .let { if (mapping.refCollection) Collection::class.generic(it).kotlin(fieldTypeNullable) else it }
   }
 }

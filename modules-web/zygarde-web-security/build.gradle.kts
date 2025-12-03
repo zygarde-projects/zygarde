@@ -12,4 +12,3 @@ dependencies {
 
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true
-tasks.getByName("printCoverage").enabled = false

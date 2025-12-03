@@ -3,13 +3,14 @@ package zygarde.codegen.generator.impl
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import io.kotest.matchers.shouldBe
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import zygarde.codegen.processor.ZygardeApiPropProcessor
 
+@ExperimentalCompilerApi
 class ZygardeApiPropGeneratorComprehensiveTest {
-
   @Test
   fun `should generate DTO with toDto extension for simple entity`() {
     val result = compileFile("codegen-input/comprehensive/SimpleEntity.kt")
@@ -69,7 +70,7 @@ class ZygardeApiPropGeneratorComprehensiveTest {
       sources = listOf(
         ClassPathResource(resourcePath).file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_1_8.description
+      jvmTarget = JvmTarget.JVM_17.description
       annotationProcessors = listOf(ZygardeApiPropProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

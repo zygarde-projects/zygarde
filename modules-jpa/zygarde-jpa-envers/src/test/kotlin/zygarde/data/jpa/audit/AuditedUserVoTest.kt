@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class AuditedUserVoTest {
-
   class TestUser(private val username: String) : AuditedUserVo {
     override fun auditInfo(): String = username
   }

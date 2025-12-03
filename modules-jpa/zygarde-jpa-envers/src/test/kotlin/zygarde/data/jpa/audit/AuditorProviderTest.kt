@@ -9,7 +9,6 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 
 class AuditorProviderTest {
-
   class TestAuditedUser(private val username: String) : AuditedUserVo {
     override fun auditInfo(): String = username
   }

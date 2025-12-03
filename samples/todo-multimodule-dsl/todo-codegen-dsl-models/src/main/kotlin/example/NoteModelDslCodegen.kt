@@ -8,7 +8,6 @@ class NoteModelDslCodegen : ModelMappingCodegenSpec({
     applyTo(Note::title)
   }
 }) {
-
   enum class NoteDtos : CodegenDtoSimple {
     UpdateNoteReq,
   }

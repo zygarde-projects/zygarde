@@ -39,7 +39,6 @@ class ZygardeApiPropGenerator(
   private val dtoWriteTo: String?,
   private val extensionWriteTo: String?,
 ) : AbstractZygardeGenerator(processingEnv) {
-
   data class DtoFieldDescriptionVo(
     val entityFieldName: String,
     val entityFieldType: TypeName,
@@ -93,7 +92,7 @@ class ZygardeApiPropGenerator(
           }
         }
         ?: emptyList()
-      )
+    )
     val dtoDescriptionsFromElementFields = element
       .allFieldsIncludeSuper()
       .flatMap { fieldElement ->
@@ -296,7 +295,8 @@ class ZygardeApiPropGenerator(
     dtoName: String,
     dtoFieldDescriptions: List<DtoFieldDescriptionVo>
   ): FunSpec {
-    val codeBlockArgs = mutableListOf<Any>(ClassName(dtoPackageName, dtoName))
+    val dtoClassName = ClassName(dtoPackageName, dtoName)
+    val codeBlockArgs = mutableListOf<Any>(dtoClassName)
     val dtoFieldSetterStatements = dtoFieldDescriptions
       .map {
         val q = if (it.dtoFieldType.isNullable) "?" else ""
@@ -319,10 +319,12 @@ class ZygardeApiPropGenerator(
       }
     return FunSpec.builder("to$dtoName")
       .receiver(element.notNullTypeName())
+      .returns(dtoClassName)
       .addStatement(
         """return %T(
 ${dtoFieldSetterStatements.joinToString(",\r\n")}              
-)""".trimMargin(),
+)
+        """.trimMargin(),
         *codeBlockArgs.toTypedArray()
       )
       .build()
