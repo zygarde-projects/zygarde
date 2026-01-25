@@ -12,12 +12,20 @@ plugins {
   id("org.springframework.boot") version "2.7.18"
   id("io.spring.dependency-management") version "1.1.3"
   id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
+  id("tech.yanand.maven-central-publish") version "1.2.0"
   kotlin("jvm") version "1.9.25"
   kotlin("plugin.spring") version "1.9.25"
   kotlin("kapt") version "1.9.25"
   `maven-publish`
+  signing
   jacoco
   application
+}
+
+mavenCentral {
+  repoDir = layout.buildDirectory.dir("repos/bundles")
+  authToken = System.getenv("MAVEN_CENTRAL_TOKEN")
+  publishingType = "AUTOMATIC"
 }
 
 fun Project.isBomProject() = this.name.startsWith("zygarde-bom")
@@ -38,25 +46,14 @@ allprojects {
 subprojects {
   if (isPublishingProject()) {
     apply(plugin = "org.gradle.maven-publish")
+    apply(plugin = "org.gradle.signing")
     apply(plugin = "io.gitlab.arturbosch.detekt")
 
     publishing {
       repositories {
         maven {
-          name = "Nexus"
-          url = uri("https://nexus.puni.tw/repository/maven-releases")
-          credentials {
-            username = System.getenv("PUNI_NEXUS_DEPLOY_USER")
-            password = System.getenv("PUNI_NEXUS_DEPLOY_PWD")
-          }
-        }
-        maven {
-          name = "Github"
-          url = uri("https://maven.pkg.github.com/zygarde-projects/zygarde")
-          credentials {
-            username = System.getenv("ZYGARDE_GH_USER") ?: System.getenv("GITHUB_ACTOR")
-            password = System.getenv("ZYGARDE_GH_TOKEN") ?: System.getenv("GITHUB_TOKEN")
-          }
+          name = "LocalStaging"
+          url = uri(rootProject.layout.buildDirectory.dir("repos/bundles"))
         }
       }
     }
@@ -64,11 +61,48 @@ subprojects {
 
   if (isBomProject()) {
     apply(plugin = "java-platform")
+    apply(plugin = "org.gradle.signing")
     publishing {
       publications {
         create<MavenPublication>("default") {
+          groupId = "io.github.zygarde-projects"
           from(components["javaPlatform"])
+
+          pom {
+            name.set(project.name)
+            description.set("Zygarde BOM - Bill of Materials for Zygarde framework")
+            url.set("https://github.com/zygarde-projects/zygarde")
+
+            licenses {
+              license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
+              }
+            }
+
+            developers {
+              developer {
+                id.set("puni")
+                name.set("puni")
+                url.set("https://github.com/puni")
+              }
+            }
+
+            scm {
+              url.set("https://github.com/zygarde-projects/zygarde")
+              connection.set("scm:git:git://github.com/zygarde-projects/zygarde.git")
+              developerConnection.set("scm:git:ssh://git@github.com/zygarde-projects/zygarde.git")
+            }
+          }
         }
+      }
+    }
+    signing {
+      val signingKey = System.getenv("GPG_SIGNING_KEY")
+      val signingPassword = System.getenv("GPG_SIGNING_PASSWORD") ?: ""
+      if (!signingKey.isNullOrBlank()) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["default"])
       }
     }
     return@subprojects
@@ -154,6 +188,13 @@ subprojects {
       from(sourceSets.getByName("main").allSource)
     }
 
+    val javadocJar by tasks.creating(Jar::class) {
+      group = JavaBasePlugin.DOCUMENTATION_GROUP
+      description = "Javadoc"
+      archiveClassifier.set("javadoc")
+      from(tasks.named("javadoc"))
+    }
+
     tasks.detekt {
       detekt {
         source = files("src/*/kotlin")
@@ -163,8 +204,37 @@ subprojects {
     publishing {
       publications {
         create<MavenPublication>("default") {
+          groupId = "io.github.zygarde-projects"
           from(components["java"])
           artifact(sourceJar)
+          artifact(javadocJar)
+
+          pom {
+            name.set(project.name)
+            description.set("Zygarde - A Kotlin framework for simplifying enterprise application development")
+            url.set("https://github.com/zygarde-projects/zygarde")
+
+            licenses {
+              license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
+              }
+            }
+
+            developers {
+              developer {
+                id.set("puni")
+                name.set("puni")
+                url.set("https://github.com/puni")
+              }
+            }
+
+            scm {
+              url.set("https://github.com/zygarde-projects/zygarde")
+              connection.set("scm:git:git://github.com/zygarde-projects/zygarde.git")
+              developerConnection.set("scm:git:ssh://git@github.com/zygarde-projects/zygarde.git")
+            }
+          }
 
           // XXX merge dependencyMangement in generated pom.xml
           // https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/257
@@ -187,6 +257,15 @@ subprojects {
             }
           }
         }
+      }
+    }
+
+    signing {
+      val signingKey = System.getenv("GPG_SIGNING_KEY")
+      val signingPassword = System.getenv("GPG_SIGNING_PASSWORD") ?: ""
+      if (!signingKey.isNullOrBlank()) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["default"])
       }
     }
   }

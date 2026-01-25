@@ -1,11 +1,5 @@
 apply(plugin = "java-platform")
 
-group = if (group == "com.github.zygarde-projects") {
-  "com.github.zygarde-projects.zygarde"
-} else {
-  group
-}
-
 dependencies {
   constraints {
     "api"("com.squareup:kotlinpoet:1.16.0")
