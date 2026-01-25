@@ -12,7 +12,6 @@ plugins {
   id("org.springframework.boot") version "2.7.18"
   id("io.spring.dependency-management") version "1.1.3"
   id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
-  id("tech.yanand.maven-central-publish") version "1.2.0"
   kotlin("jvm") version "1.9.25"
   kotlin("plugin.spring") version "1.9.25"
   kotlin("kapt") version "1.9.25"
@@ -22,10 +21,17 @@ plugins {
   application
 }
 
-mavenCentral {
-  repoDir = layout.buildDirectory.dir("repos/bundles")
-  authToken = System.getenv("MAVEN_CENTRAL_TOKEN")
-  publishingType = "AUTOMATIC"
+val stagingDir = layout.buildDirectory.dir("staging-deploy")
+
+tasks.register<Zip>("zipStagingRepository") {
+  group = "publishing"
+  description = "Creates a bundle zip for Maven Central upload"
+  archiveFileName.set("bundle.zip")
+  destinationDirectory.set(layout.buildDirectory.dir("distributions"))
+  from(stagingDir)
+
+  // Ensure all subproject publish tasks complete before zipping
+  dependsOn(subprojects.mapNotNull { it.tasks.findByName("publishAllPublicationsToLocalStagingRepository") })
 }
 
 fun Project.isBomProject() = this.name.startsWith("zygarde-bom")
@@ -53,7 +59,7 @@ subprojects {
       repositories {
         maven {
           name = "LocalStaging"
-          url = uri(rootProject.layout.buildDirectory.dir("repos/bundles"))
+          url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
         }
       }
     }

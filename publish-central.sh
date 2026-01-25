@@ -23,12 +23,33 @@ fi
 
 # GPG_SIGNING_PASSWORD is optional (can be empty for keys without passphrase)
 
-# Publish to local staging, then upload to Central Portal
+echo "Step 1: Building and staging artifacts..."
 ./gradlew clean \
   publishAllPublicationsToLocalStagingRepository \
-  publishToMavenCentralPortal \
   -Pversion="$VERSION"
 
 echo ""
-echo "Successfully published $VERSION to Maven Central!"
-echo "Check status at: https://central.sonatype.com/publishing/deployments"
+echo "Step 2: Creating bundle zip..."
+./gradlew zipStagingRepository
+
+echo ""
+echo "Step 3: Uploading to Maven Central..."
+RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+  "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC" \
+  -H "Authorization: Bearer $MAVEN_CENTRAL_TOKEN" \
+  -F "bundle=@build/distributions/bundle.zip")
+
+HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" -eq 201 ]; then
+  echo "Upload successful!"
+  echo "Deployment ID: $BODY"
+  echo ""
+  echo "Check status at: https://central.sonatype.com/publishing/deployments"
+  echo "Artifacts will be available on Maven Central after validation and publishing."
+else
+  echo "Upload failed with HTTP $HTTP_CODE"
+  echo "Response: $BODY"
+  exit 1
+fi

@@ -15,13 +15,29 @@ jobs:
           java-version: 17
           distribution: 'zulu'
           cache: 'gradle'
-      - name: Publish to Maven Central
+      - name: Build and stage artifacts
         run: |
           ./gradlew clean \
             publishAllPublicationsToLocalStagingRepository \
-            publishToMavenCentralPortal \
             -Pversion="${RELEASE_VERSION}"
         env:
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
-          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+      - name: Create bundle zip
+        run: ./gradlew zipStagingRepository
+      - name: Upload to Maven Central
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC" \
+            -H "Authorization: Bearer $MAVEN_CENTRAL_TOKEN" \
+            -F "bundle=@build/distributions/bundle.zip")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          if [ "$HTTP_CODE" -eq 201 ]; then
+            echo "Upload successful! Deployment ID: $BODY"
+          else
+            echo "Upload failed with HTTP $HTTP_CODE: $BODY"
+            exit 1
+          fi
+        env:
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
