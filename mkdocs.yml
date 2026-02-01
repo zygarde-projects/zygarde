@@ -124,6 +124,7 @@ nav:
   - Tutorials:
     - KAPT-Based Tutorial: tutorials/kapt-based.md
     - DSL-Based Tutorial: tutorials/dsl-based.md
+  - Best Practices: guide/best-practices.md
   - Configuration:
     - KAPT Options: reference/kapt-options.md
     - DSL Properties: reference/dsl-properties.md
