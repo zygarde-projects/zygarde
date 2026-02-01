@@ -2,90 +2,94 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/changelog/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/faq/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/examples/advanced-queries/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/examples/basic-crud/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/examples/relationships/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/getting-started/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/getting-started/comparison/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/getting-started/project-setup/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/getting-started/quick-start/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/guide/architecture/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
+    </url>
+    <url>
+         <loc>https://zygarde-projects.github.io/zygarde/guide/best-practices/</loc>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/guide/code-generation/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/guide/jpa-extensions/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/guide/model-mapping/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/guide/search-dsl/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/guide/web-rest/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/reference/common-patterns/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/reference/dsl-properties/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/reference/kapt-options/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/reference/modules/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/tutorials/dsl-based/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
     <url>
          <loc>https://zygarde-projects.github.io/zygarde/tutorials/kapt-based/</loc>
-         <lastmod>2025-10-30</lastmod>
+         <lastmod>2026-02-01</lastmod>
     </url>
 </urlset>
