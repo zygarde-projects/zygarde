@@ -14,6 +14,14 @@ interface StringConditionAction<RootEntityType, EntityType> : ComparableConditio
 
   infix fun containsAny(value: Collection<String>?): EnhancedSearch<RootEntityType>
 
+  infix fun eqIgnoreCase(value: String?): EnhancedSearch<RootEntityType>
+
+  infix fun containsIgnoreCase(value: String?): EnhancedSearch<RootEntityType>
+
+  infix fun startsWithIgnoreCase(value: String?): EnhancedSearch<RootEntityType>
+
+  infix fun endsWithIgnoreCase(value: String?): EnhancedSearch<RootEntityType>
+
   fun lower(): StringConditionAction<RootEntityType, EntityType>
 
   fun upper(): StringConditionAction<RootEntityType, EntityType>

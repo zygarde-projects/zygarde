@@ -19,4 +19,6 @@ interface ComparableConditionAction<RootEntityType, EntityType, FieldType : Comp
   infix fun lt(anotherAction: ConditionAction<*, EntityType, FieldType>)
 
   infix fun lte(anotherAction: ConditionAction<*, EntityType, FieldType>)
+
+  infix fun between(range: Pair<FieldType, FieldType>?): EnhancedSearch<RootEntityType>
 }

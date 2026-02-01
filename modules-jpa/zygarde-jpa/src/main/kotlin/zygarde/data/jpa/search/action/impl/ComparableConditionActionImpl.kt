@@ -41,4 +41,8 @@ open class ComparableConditionActionImpl<RootEntityType, EntityType, FieldType :
   override fun lte(anotherAction: ConditionAction<*, EntityType, FieldType>) = applyThisAndAnother(anotherAction) { l, r ->
     cb.lessThanOrEqualTo(l, r)
   }
+
+  override fun between(range: Pair<FieldType, FieldType>?): EnhancedSearch<RootEntityType> = applyNonNullAction(range) { path, v ->
+    cb.between(path, v.first, v.second)
+  }
 }

@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import zygarde.core.exception.BusinessException
+import zygarde.core.exception.ErrorCode
 import zygarde.data.api.PagingAndSortingRequest
 import zygarde.data.api.SortField
 import zygarde.data.jpa.search.EnhancedSearch
@@ -47,6 +49,13 @@ fun <T> JpaSpecificationExecutor<T>.searchOne(searchContent: EnhancedSearch<T>.(
   return findOne(buildSpec(searchContent)).let { if (it.isPresent) it.get() else null }
 }
 
+fun <T> JpaSpecificationExecutor<T>.searchOneOrThrow(
+  errorCode: ErrorCode,
+  searchContent: EnhancedSearch<T>.() -> Unit
+): T {
+  return searchOne(searchContent) ?: throw BusinessException(errorCode)
+}
+
 fun <T> JpaSpecificationExecutor<T>.searchPage(
   req: PagingAndSortingRequest,
   searchContent: EnhancedSearch<T>.() -> Unit
@@ -54,6 +63,6 @@ fun <T> JpaSpecificationExecutor<T>.searchPage(
   return findAll(buildSpec(searchContent), req.toSpringDataPageRequest())
 }
 
-fun <T> ZygardeEnhancedDao<T, *>.remove(searchContent: EnhancedSearch<T>.() -> Unit) {
-  delete(buildSpec(searchContent))
+fun <T> ZygardeEnhancedDao<T, *>.remove(searchContent: EnhancedSearch<T>.() -> Unit): Int {
+  return delete(buildSpec(searchContent))
 }

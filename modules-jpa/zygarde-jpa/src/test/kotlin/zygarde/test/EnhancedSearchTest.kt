@@ -1,5 +1,6 @@
 package zygarde.test
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import zygarde.core.exception.BusinessException
+import zygarde.core.exception.ErrorCode
 import zygarde.data.api.PagingAndSortingRequest
 import zygarde.data.api.PagingRequest
 import zygarde.data.api.SortDirection
@@ -23,6 +26,7 @@ import zygarde.data.jpa.dao.remove
 import zygarde.data.jpa.dao.search
 import zygarde.data.jpa.dao.searchCount
 import zygarde.data.jpa.dao.searchOne
+import zygarde.data.jpa.dao.searchOneOrThrow
 import zygarde.data.jpa.dao.searchPage
 import zygarde.data.jpa.entity.getId
 import zygarde.data.jpa.search.action.ComparableConditionAction
@@ -381,6 +385,22 @@ class EnhancedSearchTest {
     }.size shouldBe 100
   }
 
+  @Order(1950)
+  @Test
+  fun `should return value for selectOneOrNull when found`() {
+    bookDao.selectOneOrNull(Book::name) {
+      field(Book::name) eq "zygarde"
+    } shouldBe "zygarde"
+  }
+
+  @Order(1951)
+  @Test
+  fun `should return null for selectOneOrNull when not found`() {
+    bookDao.selectOneOrNull(Book::name) {
+      field(Book::name) eq "nonexistent_book_name"
+    } shouldBe null
+  }
+
   @Order(1900)
   @Test
   fun `select for prop`() {
@@ -438,6 +458,104 @@ class EnhancedSearchTest {
     bookDao.search {
       comparableField<Int>("price") range SearchRange.Number.SearchRangeInt(99, 100).also { it.fromExclusive = true }
     }.all { it.price == 100 } shouldBe true
+  }
+
+  enum class TestErrorCode(override val code: String, override val message: String) : ErrorCode {
+    NOT_FOUND("NOT_FOUND", "entity not found")
+  }
+
+  @Order(2100)
+  @Test
+  fun `should able to search with between`() {
+    bookDao.search {
+      comparableField<Int>("price") between (100 to 100)
+    }.size shouldBe 20
+    bookDao.search {
+      comparableField<Int>("price") between (100 to 200)
+    }.size shouldBeGreaterThan 0
+  }
+
+  @Order(2101)
+  @Test
+  fun `should skip between when null`() {
+    bookDao.search {
+      comparableField<Int>("price") between null
+    }.size shouldBe 1000
+  }
+
+  @Order(2200)
+  @Test
+  fun `should able to search with case insensitive operations`() {
+    bookDao.search {
+      stringField("name") eqIgnoreCase "ZYGARDE"
+    }.size shouldBe 20
+    bookDao.search {
+      stringField("name") containsIgnoreCase "ZYGAR"
+    }.size shouldBe 20
+    bookDao.search {
+      stringField("name") startsWithIgnoreCase "ZYGAR"
+    }.size shouldBe 20
+    bookDao.search {
+      stringField("name") endsWithIgnoreCase "GARDE"
+    }.size shouldBe 20
+  }
+
+  @Order(2201)
+  @Test
+  fun `should skip case insensitive operations when null`() {
+    bookDao.search { stringField("name") eqIgnoreCase null }.size shouldBe 1000
+    bookDao.search { stringField("name") containsIgnoreCase null }.size shouldBe 1000
+    bookDao.search { stringField("name") startsWithIgnoreCase null }.size shouldBe 1000
+    bookDao.search { stringField("name") endsWithIgnoreCase null }.size shouldBe 1000
+  }
+
+  @Order(2300)
+  @Test
+  fun `should return entity for searchOneOrThrow when found`() {
+    bookDao.searchOneOrThrow(TestErrorCode.NOT_FOUND) {
+      field(Book::id) eq 1
+    } shouldNotBe null
+  }
+
+  @Order(2301)
+  @Test
+  fun `should throw BusinessException for searchOneOrThrow when not found`() {
+    shouldThrow<BusinessException> {
+      bookDao.searchOneOrThrow(TestErrorCode.NOT_FOUND) {
+        field(Book::id) eq 0
+      }
+    }.code shouldBe TestErrorCode.NOT_FOUND
+  }
+
+  @Order(2400)
+  @Test
+  fun `should escape LIKE special characters in search`() {
+    bookDao.save(Book(name = "100%_off", price = 100))
+    bookDao.search {
+      stringField("name") contains "%_"
+    }.size shouldBe 1
+    bookDao.search {
+      stringField("name") startsWith "100%"
+    }.size shouldBe 1
+    bookDao.search {
+      stringField("name") endsWith "_off"
+    }.size shouldBe 1
+    bookDao.search {
+      stringField("name") containsAny listOf("%_")
+    }.size shouldBe 1
+  }
+
+  @Order(8900)
+  @Test
+  fun `should return deleted count from remove`() {
+    val count = bookDao.remove {
+      field(Book::name) eq "100%_off"
+    }
+    count shouldBe 1
+    val zeroCount = bookDao.remove {
+      field(Book::name) eq "nonexistent_book"
+    }
+    zeroCount shouldBe 0
   }
 
   @Order(9000)
