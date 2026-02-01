@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  zygarde.lock.redis.autoconfigure.ZygardeLockRedisAutoConfiguration

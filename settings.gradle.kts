@@ -15,6 +15,7 @@ registerModules("modules-web")
 registerModules("modules-model-mapping")
 registerModules("modules-codegen-support")
 registerModules("modules-test-support")
+registerModules("modules-lock")
 registerModules("modules-bom")
 
 if (System.getenv("JITPACK") != "true" && System.getenv("GITHUB_ACTIONS") != "true") {
