@@ -10,10 +10,10 @@ import org.springframework.core.convert.ConversionService
 import org.springframework.core.convert.TypeDescriptor
 import org.springframework.expression.Expression
 
-class SpelKeyGenerator(
+open class SpelKeyGenerator(
   private val conversionService: ConversionService
 ) : CachedExpressionEvaluator(), KeyGenerator {
-  private val conditionCache = ConcurrentHashMap<ExpressionKey, Expression>()
+  protected val conditionCache = ConcurrentHashMap<ExpressionKey, Expression>()
 
   override fun resolveKeys(
     lockKeyPrefix: String,
@@ -41,7 +41,10 @@ class SpelKeyGenerator(
       ?: throw EvaluationConvertException("Expression evaluated in a null")
   }
 
-  private fun convertResultToList(expressionValue: Any): List<String> {
+  protected open fun convertResultToList(expressionValue: Any?): List<String> {
+    if (expressionValue == null) {
+      throw EvaluationConvertException("Expression evaluated in a null")
+    }
     val list: List<Any?>? = when {
       expressionValue is Iterable<*> -> {
         val genericCollection = TypeDescriptor.collection(Collection::class.java, TypeDescriptor.valueOf(Any::class.java))
