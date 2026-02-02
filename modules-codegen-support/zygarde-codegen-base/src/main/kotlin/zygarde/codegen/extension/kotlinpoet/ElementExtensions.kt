@@ -83,21 +83,23 @@ object ElementExtensions {
     superTypes.forEach { superType ->
       if (superType is TypeElement) {
         listOf(superType.interfaces, listOf(superType.superclass)).flatten().forEach { superClassOrInterface ->
-          val matchedValues = "(.*)<(.*)>".toRegex().find(superClassOrInterface.toString())?.groupValues ?: emptyList()
-          if (matchedValues.size > 1) {
-            val superClassName = matchedValues[1]
+          val parsed = parseTypeArguments(superClassOrInterface.toString())
+          if (parsed != null) {
+            val (superClassName, typeClassNames) = parsed
             val typeArgList = allTypeArgs.getOrDefault(superClassName, emptyList())
             typeArgList.forEachIndexed { idx, typeArg ->
-              val typeClassName = matchedValues[idx + 2]
-              val genericTypePath = "${superClassName}_$typeArg"
-              if (typeArg == typeClassName) {
-                val resolvedBySuperType = genericTypeMap[superType.toString() + "_" + typeArg]
-                if (resolvedBySuperType != null) {
-                  genericTypeMap[genericTypePath] = resolvedBySuperType
+              if (idx < typeClassNames.size) {
+                val typeClassName = typeClassNames[idx]
+                val genericTypePath = "${superClassName}_$typeArg"
+                if (typeArg == typeClassName) {
+                  val resolvedBySuperType = genericTypeMap[superType.toString() + "_" + typeArg]
+                  if (resolvedBySuperType != null) {
+                    genericTypeMap[genericTypePath] = resolvedBySuperType
+                  }
+                } else {
+                  val resolvedGenericType = typeClassName.toClassName().kotlin(false)
+                  genericTypeMap[genericTypePath] = resolvedGenericType
                 }
-              } else {
-                val resolvedGenericType = typeClassName.toClassName().kotlin(false)
-                genericTypeMap[genericTypePath] = resolvedGenericType
               }
             }
           }
@@ -105,6 +107,20 @@ object ElementExtensions {
       }
     }
     return genericTypeMap
+  }
+
+  /**
+   * Parses a type string like "com.example.Map<K, V>" into a pair of
+   * (className, listOf(typeArgNames)).
+   * Returns null if the string has no generic type arguments.
+   */
+  internal fun parseTypeArguments(str: String): Pair<String, List<String>>? {
+    val matchResult = "(.*)<(.*)>".toRegex().find(str) ?: return null
+    val groupValues = matchResult.groupValues
+    if (groupValues.size <= 2) return null
+    val className = groupValues[1]
+    val typeClassNames = groupValues[2].split(",").map { it.trim() }
+    return className to typeClassNames
   }
 
   private fun Element.typeName(canBeNullable: Boolean = true): TypeName {

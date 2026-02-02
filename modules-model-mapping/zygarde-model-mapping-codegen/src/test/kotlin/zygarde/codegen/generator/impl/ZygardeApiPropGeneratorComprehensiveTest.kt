@@ -5,6 +5,7 @@ import com.tschuchort.compiletesting.SourceFile
 import io.kotest.matchers.shouldBe
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.JvmTarget
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import zygarde.codegen.processor.ZygardeApiPropProcessor
@@ -34,18 +35,19 @@ class ZygardeApiPropGeneratorComprehensiveTest {
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
   }
 
-  // TODO: Investigate why these tests fail - likely need specific KAPT configuration or compilation order
-  // @Test
-  // fun `should generate complex entity with multiple DTOs`() {
-  //   val result = compileFile("codegen-input/comprehensive/ComplexEntity.kt")
-  //   result.exitCode shouldBe KotlinCompilation.ExitCode.OK
-  // }
-  //
-  // @Test
-  // fun `should generate advanced search with all search types`() {
-  //   val result = compileFile("codegen-input/comprehensive/AdvancedSearchEntity.kt")
-  //   result.exitCode shouldBe KotlinCompilation.ExitCode.OK
-  // }
+  @Disabled("Needs specific KAPT configuration or compilation order for multiple DTOs from single entity")
+  @Test
+  fun `should generate complex entity with multiple DTOs`() {
+    val result = compileFile("codegen-input/comprehensive/ComplexEntity.kt")
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+  }
+
+  @Disabled("Needs specific KAPT configuration or compilation order for advanced search types")
+  @Test
+  fun `should generate advanced search with all search types`() {
+    val result = compileFile("codegen-input/comprehensive/AdvancedSearchEntity.kt")
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+  }
 
   @Test
   fun `should handle nullable fields correctly`() {
@@ -59,11 +61,12 @@ class ZygardeApiPropGeneratorComprehensiveTest {
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
   }
 
-  // @Test
-  // fun `should generate entity with collection ref`() {
-  //   val result = compileFile("codegen-input/comprehensive/EntityWithCollection.kt")
-  //   result.exitCode shouldBe KotlinCompilation.ExitCode.OK
-  // }
+  @Disabled("Needs specific KAPT configuration or compilation order for collection ref generation")
+  @Test
+  fun `should generate entity with collection ref`() {
+    val result = compileFile("codegen-input/comprehensive/EntityWithCollection.kt")
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+  }
 
   private fun compileFile(resourcePath: String): KotlinCompilation.Result {
     return KotlinCompilation().apply {

@@ -4,13 +4,14 @@ import com.squareup.kotlinpoet.asTypeName
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
+import zygarde.codegen.generator.shared.DtoFieldDescriptionVo
 import zygarde.codegen.value.NoOpValueProvider
 
 class ZygardeApiPropGeneratorUnitTest {
   @Test
   fun `DtoFieldDescriptionVo should create with all fields`() {
     // given/when
-    val vo = ZygardeApiPropGenerator.DtoFieldDescriptionVo(
+    val vo = DtoFieldDescriptionVo(
       entityFieldName = "userId",
       entityFieldType = Long::class.asTypeName(),
       dtoName = "UserDto",
@@ -49,7 +50,7 @@ class ZygardeApiPropGeneratorUnitTest {
   @Test
   fun `DtoFieldDescriptionVo should use default values`() {
     // given/when
-    val vo = ZygardeApiPropGenerator.DtoFieldDescriptionVo(
+    val vo = DtoFieldDescriptionVo(
       entityFieldName = "name",
       entityFieldType = String::class.asTypeName(),
       dtoName = "TestDto",
@@ -73,7 +74,7 @@ class ZygardeApiPropGeneratorUnitTest {
   @Test
   fun `DtoFieldDescriptionVo should support data class operations`() {
     // given
-    val vo1 = ZygardeApiPropGenerator.DtoFieldDescriptionVo(
+    val vo1 = DtoFieldDescriptionVo(
       entityFieldName = "id",
       entityFieldType = Long::class.asTypeName(),
       dtoName = "TestDto",
