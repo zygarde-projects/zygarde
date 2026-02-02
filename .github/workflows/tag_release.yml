@@ -23,6 +23,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_SIGNING_PASSWORD: ${{ secrets.GPG_SIGNING_PASSWORD }}
       - name: Create bundle zip
         run: ./gradlew zipStagingRepository
       - name: Upload to Maven Central

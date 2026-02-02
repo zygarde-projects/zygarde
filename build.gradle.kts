@@ -50,6 +50,8 @@ allprojects {
 }
 
 subprojects {
+  version = rootProject.version
+
   if (isPublishingProject()) {
     apply(plugin = "org.gradle.maven-publish")
     apply(plugin = "org.gradle.signing")
