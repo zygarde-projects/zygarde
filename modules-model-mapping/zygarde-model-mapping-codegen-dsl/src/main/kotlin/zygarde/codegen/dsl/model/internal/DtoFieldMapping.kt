@@ -29,6 +29,78 @@ sealed class DtoFieldMapping(
     forceNull = ForceNull.NOT_NULL
   }
 
+  fun notNull(message: String = "") {
+    validations.add(DtoFieldValidation.NotNull(message))
+  }
+
+  fun notBlank(message: String = "") {
+    validations.add(DtoFieldValidation.NotBlank(message))
+  }
+
+  fun notEmpty(message: String = "") {
+    validations.add(DtoFieldValidation.NotEmpty(message))
+  }
+
+  fun email(message: String = "") {
+    validations.add(DtoFieldValidation.Email(message))
+  }
+
+  fun regex(regexp: Regex, message: String = "") {
+    validations.add(DtoFieldValidation.Regex(regexp, message))
+  }
+
+  fun size(min: Int = 0, max: Int = Int.MAX_VALUE, message: String = "") {
+    validations.add(DtoFieldValidation.Size(min, max, message))
+  }
+
+  fun min(value: Long, message: String = "") {
+    validations.add(DtoFieldValidation.Min(value, message))
+  }
+
+  fun max(value: Long, message: String = "") {
+    validations.add(DtoFieldValidation.Max(value, message))
+  }
+
+  fun decimalMin(value: String, inclusive: Boolean = true, message: String = "") {
+    validations.add(DtoFieldValidation.DecimalMin(value, inclusive, message))
+  }
+
+  fun decimalMax(value: String, inclusive: Boolean = true, message: String = "") {
+    validations.add(DtoFieldValidation.DecimalMax(value, inclusive, message))
+  }
+
+  fun positive(message: String = "") {
+    validations.add(DtoFieldValidation.Positive(message))
+  }
+
+  fun positiveOrZero(message: String = "") {
+    validations.add(DtoFieldValidation.PositiveOrZero(message))
+  }
+
+  fun negative(message: String = "") {
+    validations.add(DtoFieldValidation.Negative(message))
+  }
+
+  fun negativeOrZero(message: String = "") {
+    validations.add(DtoFieldValidation.NegativeOrZero(message))
+  }
+
+  fun past(message: String = "") {
+    validations.add(DtoFieldValidation.Past(message))
+  }
+
+  fun pastOrPresent(message: String = "") {
+    validations.add(DtoFieldValidation.PastOrPresent(message))
+  }
+
+  fun future(message: String = "") {
+    validations.add(DtoFieldValidation.Future(message))
+  }
+
+  fun futureOrPresent(message: String = "") {
+    validations.add(DtoFieldValidation.FutureOrPresent(message))
+  }
+
   data class DtoFieldNoMapping(
     override var modelField: ModelMetaField,
     override var dto: CodegenDto,
