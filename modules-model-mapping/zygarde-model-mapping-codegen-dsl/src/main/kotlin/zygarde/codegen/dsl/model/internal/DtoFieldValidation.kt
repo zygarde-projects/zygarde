@@ -22,6 +22,8 @@ sealed class DtoFieldValidation(
   data class Email(
     override val message: String,
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Email::class).build()
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Email::class)
+      .useSiteTarget(AnnotationSpec.UseSiteTarget.FIELD)
+      .build()
   }
 }
