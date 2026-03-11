@@ -1,6 +1,7 @@
 package zygarde.codegen.dsl
 
 import zygarde.codegen.meta.CodegenDto
+import zygarde.codegen.meta.CodegenSealedInterface
 
 abstract class ModelMappingCodegenSpec(buildMapping: ModelMappingCodegenSpec.() -> Unit) : ModelMappingDslCodegen() {
   companion object {
@@ -27,5 +28,9 @@ abstract class ModelMappingCodegenSpec(buildMapping: ModelMappingCodegenSpec.() 
         groupInvokingDto.remove()
       }
     }
+  }
+
+  fun sealedInterface(name: String, dsl: SealedInterfaceSpec.() -> Unit): CodegenSealedInterface {
+    return SealedInterfaceSpec(name).also(dsl).build().also(sealedInterfaces::add)
   }
 }
