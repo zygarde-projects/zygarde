@@ -2,6 +2,7 @@ package zygarde.codegen.dsl.generator
 
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -19,12 +20,16 @@ import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
+import zygarde.codegen.meta.CodegenSealedInterface
 import zygarde.core.annotation.Comment
 import java.io.Serializable
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 
-class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapping>) {
+class DtoFieldMappingCodeGenerator(
+  val dtoFieldMappings: Collection<DtoFieldMapping>,
+  val sealedInterfaces: Collection<CodegenSealedInterface> = emptyList(),
+) {
   val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
   var dtoToExtraToDtoMappingMap = dtoFieldMappings
@@ -35,11 +40,15 @@ class DtoFieldMappingCodeGenerator(val dtoFieldMappings: Collection<DtoFieldMapp
     .associate {
       it.key to it.value.groupBy { it.dto }
     }
+  val dtoToSealedInterface: Map<String, CodegenSealedInterface> = sealedInterfaces
+    .flatMap { sealed -> sealed.subtypes.map { it.dto.name to sealed } }
+    .toMap()
 
   fun generateFileSpec(): DtoFieldMappingGenerateResult {
     return DtoFieldMappingGenerateResult(
       dtoFileSpecs = listOf(
         generateDtos(),
+        generateSealedInterfaces(),
       ).flatten(),
       modelMappingFileSpecs = listOf(
         generateDtoExtraValue(),
@@ -155,6 +164,9 @@ $callDtoStatements
       dto.superInterfaces().forEach { i ->
         dtoClassBuilder.addSuperinterface(i)
       }
+      dtoToSealedInterface[dto.name]?.also { sealed ->
+        dtoClassBuilder.addSuperinterface(ClassName(dtoPackageName, sealed.name))
+      }
 
       dto.annotations().forEach { a ->
         dtoClassBuilder.addAnnotation(a)
@@ -220,6 +232,53 @@ $callDtoStatements
             .build()
         )
         .build()
+    }
+  }
+
+  private fun generateSealedInterfaces(): List<FileSpec> {
+    return sealedInterfaces.map { sealed ->
+      val sealedClassName = ClassName(dtoPackageName, sealed.name)
+      val fileBuilder = FileSpec.builder(dtoPackageName, sealed.name)
+      val interfaceBuilder = TypeSpec.interfaceBuilder(sealedClassName)
+        .addModifiers(KModifier.SEALED)
+
+      // @JsonTypeInfo
+      interfaceBuilder.addAnnotation(
+        AnnotationSpec.builder(ClassName("com.fasterxml.jackson.annotation", "JsonTypeInfo"))
+          .addMember("use = %T.%L", ClassName("com.fasterxml.jackson.annotation", "JsonTypeInfo", "Id"), "NAME")
+          .addMember("property = %S", sealed.discriminatorProperty)
+          .build()
+      )
+
+      // @JsonSubTypes
+      val jsonSubTypesBuilder = AnnotationSpec.builder(ClassName("com.fasterxml.jackson.annotation", "JsonSubTypes"))
+      val subtypeCodeBlock = CodeBlock.builder().add("value = [")
+      sealed.subtypes.forEachIndexed { idx, subtype ->
+        if (idx > 0) subtypeCodeBlock.add(", ")
+        subtypeCodeBlock.add(
+          "%T(value = %T::class, name = %S)",
+          ClassName("com.fasterxml.jackson.annotation", "JsonSubTypes", "Type"),
+          ClassName(dtoPackageName, subtype.dto.name),
+          subtype.discriminatorValue,
+        )
+      }
+      subtypeCodeBlock.add("]")
+      jsonSubTypesBuilder.addMember(subtypeCodeBlock.build())
+      interfaceBuilder.addAnnotation(jsonSubTypesBuilder.build())
+
+      // @Schema
+      val schemaBuilder = AnnotationSpec.builder(Schema::class)
+      val oneOfCodeBlock = CodeBlock.builder().add("oneOf = [")
+      sealed.subtypes.forEachIndexed { idx, subtype ->
+        if (idx > 0) oneOfCodeBlock.add(", ")
+        oneOfCodeBlock.add("%T::class", ClassName(dtoPackageName, subtype.dto.name))
+      }
+      oneOfCodeBlock.add("]")
+      schemaBuilder.addMember(oneOfCodeBlock.build())
+      schemaBuilder.addMember("discriminatorProperty = %S", sealed.discriminatorProperty)
+      interfaceBuilder.addAnnotation(schemaBuilder.build())
+
+      fileBuilder.addType(interfaceBuilder.build()).build()
     }
   }
 
