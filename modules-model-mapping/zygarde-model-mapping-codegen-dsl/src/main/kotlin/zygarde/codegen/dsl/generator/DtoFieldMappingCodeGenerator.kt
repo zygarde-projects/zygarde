@@ -40,15 +40,16 @@ class DtoFieldMappingCodeGenerator(
     .associate {
       it.key to it.value.groupBy { it.dto }
     }
-  val dtoToSealedInterface: Map<String, CodegenSealedInterface> = sealedInterfaces
+  val dtoToSealedInterfaces: Map<String, List<CodegenSealedInterface>> = sealedInterfaces
     .flatMap { sealed -> sealed.subtypes.map { it.dto.name to sealed } }
-    .toMap()
+    .groupBy({ it.first }, { it.second })
 
   fun generateFileSpec(): DtoFieldMappingGenerateResult {
     return DtoFieldMappingGenerateResult(
       dtoFileSpecs = listOf(
         generateDtos(),
         generateSealedInterfaces(),
+        generateObjectSubtypes(),
       ).flatten(),
       modelMappingFileSpecs = listOf(
         generateDtoExtraValue(),
@@ -164,7 +165,7 @@ $callDtoStatements
       dto.superInterfaces().forEach { i ->
         dtoClassBuilder.addSuperinterface(i)
       }
-      dtoToSealedInterface[dto.name]?.also { sealed ->
+      dtoToSealedInterfaces[dto.name]?.forEach { sealed ->
         dtoClassBuilder.addSuperinterface(ClassName(dtoPackageName, sealed.name))
       }
 
@@ -280,6 +281,24 @@ $callDtoStatements
 
       fileBuilder.addType(interfaceBuilder.build()).build()
     }
+  }
+
+  private fun generateObjectSubtypes(): List<FileSpec> {
+    val dtosWithMappings = dtoFieldMappings.map { it.dto.name }.toSet()
+    return dtoToSealedInterfaces
+      .filterKeys { it !in dtosWithMappings }
+      .map { (dtoName, sealedList) ->
+        val dtoClassName = ClassName(dtoPackageName, dtoName)
+        val fileBuilder = FileSpec.builder(dtoPackageName, dtoName)
+        val objectBuilder = TypeSpec.objectBuilder(dtoClassName)
+          .addModifiers(KModifier.DATA)
+          .addAnnotation(Schema::class)
+          .addSuperinterface(Serializable::class)
+        sealedList.forEach { sealed ->
+          objectBuilder.addSuperinterface(ClassName(dtoPackageName, sealed.name))
+        }
+        fileBuilder.addType(objectBuilder.build()).build()
+      }
   }
 
   private fun generateDtoExtraValue(): List<FileSpec> {
