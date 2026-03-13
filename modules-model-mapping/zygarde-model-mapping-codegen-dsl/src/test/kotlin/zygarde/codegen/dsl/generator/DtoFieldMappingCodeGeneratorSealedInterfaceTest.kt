@@ -61,7 +61,60 @@ class DtoFieldMappingCodeGeneratorSealedInterfaceTest {
       sealedInterfaces = listOf(sealed),
     )
 
-    generator.dtoToSealedInterface["SuccessDto"] shouldBe sealed
-    generator.dtoToSealedInterface["FailureDto"] shouldBe null
+    generator.dtoToSealedInterfaces["SuccessDto"] shouldBe listOf(sealed)
+    generator.dtoToSealedInterfaces["FailureDto"] shouldBe null
+  }
+
+  @Test
+  fun `should generate data object subtype for sealed interface when dto has no field mappings`() {
+    val sealed = CodegenSealedInterface(
+      name = "PaymentResult",
+      discriminatorProperty = "type",
+      subtypes = listOf(
+        SealedSubtypeMapping("success", TestDtos.SuccessDto),
+        SealedSubtypeMapping("failure", TestDtos.FailureDto),
+      ),
+    )
+
+    val result = DtoFieldMappingCodeGenerator(
+      dtoFieldMappings = emptyList(),
+      sealedInterfaces = listOf(sealed),
+    ).generateFileSpec()
+
+    val successFile = result.dtoFileSpecs.first { it.name == "SuccessDto" }
+    val successOutput = successFile.toString()
+    successOutput shouldContain "data object SuccessDto"
+    successOutput shouldContain "Serializable"
+    successOutput shouldContain "PaymentResult"
+
+    val failureFile = result.dtoFileSpecs.first { it.name == "FailureDto" }
+    val failureOutput = failureFile.toString()
+    failureOutput shouldContain "data object FailureDto"
+    failureOutput shouldContain "Serializable"
+    failureOutput shouldContain "PaymentResult"
+  }
+
+  @Test
+  fun `should support dto as subtype of multiple sealed interfaces`() {
+    val sealedA = CodegenSealedInterface(
+      name = "ResultA",
+      subtypes = listOf(SealedSubtypeMapping("shared", TestDtos.SuccessDto)),
+    )
+    val sealedB = CodegenSealedInterface(
+      name = "ResultB",
+      subtypes = listOf(SealedSubtypeMapping("shared", TestDtos.SuccessDto)),
+    )
+
+    val result = DtoFieldMappingCodeGenerator(
+      dtoFieldMappings = emptyList(),
+      sealedInterfaces = listOf(sealedA, sealedB),
+    ).generateFileSpec()
+
+    val objectFiles = result.dtoFileSpecs.filter { it.name == "SuccessDto" }
+    objectFiles shouldHaveSize 1
+
+    val output = objectFiles.first().toString()
+    output shouldContain "ResultA"
+    output shouldContain "ResultB"
   }
 }
