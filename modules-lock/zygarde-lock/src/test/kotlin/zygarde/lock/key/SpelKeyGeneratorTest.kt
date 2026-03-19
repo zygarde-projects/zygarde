@@ -67,6 +67,18 @@ class SpelKeyGeneratorTest {
     }
   }
 
+  @Test
+  fun `should work without ConversionService using default`() {
+    val noArgGenerator = SpelKeyGenerator()
+    val method = SampleService::class.java.getMethod("doSomething", String::class.java)
+    val obj = SampleService()
+
+    val keys = noArgGenerator.resolveKeys("", "#p0", obj, method, arrayOf("defaultKey"))
+
+    keys.size shouldBe 1
+    keys[0] shouldBe "defaultKey"
+  }
+
   class SampleService {
     fun doSomething(key: String): String = key
 

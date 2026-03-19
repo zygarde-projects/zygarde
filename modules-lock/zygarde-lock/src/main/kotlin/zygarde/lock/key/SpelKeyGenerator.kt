@@ -7,11 +7,12 @@ import org.springframework.context.expression.AnnotatedElementKey
 import org.springframework.context.expression.CachedExpressionEvaluator
 import org.springframework.context.expression.MethodBasedEvaluationContext
 import org.springframework.core.convert.ConversionService
+import org.springframework.core.convert.support.DefaultConversionService
 import org.springframework.core.convert.TypeDescriptor
 import org.springframework.expression.Expression
 
 open class SpelKeyGenerator(
-  private val conversionService: ConversionService
+  private val conversionService: ConversionService = DefaultConversionService.getSharedInstance()
 ) : CachedExpressionEvaluator(), KeyGenerator {
   protected val conditionCache = ConcurrentHashMap<ExpressionKey, Expression>()
 
