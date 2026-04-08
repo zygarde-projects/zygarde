@@ -4,9 +4,12 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class OptionEnumTest {
-  enum class TestStatus(override val label: String) : OptionEnum {
+  enum class TestStatus(
+    override val label: String,
+    override val active: Boolean = true
+  ) : OptionEnum {
     ACTIVE("Active"),
-    INACTIVE("Inactive"),
+    INACTIVE("Inactive", active = false),
     PENDING("Pending")
   }
 
@@ -36,9 +39,12 @@ class OptionEnumTest {
     dtos.size shouldBe 3
     dtos[0].key shouldBe "ACTIVE"
     dtos[0].label shouldBe "Active"
+    dtos[0].active shouldBe true
     dtos[1].key shouldBe "INACTIVE"
     dtos[1].label shouldBe "Inactive"
+    dtos[1].active shouldBe false
     dtos[2].key shouldBe "PENDING"
     dtos[2].label shouldBe "Pending"
+    dtos[2].active shouldBe true
   }
 }
