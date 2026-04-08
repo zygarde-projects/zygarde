@@ -9,6 +9,7 @@ class ZygardeApiProperties {
   var staticOptionApi = StaticOptionApiProp()
 
   class StaticOptionApiProp(
-    var path: String = "/api/staticOptions"
+    var path: String = "/api/staticOptions",
+    var active: Map<String, Map<String, Boolean>> = emptyMap()
   )
 }

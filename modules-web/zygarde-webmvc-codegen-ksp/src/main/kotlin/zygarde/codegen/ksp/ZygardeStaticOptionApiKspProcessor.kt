@@ -33,6 +33,7 @@ import zygarde.codegen.ksp.extension.fieldName
 import zygarde.codegen.ksp.extension.getArgumentValueAsString
 import zygarde.codegen.ksp.extension.implementsInterface
 import zygarde.codegen.ksp.extension.name
+import zygarde.core.props.ZygardeApiProperties
 import zygarde.data.option.OptionDto
 import zygarde.data.option.OptionEnum
 
@@ -190,18 +191,52 @@ class ZygardeStaticOptionApiKspProcessor(
 
   private fun generateStaticOptionController(elements: List<KSClassDeclaration>): FileSpec {
     val fileSpec = FileSpec.builder(optionControllerPackage, optionControllerName)
+    val zygardeApiPropertiesType = ZygardeApiProperties::class.asClassName()
+    val dtoType = ClassName(optionDtoPackage, optionDtoName)
+
+    val lazyBlock = CodeBlock.builder()
+      .beginControlFlow("lazy")
+      .addStatement("val activeOverrides = zygardeApiProperties.staticOptionApi.active")
+      .add("%T(\n", dtoType)
+    elements.forEachIndexed { index, elem ->
+      val elemTypeName = elem.asType(emptyList()).toTypeName()
+      lazyBlock.add(
+        "  %L = %T.values().map { it.toOptionDto(activeOverrides[%S]) }",
+        elem.fieldName(),
+        elemTypeName,
+        elem.name()
+      )
+      if (index < elements.size - 1) {
+        lazyBlock.add(",\n")
+      } else {
+        lazyBlock.add("\n")
+      }
+    }
+    lazyBlock.add(")\n")
+    lazyBlock.endControlFlow()
+
     val staticOptionControllerBuilder = TypeSpec.classBuilder(optionControllerName)
       .addSuperinterface(ClassName(optionPackage, optionApiName))
       .addAnnotation(RestController::class)
+      .primaryConstructor(
+        FunSpec.constructorBuilder()
+          .addParameter("zygardeApiProperties", zygardeApiPropertiesType)
+          .build()
+      )
       .addProperty(
-        PropertySpec.builder("staticOptionDto", ClassName(optionDtoPackage, optionDtoName), KModifier.PRIVATE)
-          .initializer("%T()", ClassName(optionDtoPackage, optionDtoName))
+        PropertySpec.builder("zygardeApiProperties", zygardeApiPropertiesType, KModifier.PRIVATE)
+          .initializer("zygardeApiProperties")
+          .build()
+      )
+      .addProperty(
+        PropertySpec.builder("staticOptionDto", dtoType, KModifier.PRIVATE)
+          .delegate(lazyBlock.build())
           .build()
       )
       .addFunction(
         FunSpec.builder("getAllStaticOptions")
           .addModifiers(KModifier.OVERRIDE)
-          .returns(ClassName(optionDtoPackage, optionDtoName))
+          .returns(dtoType)
           .addStatement("return staticOptionDto")
           .build()
       )
