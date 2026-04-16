@@ -9,7 +9,6 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import zygarde.codegen.ZyModel
 import zygarde.codegen.ksp.generator.ZygardeEntityFieldKspGenerator
-import zygarde.codegen.ksp.generator.ZygardeJpaDaoExtensionKspGenerator
 import zygarde.codegen.ksp.generator.ZygardeJpaDaoKspGenerator
 
 class ZygardeJpaKspProcessor(
@@ -59,8 +58,6 @@ class ZygardeJpaKspProcessor(
     val elementsForDao = zyModelSymbols.filter { entitySymbols.contains(it) }
     ZygardeJpaDaoKspGenerator(codeGenerator, logger, options)
       .generateDaoForEntityElements(elementsForDao)
-    ZygardeJpaDaoExtensionKspGenerator(codeGenerator, logger, options)
-      .generateDaoExtensionsForEntityElements(elementsForDao)
 
     return emptyList()
   }

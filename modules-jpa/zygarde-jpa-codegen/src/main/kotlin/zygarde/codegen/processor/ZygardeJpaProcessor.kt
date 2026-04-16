@@ -5,7 +5,6 @@ import zygarde.codegen.ZyModel
 import zygarde.codegen.ZygardeJpaCodegenKaptOptions
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.generator.impl.ZygardeEntityFieldGenerator
-import zygarde.codegen.generator.impl.ZygardeJpaDaoExtensionGenerator
 import zygarde.codegen.generator.impl.ZygardeJpaDaoGenerator
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Processor
@@ -55,10 +54,6 @@ class ZygardeJpaProcessor : AbstractProcessor() {
       processingEnv,
       processingEnv.options[ZygardeJpaCodegenKaptOptions.DAO_GENERATE_TO],
     ).generateDaoForEntityElements(entityElements)
-    ZygardeJpaDaoExtensionGenerator(
-      processingEnv,
-      processingEnv.options[ZygardeJpaCodegenKaptOptions.DAO_GENERATE_TO],
-    ).generateDaoExtensionsForEntityElements(entityElements)
     return false
   }
 }
