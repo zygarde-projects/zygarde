@@ -9,6 +9,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
@@ -27,10 +28,10 @@ class ZygardeJpaKspProcessorTest {
     }
     val result = compilation.compile()
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
-    val generatedFileNames = compilation.kspSourcesDir.walkTopDown()
+    val generatedFiles = compilation.kspSourcesDir.walkTopDown()
       .filter { f -> f.isFile && f.extension == "kt" }
-      .map { f -> f.name }
       .toList()
+    val generatedFileNames = generatedFiles.map { it.name }
     generatedFileNames shouldContain "SimpleBookDao.kt"
     generatedFileNames shouldContain "AutoIntIdBookDao.kt"
     generatedFileNames shouldContain "AutoLongIdBookDao.kt"
@@ -38,6 +39,15 @@ class ZygardeJpaKspProcessorTest {
     generatedFileNames shouldContain "SequenceAutoIntIdBookDao.kt"
     generatedFileNames shouldContain "IdClassBookDao.kt"
     generatedFileNames shouldContain "Dao.kt"
+    generatedFileNames shouldContain "SimpleBookDaoExtensions.kt"
+    generatedFileNames shouldContain "AutoIntIdBookDaoExtensions.kt"
+    generatedFileNames shouldContain "AutoLongIdBookDaoExtensions.kt"
+    val simpleBookDaoExtensions = generatedFiles.find { it.name == "SimpleBookDaoExtensions.kt" }!!.readText()
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.search("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchOne("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchCount("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchPage("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchOneOrThrow("
   }
 
   @Test
@@ -59,6 +69,26 @@ class ZygardeJpaKspProcessorTest {
       .forEach { f ->
         f.readText() shouldContain "ZygardeEnhancedDao"
       }
+    val simpleBookDaoExtensions = compilation.kspSourcesDir.walkTopDown()
+      .find { it.name == "SimpleBookDaoExtensions.kt" }!!.readText()
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.remove("
+  }
+
+  @Test
+  fun `should not generate remove when not using ZygardeEnhancedDao`() {
+    val compilation = KotlinCompilation().apply {
+      sources = listOf(
+        ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
+      ).map { SourceFile.fromPath(it) }
+      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      inheritClassPath = true
+      messageOutputStream = System.out
+    }
+    val result = compilation.compile()
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+    val simpleBookDaoExtensions = compilation.kspSourcesDir.walkTopDown()
+      .find { it.name == "SimpleBookDaoExtensions.kt" }!!.readText()
+    simpleBookDaoExtensions shouldNotContain "fun SimpleBookDao.remove("
   }
 
   @Test

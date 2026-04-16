@@ -5,6 +5,7 @@ import zygarde.codegen.ZyModel
 import zygarde.codegen.ZygardeJpaCodegenKaptOptions
 import zygarde.codegen.ZygardeKaptOptions
 import zygarde.codegen.generator.impl.ZygardeEntityFieldGenerator
+import zygarde.codegen.generator.impl.ZygardeJpaDaoExtensionGenerator
 import zygarde.codegen.generator.impl.ZygardeJpaDaoGenerator
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Processor
@@ -49,12 +50,15 @@ class ZygardeJpaProcessor : AbstractProcessor() {
           elementsAnnotatedWithMappedSuperclass.contains(it)
       }
     )
+    val entityElements = elementsAnnotatedWithZyModel.filter { elementsAnnotatedWithEntity.contains(it) }
     ZygardeJpaDaoGenerator(
       processingEnv,
       processingEnv.options[ZygardeJpaCodegenKaptOptions.DAO_GENERATE_TO],
-    ).generateDaoForEntityElements(
-      elementsAnnotatedWithZyModel.filter { elementsAnnotatedWithEntity.contains(it) }
-    )
+    ).generateDaoForEntityElements(entityElements)
+    ZygardeJpaDaoExtensionGenerator(
+      processingEnv,
+      processingEnv.options[ZygardeJpaCodegenKaptOptions.DAO_GENERATE_TO],
+    ).generateDaoExtensionsForEntityElements(entityElements)
     return false
   }
 }

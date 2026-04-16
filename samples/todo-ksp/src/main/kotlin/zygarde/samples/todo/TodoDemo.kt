@@ -14,7 +14,7 @@ import zygarde.codegen.StaticOptionApi
 import zygarde.codegen.ZyApi
 import zygarde.codegen.ZyModel
 import zygarde.codegen.value.AutoIntIdValueProvider
-import zygarde.data.jpa.dao.search
+import zygarde.samples.todo.generated.dao.search
 import zygarde.data.jpa.entity.AutoIntIdEntity
 import zygarde.data.option.OptionEnum
 import zygarde.samples.todo.generated.dao.TodoDao

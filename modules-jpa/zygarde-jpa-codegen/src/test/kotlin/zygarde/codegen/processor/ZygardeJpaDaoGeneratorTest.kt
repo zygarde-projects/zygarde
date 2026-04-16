@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
@@ -35,6 +36,15 @@ class ZygardeJpaDaoGeneratorTest {
     generatedFileNames shouldContain "SequenceAutoIntIdBookDao.kt"
     generatedFileNames shouldContain "IdClassBookDao.kt"
     generatedFileNames shouldContain "Dao.kt"
+    generatedFileNames shouldContain "SimpleBookDaoExtensions.kt"
+    generatedFileNames shouldContain "AutoIntIdBookDaoExtensions.kt"
+    generatedFileNames shouldContain "AutoLongIdBookDaoExtensions.kt"
+    val simpleBookDaoExtensions = result.generatedFiles.find { it.name == "SimpleBookDaoExtensions.kt" }!!.readText()
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.search("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchOne("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchCount("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchPage("
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchOneOrThrow("
   }
 
   @Test
@@ -54,6 +64,24 @@ class ZygardeJpaDaoGeneratorTest {
     result.generatedFiles.filter { it.name.endsWith("Dao") }.forEach {
       it.readText() shouldContain "ZygardeEnhancedDao"
     }
+    val simpleBookDaoExtensions = result.generatedFiles.find { it.name == "SimpleBookDaoExtensions.kt" }!!.readText()
+    simpleBookDaoExtensions shouldContain "fun SimpleBookDao.remove("
+  }
+
+  @Test
+  fun `should not generate remove when not using ZygardeEnhancedDao`() {
+    val result = KotlinCompilation().apply {
+      sources = listOf(
+        ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
+      ).map { SourceFile.fromPath(it) }
+      jvmTarget = JvmTarget.JVM_17.description
+      annotationProcessors = listOf(ZygardeJpaProcessor())
+      inheritClassPath = true
+      messageOutputStream = System.out
+    }.compile()
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+    val simpleBookDaoExtensions = result.generatedFiles.find { it.name == "SimpleBookDaoExtensions.kt" }!!.readText()
+    simpleBookDaoExtensions shouldNotContain "fun SimpleBookDao.remove("
   }
 
   @Test
