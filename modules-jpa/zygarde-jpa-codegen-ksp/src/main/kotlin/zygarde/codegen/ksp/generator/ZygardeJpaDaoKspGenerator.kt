@@ -7,8 +7,10 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
@@ -94,6 +96,16 @@ class ZygardeJpaDaoKspGenerator(
         .build()
         .writeTo(codeGenerator, aggregating = false)
 
+      // Detect scope fields from @ScopeMarker interfaces
+      val scopeFields = collectScopeFields(element)
+      val scopeClassName = if (scopeFields.isNotEmpty()) {
+        val scopeType = ClassName(daoPackage, "${entityName}Scope")
+        generateScopeDataClass(daoPackage, entityName, scopeFields)
+        scopeType
+      } else {
+        null
+      }
+
       val searchContentType = searchContentLambdaType(entityTypeName)
       buildExtensionFileSpec(
         daoPackage,
@@ -104,6 +116,8 @@ class ZygardeJpaDaoKspGenerator(
         toSpringDataSort,
         toSpringDataPageRequest,
         generateRemove,
+        scopeClassName,
+        scopeFields,
       ).build().writeTo(codeGenerator, aggregating = false)
     }
 
@@ -141,6 +155,116 @@ class ZygardeJpaDaoKspGenerator(
     }
   }
 
+  private data class ScopeFieldInfo(
+    val name: String,
+    val typeName: TypeName,
+    val nullable: Boolean,
+    val nullEquivalent: String?,
+  )
+
+  private fun collectScopeFields(element: KSClassDeclaration): List<ScopeFieldInfo> {
+    val fields = mutableMapOf<String, ScopeFieldInfo>()
+    collectScopeFieldsRecursive(element, fields)
+    return fields.values.toList()
+  }
+
+  private fun collectScopeFieldsRecursive(
+    declaration: KSClassDeclaration,
+    result: MutableMap<String, ScopeFieldInfo>,
+  ) {
+    declaration.superTypes.forEach { superTypeRef ->
+      val superType = superTypeRef.resolve()
+      val superDeclaration = superType.declaration
+      if (superDeclaration is KSClassDeclaration) {
+        val scopeMarkerAnnotation = superDeclaration.annotations.find {
+          it.shortName.asString() == "ScopeMarker"
+        }
+        if (scopeMarkerAnnotation != null) {
+          superDeclaration.getAllProperties().forEach { prop ->
+            val propName = prop.simpleName.asString()
+            val propType = prop.type.resolve()
+            val isNullable = propType.isMarkedNullable
+            val nullEquivalentAnnotation = prop.annotations.find {
+              it.shortName.asString() == "NullEquivalent"
+            } ?: prop.getter?.annotations?.find {
+              it.shortName.asString() == "NullEquivalent"
+            }
+            val nullEquivalent = nullEquivalentAnnotation
+              ?.arguments?.find { it.name?.asString() == "value" }?.value as? String
+            val typeName = propType.toTypeName().copy(nullable = false)
+            result.putIfAbsent(
+              propName,
+              ScopeFieldInfo(
+                name = propName,
+                typeName = typeName,
+                nullable = isNullable || nullEquivalent != null,
+                nullEquivalent = nullEquivalent,
+              )
+            )
+          }
+        }
+        // Recurse into super types
+        collectScopeFieldsRecursive(superDeclaration, result)
+      }
+    }
+  }
+
+  private fun generateScopeDataClass(
+    daoPackage: String,
+    entityName: String,
+    fields: List<ScopeFieldInfo>,
+  ) {
+    val scopeClassName = "${entityName}Scope"
+    val collectionType = Collection::class.asClassName()
+
+    val primaryConstructor = FunSpec.constructorBuilder()
+    val properties = mutableListOf<PropertySpec>()
+
+    fields.forEach { field ->
+      val collectionOfField = collectionType.parameterizedBy(field.typeName)
+      val paramType = if (field.nullable) collectionOfField.copy(nullable = true) else collectionOfField
+      primaryConstructor.addParameter(
+        ParameterSpec.builder(field.name, paramType)
+          .also { if (field.nullable) it.defaultValue("null") }
+          .build()
+      )
+      properties.add(
+        PropertySpec.builder(field.name, paramType)
+          .initializer(field.name)
+          .build()
+      )
+    }
+
+    val convenienceConstructor = FunSpec.constructorBuilder()
+    val convenienceThisArgs = mutableListOf<CodeBlock>()
+    fields.forEach { field ->
+      val singleType = if (field.nullable) field.typeName.copy(nullable = true) else field.typeName
+      convenienceConstructor.addParameter(
+        ParameterSpec.builder(field.name, singleType)
+          .also { if (field.nullable) it.defaultValue("null") }
+          .build()
+      )
+      if (field.nullable) {
+        convenienceThisArgs.add(CodeBlock.of("${field.name} = ${field.name}?.let { listOf(it) }"))
+      } else {
+        convenienceThisArgs.add(CodeBlock.of("${field.name} = listOf(${field.name})"))
+      }
+    }
+    convenienceConstructor.callThisConstructor(convenienceThisArgs)
+
+    val typeSpec = TypeSpec.classBuilder(scopeClassName)
+      .addModifiers(KModifier.DATA)
+      .primaryConstructor(primaryConstructor.build())
+      .addProperties(properties)
+      .addFunction(convenienceConstructor.build())
+      .build()
+
+    FileSpec.builder(daoPackage, scopeClassName)
+      .addType(typeSpec)
+      .build()
+      .writeTo(codeGenerator, aggregating = false)
+  }
+
   private fun buildExtensionFileSpec(
     daoPackage: String,
     daoName: String,
@@ -150,9 +274,142 @@ class ZygardeJpaDaoKspGenerator(
     toSpringDataSort: MemberName,
     toSpringDataPageRequest: MemberName,
     generateRemove: Boolean,
+    scopeClassName: ClassName?,
+    scopeFields: List<ScopeFieldInfo>,
   ): FileSpec.Builder {
     val fileSpec = FileSpec.builder(daoPackage, "${daoName}Extensions")
-      .addFunction(
+
+    if (scopeClassName != null) {
+      val scopeParam = ParameterSpec.builder("scope", scopeClassName).build()
+      val defaultSearchContent = ParameterSpec.builder("searchContent", searchContentType)
+        .defaultValue("{}")
+        .build()
+
+      fileSpec.addFunction(
+        FunSpec.builder("search")
+          .receiver(daoType)
+          .addParameter(scopeParam)
+          .addParameter(defaultSearchContent)
+          .returns(List::class.asClassName().parameterizedBy(entityType))
+          .addCode(buildScopedSearchBody(entityType, scopeFields, "findAll(%T.buildSpec(searchContent))", SearchSpecBuilder::class))
+          .build()
+      )
+
+      fileSpec.addFunction(
+        FunSpec.builder("search")
+          .receiver(daoType)
+          .addParameter(scopeParam)
+          .addParameter(
+            "sorts",
+            List::class.asClassName().parameterizedBy(SortField::class.asClassName()).copy(nullable = true)
+          )
+          .addParameter("searchContent", searchContentType)
+          .returns(List::class.asClassName().parameterizedBy(entityType))
+          .addCode(
+            buildScopedSearchBody(
+              entityType,
+              scopeFields,
+              "sorts?.let { findAll(%T.buildSpec(searchContent), it.%M()) } ?: findAll(%T.buildSpec(searchContent))",
+              SearchSpecBuilder::class,
+              toSpringDataSort,
+              SearchSpecBuilder::class,
+            )
+          )
+          .build()
+      )
+
+      fileSpec.addFunction(
+        FunSpec.builder("search")
+          .receiver(daoType)
+          .addParameter(scopeParam)
+          .addParameter("searchContent", searchContentType)
+          .addParameter("limit", Int::class)
+          .returns(List::class.asClassName().parameterizedBy(entityType))
+          .addCode(
+            buildScopedSearchBody(
+              entityType,
+              scopeFields,
+              "findAll(%T.buildSpec(searchContent), %T.of(0, limit)).content",
+              SearchSpecBuilder::class,
+              PageRequest::class
+            )
+          )
+          .build()
+      )
+
+      fileSpec.addFunction(
+        FunSpec.builder("searchCount")
+          .receiver(daoType)
+          .addParameter(scopeParam)
+          .addParameter(defaultSearchContent)
+          .returns(Long::class)
+          .addCode(buildScopedSearchBody(entityType, scopeFields, "count(%T.buildSpec(searchContent))", SearchSpecBuilder::class))
+          .build()
+      )
+
+      fileSpec.addFunction(
+        FunSpec.builder("searchOne")
+          .receiver(daoType)
+          .addParameter(scopeParam)
+          .addParameter(defaultSearchContent)
+          .returns(entityType.copy(nullable = true))
+          .addCode(
+            buildScopedSearchBody(
+              entityType,
+              scopeFields,
+              "findOne(%T.buildSpec(searchContent)).let { if (it.isPresent) it.get() else null }",
+              SearchSpecBuilder::class,
+            )
+          )
+          .build()
+      )
+
+      fileSpec.addFunction(
+        FunSpec.builder("searchOneOrThrow")
+          .receiver(daoType)
+          .addParameter(scopeParam)
+          .addParameter("errorCode", ErrorCode::class)
+          .addParameter(defaultSearchContent)
+          .returns(entityType)
+          .addStatement(
+            "return searchOne(scope, searchContent) ?: throw %T(errorCode)",
+            BusinessException::class,
+          )
+          .build()
+      )
+
+      fileSpec.addFunction(
+        FunSpec.builder("searchPage")
+          .receiver(daoType)
+          .addParameter(scopeParam)
+          .addParameter("req", PagingAndSortingRequest::class)
+          .addParameter(defaultSearchContent)
+          .returns(Page::class.asClassName().parameterizedBy(entityType))
+          .addCode(
+            buildScopedSearchBody(
+              entityType,
+              scopeFields,
+              "findAll(%T.buildSpec(searchContent), req.%M())",
+              SearchSpecBuilder::class,
+              toSpringDataPageRequest,
+            )
+          )
+          .build()
+      )
+
+      if (generateRemove) {
+        fileSpec.addFunction(
+          FunSpec.builder("remove")
+            .receiver(daoType)
+            .addParameter(scopeParam)
+            .addParameter(defaultSearchContent)
+            .returns(Int::class)
+            .addCode(buildScopedSearchBody(entityType, scopeFields, "delete(%T.buildSpec(searchContent))", SearchSpecBuilder::class))
+            .build()
+        )
+      }
+    } else {
+      fileSpec.addFunction(
         FunSpec.builder("search")
           .receiver(daoType)
           .addParameter("searchContent", searchContentType)
@@ -160,92 +417,145 @@ class ZygardeJpaDaoKspGenerator(
           .addStatement("return findAll(%T.buildSpec(searchContent))", SearchSpecBuilder::class)
           .build()
       )
-      .addFunction(
-        FunSpec.builder("search")
-          .receiver(daoType)
-          .addParameter(
-            "sorts",
-            List::class.asClassName().parameterizedBy(SortField::class.asClassName()).copy(nullable = true)
-          )
-          .addParameter("searchContent", searchContentType)
-          .returns(List::class.asClassName().parameterizedBy(entityType))
-          .addStatement(
-            "return sorts?.let { findAll(%T.buildSpec(searchContent), it.%M()) } ?: search(searchContent)",
-            SearchSpecBuilder::class,
-            toSpringDataSort,
-          )
-          .build()
-      )
-      .addFunction(
-        FunSpec.builder("search")
-          .receiver(daoType)
-          .addParameter("searchContent", searchContentType)
-          .addParameter("limit", Int::class)
-          .returns(List::class.asClassName().parameterizedBy(entityType))
-          .addStatement(
-            "return findAll(%T.buildSpec(searchContent), %T.of(0, limit)).content",
-            SearchSpecBuilder::class,
-            PageRequest::class,
-          )
-          .build()
-      )
-      .addFunction(
-        FunSpec.builder("searchCount")
-          .receiver(daoType)
-          .addParameter("searchContent", searchContentType)
-          .returns(Long::class)
-          .addStatement("return count(%T.buildSpec(searchContent))", SearchSpecBuilder::class)
-          .build()
-      )
-      .addFunction(
-        FunSpec.builder("searchOne")
-          .receiver(daoType)
-          .addParameter("searchContent", searchContentType)
-          .returns(entityType.copy(nullable = true))
-          .addStatement(
-            "return findOne(%T.buildSpec(searchContent)).let { if (it.isPresent) it.get() else null }",
-            SearchSpecBuilder::class,
-          )
-          .build()
-      )
-      .addFunction(
-        FunSpec.builder("searchOneOrThrow")
-          .receiver(daoType)
-          .addParameter("errorCode", ErrorCode::class)
-          .addParameter("searchContent", searchContentType)
-          .returns(entityType)
-          .addStatement(
-            "return searchOne(searchContent) ?: throw %T(errorCode)",
-            BusinessException::class,
-          )
-          .build()
-      )
-      .addFunction(
-        FunSpec.builder("searchPage")
-          .receiver(daoType)
-          .addParameter("req", PagingAndSortingRequest::class)
-          .addParameter("searchContent", searchContentType)
-          .returns(Page::class.asClassName().parameterizedBy(entityType))
-          .addStatement(
-            "return findAll(%T.buildSpec(searchContent), req.%M())",
-            SearchSpecBuilder::class,
-            toSpringDataPageRequest,
-          )
-          .build()
-      )
+        .addFunction(
+          FunSpec.builder("search")
+            .receiver(daoType)
+            .addParameter(
+              "sorts",
+              List::class.asClassName().parameterizedBy(SortField::class.asClassName()).copy(nullable = true)
+            )
+            .addParameter("searchContent", searchContentType)
+            .returns(List::class.asClassName().parameterizedBy(entityType))
+            .addStatement(
+              "return sorts?.let { findAll(%T.buildSpec(searchContent), it.%M()) } ?: search(searchContent)",
+              SearchSpecBuilder::class,
+              toSpringDataSort,
+            )
+            .build()
+        )
+        .addFunction(
+          FunSpec.builder("search")
+            .receiver(daoType)
+            .addParameter("searchContent", searchContentType)
+            .addParameter("limit", Int::class)
+            .returns(List::class.asClassName().parameterizedBy(entityType))
+            .addStatement(
+              "return findAll(%T.buildSpec(searchContent), %T.of(0, limit)).content",
+              SearchSpecBuilder::class,
+              PageRequest::class,
+            )
+            .build()
+        )
+        .addFunction(
+          FunSpec.builder("searchCount")
+            .receiver(daoType)
+            .addParameter("searchContent", searchContentType)
+            .returns(Long::class)
+            .addStatement("return count(%T.buildSpec(searchContent))", SearchSpecBuilder::class)
+            .build()
+        )
+        .addFunction(
+          FunSpec.builder("searchOne")
+            .receiver(daoType)
+            .addParameter("searchContent", searchContentType)
+            .returns(entityType.copy(nullable = true))
+            .addStatement(
+              "return findOne(%T.buildSpec(searchContent)).let { if (it.isPresent) it.get() else null }",
+              SearchSpecBuilder::class,
+            )
+            .build()
+        )
+        .addFunction(
+          FunSpec.builder("searchOneOrThrow")
+            .receiver(daoType)
+            .addParameter("errorCode", ErrorCode::class)
+            .addParameter("searchContent", searchContentType)
+            .returns(entityType)
+            .addStatement(
+              "return searchOne(searchContent) ?: throw %T(errorCode)",
+              BusinessException::class,
+            )
+            .build()
+        )
+        .addFunction(
+          FunSpec.builder("searchPage")
+            .receiver(daoType)
+            .addParameter("req", PagingAndSortingRequest::class)
+            .addParameter("searchContent", searchContentType)
+            .returns(Page::class.asClassName().parameterizedBy(entityType))
+            .addStatement(
+              "return findAll(%T.buildSpec(searchContent), req.%M())",
+              SearchSpecBuilder::class,
+              toSpringDataPageRequest,
+            )
+            .build()
+        )
 
-    if (generateRemove) {
-      fileSpec.addFunction(
-        FunSpec.builder("remove")
-          .receiver(daoType)
-          .addParameter("searchContent", searchContentType)
-          .returns(Int::class)
-          .addStatement("return delete(%T.buildSpec(searchContent))", SearchSpecBuilder::class)
-          .build()
-      )
+      if (generateRemove) {
+        fileSpec.addFunction(
+          FunSpec.builder("remove")
+            .receiver(daoType)
+            .addParameter("searchContent", searchContentType)
+            .returns(Int::class)
+            .addStatement("return delete(%T.buildSpec(searchContent))", SearchSpecBuilder::class)
+            .build()
+        )
+      }
     }
 
     return fileSpec
+  }
+
+  private fun buildScopedSearchBody(
+    entityType: TypeName,
+    scopeFields: List<ScopeFieldInfo>,
+    returnStatement: String,
+    vararg returnArgs: Any,
+  ): CodeBlock {
+    val builder = CodeBlock.builder()
+    builder.addStatement("val originalSearchContent = searchContent")
+    builder.beginControlFlow(
+      "val searchContent: %T.() -> %T = ",
+      EnhancedSearch::class.asClassName().parameterizedBy(entityType),
+      UNIT,
+    )
+
+    scopeFields.forEach { field ->
+      if (field.nullEquivalent != null) {
+        if (field.nullable) {
+          builder.beginControlFlow("scope.${field.name}?.let { scopeValues ->")
+          builder.beginControlFlow("if (scopeValues.any { it.toString() == %S })", field.nullEquivalent)
+          builder.beginControlFlow("or")
+          builder.addStatement("field<%T>(%S) inList scopeValues", field.typeName, field.name)
+          builder.addStatement("field<%T>(%S).isNull()", field.typeName, field.name)
+          builder.endControlFlow()
+          builder.nextControlFlow("else")
+          builder.addStatement("field<%T>(%S) inList scopeValues", field.typeName, field.name)
+          builder.endControlFlow()
+          builder.endControlFlow()
+        } else {
+          builder.beginControlFlow("scope.${field.name}.let { scopeValues ->")
+          builder.beginControlFlow("if (scopeValues.any { it.toString() == %S })", field.nullEquivalent)
+          builder.beginControlFlow("or")
+          builder.addStatement("field<%T>(%S) inList scopeValues", field.typeName, field.name)
+          builder.addStatement("field<%T>(%S).isNull()", field.typeName, field.name)
+          builder.endControlFlow()
+          builder.nextControlFlow("else")
+          builder.addStatement("field<%T>(%S) inList scopeValues", field.typeName, field.name)
+          builder.endControlFlow()
+          builder.endControlFlow()
+        }
+      } else if (field.nullable) {
+        builder.addStatement("scope.${field.name}?.let { field<%T>(%S) inList it }", field.typeName, field.name)
+      } else {
+        builder.addStatement("field<%T>(%S) inList scope.${field.name}", field.typeName, field.name)
+      }
+    }
+
+    builder.addStatement("originalSearchContent()")
+    builder.endControlFlow()
+    builder.addStatement("return $returnStatement", *returnArgs)
+    return builder.build()
   }
 
   private fun searchContentLambdaType(entityType: TypeName): LambdaTypeName {
