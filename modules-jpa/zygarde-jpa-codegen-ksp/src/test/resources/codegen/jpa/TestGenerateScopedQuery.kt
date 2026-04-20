@@ -84,3 +84,16 @@ class UnscopedByEmptyMarker(
   @Id
   var id: Long,
 ) : EmptyScopeMarker
+
+/**
+ * Regression fixture: long class name forces KotlinPoet to wrap the generated
+ * scoped sorted-search body. A wrap between `.let` and `{` would break the
+ * generated file compilation.
+ */
+@ZyModel
+@Entity
+class VeryLongEntityNameScopedRegressionEntityForDaoExtensions(
+  @Id
+  var id: Long,
+  override val regionId: Long = 0,
+) : RegionScoped
