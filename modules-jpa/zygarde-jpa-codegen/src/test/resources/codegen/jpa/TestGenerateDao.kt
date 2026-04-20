@@ -52,3 +52,16 @@ class IdClassBook(
 class SequenceBook(
   var name: String = ""
 ) : SequenceIntIdEntity()
+
+/**
+ * Regression fixture for KotlinPoet line-wrapping in generated DAO extensions.
+ * The long class name forces the generated `search(sorts, searchContent)` body
+ * past KotlinPoet's default wrap column so any wrap between `.let` and `{`
+ * would break compilation of the generated file.
+ */
+@ZyModel
+@Entity
+class VeryLongEntityNameForceWrapRegressionBookForDaoExtensions(
+  @Id
+  var id: Long
+)

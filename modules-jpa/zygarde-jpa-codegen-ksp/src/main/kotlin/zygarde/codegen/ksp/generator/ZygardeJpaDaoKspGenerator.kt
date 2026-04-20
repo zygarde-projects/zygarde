@@ -245,7 +245,7 @@ class ZygardeJpaDaoKspGenerator(
           .build()
       )
       if (field.nullable) {
-        convenienceThisArgs.add(CodeBlock.of("${field.name} = ${field.name}?.let { listOf(it) }"))
+        convenienceThisArgs.add(CodeBlock.of("${field.name} = ${field.name}?.let·{ listOf(it) }"))
       } else {
         convenienceThisArgs.add(CodeBlock.of("${field.name} = listOf(${field.name})"))
       }
@@ -309,7 +309,7 @@ class ZygardeJpaDaoKspGenerator(
             buildScopedSearchBody(
               entityType,
               scopeFields,
-              "sorts?.let { findAll(%T.buildSpec(searchContent), it.%M()) } ?: findAll(%T.buildSpec(searchContent))",
+              "sorts?.let·{ findAll(%T.buildSpec(searchContent), it.%M()) } ?: findAll(%T.buildSpec(searchContent))",
               SearchSpecBuilder::class,
               toSpringDataSort,
               SearchSpecBuilder::class,
@@ -357,7 +357,7 @@ class ZygardeJpaDaoKspGenerator(
             buildScopedSearchBody(
               entityType,
               scopeFields,
-              "findOne(%T.buildSpec(searchContent)).let { if (it.isPresent) it.get() else null }",
+              "findOne(%T.buildSpec(searchContent)).let·{ if (it.isPresent) it.get() else null }",
               SearchSpecBuilder::class,
             )
           )
@@ -427,7 +427,7 @@ class ZygardeJpaDaoKspGenerator(
             .addParameter("searchContent", searchContentType)
             .returns(List::class.asClassName().parameterizedBy(entityType))
             .addStatement(
-              "return sorts?.let { findAll(%T.buildSpec(searchContent), it.%M()) } ?: search(searchContent)",
+              "return sorts?.let·{ findAll(%T.buildSpec(searchContent), it.%M()) } ?: search(searchContent)",
               SearchSpecBuilder::class,
               toSpringDataSort,
             )
@@ -460,7 +460,7 @@ class ZygardeJpaDaoKspGenerator(
             .addParameter("searchContent", searchContentType)
             .returns(entityType.copy(nullable = true))
             .addStatement(
-              "return findOne(%T.buildSpec(searchContent)).let { if (it.isPresent) it.get() else null }",
+              "return findOne(%T.buildSpec(searchContent)).let·{ if (it.isPresent) it.get() else null }",
               SearchSpecBuilder::class,
             )
             .build()
@@ -523,7 +523,7 @@ class ZygardeJpaDaoKspGenerator(
     scopeFields.forEach { field ->
       if (field.nullEquivalent != null) {
         if (field.nullable) {
-          builder.beginControlFlow("scope.${field.name}?.let { scopeValues ->")
+          builder.beginControlFlow("scope.${field.name}?.let·{ scopeValues ->")
           builder.beginControlFlow("if (scopeValues.any { it.toString() == %S })", field.nullEquivalent)
           builder.beginControlFlow("or")
           builder.addStatement("field<%T>(%S) inList scopeValues", field.typeName, field.name)
@@ -534,7 +534,7 @@ class ZygardeJpaDaoKspGenerator(
           builder.endControlFlow()
           builder.endControlFlow()
         } else {
-          builder.beginControlFlow("scope.${field.name}.let { scopeValues ->")
+          builder.beginControlFlow("scope.${field.name}.let·{ scopeValues ->")
           builder.beginControlFlow("if (scopeValues.any { it.toString() == %S })", field.nullEquivalent)
           builder.beginControlFlow("or")
           builder.addStatement("field<%T>(%S) inList scopeValues", field.typeName, field.name)
@@ -546,7 +546,7 @@ class ZygardeJpaDaoKspGenerator(
           builder.endControlFlow()
         }
       } else if (field.nullable) {
-        builder.addStatement("scope.${field.name}?.let { field<%T>(%S) inList it }", field.typeName, field.name)
+        builder.addStatement("scope.${field.name}?.let·{ field<%T>(%S) inList it }", field.typeName, field.name)
       } else {
         builder.addStatement("field<%T>(%S) inList scope.${field.name}", field.typeName, field.name)
       }
