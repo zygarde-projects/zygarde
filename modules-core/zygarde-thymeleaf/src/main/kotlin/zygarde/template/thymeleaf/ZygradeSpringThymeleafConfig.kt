@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.thymeleaf.TemplateEngine
-import org.thymeleaf.spring5.dialect.SpringStandardDialect
+import org.thymeleaf.spring6.dialect.SpringStandardDialect
 import org.thymeleaf.templateresolver.StringTemplateResolver
 import zygarde.template.thymeleaf.impl.TemplateServiceImpl
 

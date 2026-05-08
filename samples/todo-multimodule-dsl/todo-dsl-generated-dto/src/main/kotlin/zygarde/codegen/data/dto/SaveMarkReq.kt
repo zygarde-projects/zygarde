@@ -2,8 +2,8 @@ package zygarde.codegen.`data`.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.io.Serializable
-import javax.validation.constraints.DecimalMax
-import javax.validation.constraints.NotEmpty
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.NotEmpty
 import kotlin.Int
 import kotlin.String
 

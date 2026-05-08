@@ -49,8 +49,8 @@ import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.type.ExecutableType
-import javax.persistence.Id
-import javax.persistence.IdClass
+import jakarta.persistence.Id
+import jakarta.persistence.IdClass
 
 class ZygardeJpaDaoGenerator(
   processingEnv: ProcessingEnvironment,
@@ -403,7 +403,7 @@ class ZygardeJpaDaoGenerator(
             .receiver(daoType)
             .addParameter(scopeParam)
             .addParameter(defaultSearchContent)
-            .returns(Int::class)
+            .returns(Long::class)
             .addCode(buildScopedSearchBody(entityType, scopeFields, "delete(%T.buildSpec(searchContent))", SearchSpecBuilder::class))
             .build()
         )
@@ -497,7 +497,7 @@ class ZygardeJpaDaoGenerator(
           FunSpec.builder("remove")
             .receiver(daoType)
             .addParameter("searchContent", searchContentType)
-            .returns(Int::class)
+            .returns(Long::class)
             .addStatement("return delete(%T.buildSpec(searchContent))", SearchSpecBuilder::class)
             .build()
         )

@@ -9,8 +9,8 @@ buildscript {
 plugins {
   id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
   id("io.gitlab.arturbosch.detekt") version "1.23.5"
-  id("org.springframework.boot") version "2.7.18"
-  id("io.spring.dependency-management") version "1.1.3"
+  id("org.springframework.boot") version "3.5.14"
+  id("io.spring.dependency-management") version "1.1.4"
   id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
   kotlin("jvm") version "1.9.25"
   kotlin("plugin.spring") version "1.9.25"
@@ -124,18 +124,21 @@ subprojects {
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2021.0.9")
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.0.2")
     }
   }
 
   configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+      languageVersion.set(JavaLanguageVersion.of(21))
+    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
   }
 
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      jvmTarget = "17"
+      jvmTarget = "21"
     }
   }
 
@@ -143,9 +146,9 @@ subprojects {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("io.kotest:kotest-assertions-shared-jvm:5.8.0")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.8.0")
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("io.kotest:kotest-assertions-shared-jvm:5.9.0")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.0")
+    testImplementation("io.mockk:mockk:1.13.10")
   }
 
   configurations.all {
@@ -173,7 +176,7 @@ subprojects {
   }
 
   jacoco {
-    toolVersion = "0.8.11"
+    toolVersion = "0.8.12"
   }
 
   tasks.withType<JacocoReport> {

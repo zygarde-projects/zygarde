@@ -1,7 +1,7 @@
 package zygarde.codegen.dsl.model.internal
 
 import com.squareup.kotlinpoet.AnnotationSpec
-import javax.validation.constraints.Pattern
+import jakarta.validation.constraints.Pattern
 
 sealed class DtoFieldValidation(
   open val message: String,
@@ -28,7 +28,7 @@ sealed class DtoFieldValidation(
   data class Email(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Email::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Email::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -37,7 +37,7 @@ sealed class DtoFieldValidation(
   data class NotNull(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.NotNull::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.NotNull::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -46,7 +46,7 @@ sealed class DtoFieldValidation(
   data class NotBlank(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.NotBlank::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.NotBlank::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -55,7 +55,7 @@ sealed class DtoFieldValidation(
   data class NotEmpty(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.NotEmpty::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.NotEmpty::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -66,7 +66,7 @@ sealed class DtoFieldValidation(
     val max: Int = Int.MAX_VALUE,
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Size::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Size::class)
       .fieldTarget()
       .addMember("min=%L", min)
       .addMember("max=%L", max)
@@ -78,7 +78,7 @@ sealed class DtoFieldValidation(
     val value: Long,
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Min::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Min::class)
       .fieldTarget()
       .addMember("value=%LL", value)
       .withMessage(message)
@@ -89,7 +89,7 @@ sealed class DtoFieldValidation(
     val value: Long,
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Max::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Max::class)
       .fieldTarget()
       .addMember("value=%LL", value)
       .withMessage(message)
@@ -101,7 +101,7 @@ sealed class DtoFieldValidation(
     val inclusive: Boolean = true,
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.DecimalMin::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.DecimalMin::class)
       .fieldTarget()
       .addMember("value=%S", value)
       .addMember("inclusive=%L", inclusive)
@@ -114,7 +114,7 @@ sealed class DtoFieldValidation(
     val inclusive: Boolean = true,
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.DecimalMax::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.DecimalMax::class)
       .fieldTarget()
       .addMember("value=%S", value)
       .addMember("inclusive=%L", inclusive)
@@ -125,7 +125,7 @@ sealed class DtoFieldValidation(
   data class Positive(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Positive::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Positive::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -134,7 +134,7 @@ sealed class DtoFieldValidation(
   data class PositiveOrZero(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.PositiveOrZero::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.PositiveOrZero::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -143,7 +143,7 @@ sealed class DtoFieldValidation(
   data class Negative(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Negative::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Negative::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -152,7 +152,7 @@ sealed class DtoFieldValidation(
   data class NegativeOrZero(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.NegativeOrZero::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.NegativeOrZero::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -161,7 +161,7 @@ sealed class DtoFieldValidation(
   data class Past(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Past::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Past::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -170,7 +170,7 @@ sealed class DtoFieldValidation(
   data class PastOrPresent(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.PastOrPresent::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.PastOrPresent::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -179,7 +179,7 @@ sealed class DtoFieldValidation(
   data class Future(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.Future::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.Future::class)
       .fieldTarget()
       .withMessage(message)
       .build()
@@ -188,7 +188,7 @@ sealed class DtoFieldValidation(
   data class FutureOrPresent(
     override val message: String = "",
   ) : DtoFieldValidation(message) {
-    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(javax.validation.constraints.FutureOrPresent::class)
+    override fun buildAnnotation(): AnnotationSpec = AnnotationSpec.builder(jakarta.validation.constraints.FutureOrPresent::class)
       .fieldTarget()
       .withMessage(message)
       .build()

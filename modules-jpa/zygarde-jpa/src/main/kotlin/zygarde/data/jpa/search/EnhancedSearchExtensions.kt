@@ -1,7 +1,7 @@
 package zygarde.data.jpa.search
 
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import javax.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Predicate
 
 inline fun <reified JoinTarget> EnhancedSearch<*>.crossJoin(joinSearchContent: (joinSearch: EnhancedSearch<JoinTarget>) -> Unit) {
   if (this is EnhancedSearchImpl) {

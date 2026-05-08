@@ -16,7 +16,7 @@ class ZygardeApiPropProcessorTest {
       sources = listOf(
         ClassPathResource("codegen-input/model-meta/Item.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeApiPropProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

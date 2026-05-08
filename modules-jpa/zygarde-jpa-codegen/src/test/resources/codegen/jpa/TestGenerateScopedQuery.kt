@@ -3,8 +3,8 @@ package codegen.jpa
 import zygarde.codegen.NullEquivalent
 import zygarde.codegen.ScopeMarker
 import zygarde.codegen.ZyModel
-import javax.persistence.Entity
-import javax.persistence.Id
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
 
 @ScopeMarker
 interface PlatformScopedEntity {

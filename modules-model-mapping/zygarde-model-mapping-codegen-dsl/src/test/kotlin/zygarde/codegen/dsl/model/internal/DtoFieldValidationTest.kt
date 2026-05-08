@@ -9,7 +9,7 @@ class DtoFieldValidationTest {
   fun `Regex should generate @field Pattern annotation`() {
     val annotation = DtoFieldValidation.Regex("[a-z]+".toRegex(), "letters only").buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Pattern"
+    output shouldContain "@field:jakarta.validation.constraints.Pattern"
     output shouldContain "regexp"
     output shouldContain "[a-z]+"
     output shouldContain "letters only"
@@ -19,7 +19,7 @@ class DtoFieldValidationTest {
   fun `Email should generate @field Email annotation`() {
     val annotation = DtoFieldValidation.Email("invalid email").buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Email"
+    output shouldContain "@field:jakarta.validation.constraints.Email"
     output shouldContain "invalid email"
   }
 
@@ -27,7 +27,7 @@ class DtoFieldValidationTest {
   fun `Email without message should not include message member`() {
     val annotation = DtoFieldValidation.Email().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Email"
+    output shouldContain "@field:jakarta.validation.constraints.Email"
     output shouldNotContain "message"
   }
 
@@ -35,14 +35,14 @@ class DtoFieldValidationTest {
   fun `NotNull should generate @field NotNull annotation`() {
     val annotation = DtoFieldValidation.NotNull().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.NotNull"
+    output shouldContain "@field:jakarta.validation.constraints.NotNull"
   }
 
   @Test
   fun `NotNull with message should include message`() {
     val annotation = DtoFieldValidation.NotNull("required").buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.NotNull"
+    output shouldContain "@field:jakarta.validation.constraints.NotNull"
     output shouldContain "required"
   }
 
@@ -50,21 +50,21 @@ class DtoFieldValidationTest {
   fun `NotBlank should generate @field NotBlank annotation`() {
     val annotation = DtoFieldValidation.NotBlank().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.NotBlank"
+    output shouldContain "@field:jakarta.validation.constraints.NotBlank"
   }
 
   @Test
   fun `NotEmpty should generate @field NotEmpty annotation`() {
     val annotation = DtoFieldValidation.NotEmpty().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.NotEmpty"
+    output shouldContain "@field:jakarta.validation.constraints.NotEmpty"
   }
 
   @Test
   fun `Size should generate @field Size annotation with min and max`() {
     val annotation = DtoFieldValidation.Size(min = 1, max = 100, message = "bad size").buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Size"
+    output shouldContain "@field:jakarta.validation.constraints.Size"
     output shouldContain "min"
     output shouldContain "1"
     output shouldContain "max"
@@ -76,7 +76,7 @@ class DtoFieldValidationTest {
   fun `Min should generate @field Min annotation`() {
     val annotation = DtoFieldValidation.Min(0).buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Min"
+    output shouldContain "@field:jakarta.validation.constraints.Min"
     output shouldContain "0L"
   }
 
@@ -84,7 +84,7 @@ class DtoFieldValidationTest {
   fun `Max should generate @field Max annotation`() {
     val annotation = DtoFieldValidation.Max(999).buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Max"
+    output shouldContain "@field:jakarta.validation.constraints.Max"
     output shouldContain "999L"
   }
 
@@ -92,7 +92,7 @@ class DtoFieldValidationTest {
   fun `DecimalMin should generate @field DecimalMin annotation`() {
     val annotation = DtoFieldValidation.DecimalMin("0.01", inclusive = false).buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.DecimalMin"
+    output shouldContain "@field:jakarta.validation.constraints.DecimalMin"
     output shouldContain "0.01"
     output shouldContain "inclusive"
     output shouldContain "false"
@@ -102,7 +102,7 @@ class DtoFieldValidationTest {
   fun `DecimalMax should generate @field DecimalMax annotation`() {
     val annotation = DtoFieldValidation.DecimalMax("100.00").buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.DecimalMax"
+    output shouldContain "@field:jakarta.validation.constraints.DecimalMax"
     output shouldContain "100.00"
   }
 
@@ -110,55 +110,55 @@ class DtoFieldValidationTest {
   fun `Positive should generate @field Positive annotation`() {
     val annotation = DtoFieldValidation.Positive().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Positive"
+    output shouldContain "@field:jakarta.validation.constraints.Positive"
   }
 
   @Test
   fun `PositiveOrZero should generate @field PositiveOrZero annotation`() {
     val annotation = DtoFieldValidation.PositiveOrZero().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.PositiveOrZero"
+    output shouldContain "@field:jakarta.validation.constraints.PositiveOrZero"
   }
 
   @Test
   fun `Negative should generate @field Negative annotation`() {
     val annotation = DtoFieldValidation.Negative().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Negative"
+    output shouldContain "@field:jakarta.validation.constraints.Negative"
   }
 
   @Test
   fun `NegativeOrZero should generate @field NegativeOrZero annotation`() {
     val annotation = DtoFieldValidation.NegativeOrZero().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.NegativeOrZero"
+    output shouldContain "@field:jakarta.validation.constraints.NegativeOrZero"
   }
 
   @Test
   fun `Past should generate @field Past annotation`() {
     val annotation = DtoFieldValidation.Past().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Past"
+    output shouldContain "@field:jakarta.validation.constraints.Past"
   }
 
   @Test
   fun `PastOrPresent should generate @field PastOrPresent annotation`() {
     val annotation = DtoFieldValidation.PastOrPresent().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.PastOrPresent"
+    output shouldContain "@field:jakarta.validation.constraints.PastOrPresent"
   }
 
   @Test
   fun `Future should generate @field Future annotation`() {
     val annotation = DtoFieldValidation.Future().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.Future"
+    output shouldContain "@field:jakarta.validation.constraints.Future"
   }
 
   @Test
   fun `FutureOrPresent should generate @field FutureOrPresent annotation`() {
     val annotation = DtoFieldValidation.FutureOrPresent().buildAnnotation()
     val output = annotation.toString()
-    output shouldContain "@field:javax.validation.constraints.FutureOrPresent"
+    output shouldContain "@field:jakarta.validation.constraints.FutureOrPresent"
   }
 }

@@ -47,6 +47,6 @@ fun <T> JpaSpecificationExecutor<T>.searchPage(
   return findAll(SearchSpecBuilder.buildSpec(searchContent), req.toSpringDataPageRequest())
 }
 
-fun <T> ZygardeEnhancedDao<T, *>.remove(searchContent: EnhancedSearch<T>.() -> Unit): Int {
+fun <T> ZygardeEnhancedDao<T, *>.remove(searchContent: EnhancedSearch<T>.() -> Unit): Long {
   return delete(SearchSpecBuilder.buildSpec(searchContent))
 }

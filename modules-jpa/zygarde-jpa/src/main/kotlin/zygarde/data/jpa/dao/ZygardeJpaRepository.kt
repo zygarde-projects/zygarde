@@ -6,11 +6,11 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository
 import zygarde.core.transform.MapToObjectTransformer
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import javax.persistence.EntityManager
-import javax.persistence.Tuple
-import javax.persistence.TypedQuery
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Predicate
+import jakarta.persistence.EntityManager
+import jakarta.persistence.Tuple
+import jakarta.persistence.TypedQuery
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Predicate
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -19,13 +19,13 @@ open class ZygardeJpaRepository<T, ID>(
   entityInformation: JpaEntityInformation<T, ID>,
   val entityManager: EntityManager
 ) : SimpleJpaRepository<T, ID>(entityInformation, entityManager), ZygardeEnhancedDao<T, ID> {
-  override fun delete(spec: Specification<T>): Int {
+  override fun delete(spec: Specification<T>): Long {
     val cb = entityManager.criteriaBuilder
     val criteriaDelete = cb.createCriteriaDelete(domainClass)
     val root = criteriaDelete.from(domainClass)
     val query = cb.createQuery()
     criteriaDelete.where(spec.toPredicate(root, query, cb))
-    return entityManager.createQuery(criteriaDelete).executeUpdate()
+    return entityManager.createQuery(criteriaDelete).executeUpdate().toLong()
   }
 
   @Suppress("UNCHECKED_CAST")

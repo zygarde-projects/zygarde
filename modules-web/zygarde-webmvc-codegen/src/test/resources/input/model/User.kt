@@ -3,8 +3,8 @@ package codegen.entity
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.*
 import zygarde.data.jpa.entity.AutoLongIdEntity
-import javax.persistence.Entity
-import javax.persistence.Transient
+import jakarta.persistence.Entity
+import jakarta.persistence.Transient
 
 private const val UserApi = "UserApi"
 private const val PhoneService = "PhoneService"

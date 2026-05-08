@@ -24,7 +24,7 @@ import zygarde.codegen.generator.shared.validValueProvider
 import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
-import javax.persistence.Transient
+import jakarta.persistence.Transient
 
 class ZygardeApiPropGenerator(
   processingEnv: ProcessingEnvironment,

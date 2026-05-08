@@ -3,8 +3,8 @@
 **Zygarde** is a powerful Kotlin framework for simplifying enterprise application development with Spring Boot. It provides code generation, JPA enhancements with type-safe search DSL, model mapping, and web/REST utilities.
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://zygarde-projects.github.io/zygarde/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.8.22-blue.svg?logo=kotlin)](https://kotlinlang.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.14-green.svg)](https://spring.io/projects/spring-boot)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-blue.svg?logo=kotlin)](https://kotlinlang.org)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.14-green.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Features
@@ -123,10 +123,10 @@ Check out the sample applications:
 
 ## Tech Stack
 
-- **Kotlin** 1.8.22
-- **Spring Boot** 2.7.14
-- **Gradle** 7.x+ (Kotlin DSL)
-- **JDK** 8+
+- **Kotlin** 1.9.25
+- **Spring Boot** 3.5.14
+- **Gradle** 8.5+ (Kotlin DSL)
+- **JDK** 21+
 
 ## Build Commands
 

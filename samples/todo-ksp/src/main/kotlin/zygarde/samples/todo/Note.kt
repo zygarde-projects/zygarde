@@ -4,7 +4,7 @@ import zygarde.codegen.NullEquivalent
 import zygarde.codegen.ScopeMarker
 import zygarde.codegen.ZyModel
 import zygarde.data.jpa.entity.AutoLongIdEntity
-import javax.persistence.Entity
+import jakarta.persistence.Entity
 
 @ScopeMarker
 interface TenantScoped {

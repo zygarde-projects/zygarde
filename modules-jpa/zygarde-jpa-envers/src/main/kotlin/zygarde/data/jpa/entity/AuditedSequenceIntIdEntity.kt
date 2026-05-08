@@ -1,7 +1,7 @@
 package zygarde.data.jpa.entity
 
 import org.hibernate.envers.AuditOverride
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.MappedSuperclass
 
 @AuditOverride(forClass = AuditedSequenceIdEntity::class)
 @MappedSuperclass

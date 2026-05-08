@@ -3,10 +3,10 @@ package zygarde.data.jpa.entity
 import org.hibernate.Hibernate
 import java.io.Serializable
 import java.util.Objects
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.MappedSuperclass
 
 @MappedSuperclass
 abstract class AutoIdEntity<T : Serializable> : Serializable {

@@ -2,7 +2,7 @@ package zygarde.data.jpa.search
 
 import org.springframework.data.jpa.domain.Specification
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import javax.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Predicate
 
 object SearchSpecBuilder {
   fun <T> buildSpec(searchContent: EnhancedSearch<T>.() -> Unit): Specification<T> {

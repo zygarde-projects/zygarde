@@ -1,7 +1,7 @@
 package zygarde.test.entity
 
 import zygarde.data.jpa.entity.SequenceIntIdEntity
-import javax.persistence.Entity
+import jakarta.persistence.Entity
 
 @Entity
 open class SequenceAuthor(

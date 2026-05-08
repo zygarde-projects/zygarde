@@ -8,8 +8,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import zygarde.data.jpa.audit.AuditInfoContainer
 import java.io.Serializable
 import java.time.LocalDateTime
-import javax.persistence.EntityListeners
-import javax.persistence.MappedSuperclass
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.MappedSuperclass
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)

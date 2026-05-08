@@ -23,7 +23,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -54,7 +54,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -75,7 +75,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -91,7 +91,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -120,7 +120,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -142,7 +142,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -167,7 +167,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -192,7 +192,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -212,7 +212,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -240,7 +240,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -269,7 +269,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -293,7 +293,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -318,7 +318,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -339,7 +339,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -366,7 +366,7 @@ class ZygardeJpaDaoGeneratorTest {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_17.description
+      jvmTarget = JvmTarget.JVM_21.description
       annotationProcessors = listOf(ZygardeJpaProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

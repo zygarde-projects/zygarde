@@ -1,18 +1,17 @@
 package zygarde.data.jpa.search.action.impl
 
-import org.hibernate.query.criteria.internal.path.SingularAttributePath
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.action.ComparableConditionAction
 import zygarde.data.jpa.search.action.ConditionAction
 import zygarde.data.jpa.search.action.StringConditionAction
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
-import javax.persistence.criteria.Expression
-import javax.persistence.criteria.Join
-import javax.persistence.criteria.JoinType
-import javax.persistence.criteria.Path
-import javax.persistence.criteria.Predicate
-import javax.persistence.criteria.Root
-import javax.persistence.metamodel.Attribute
+import jakarta.persistence.criteria.Expression
+import jakarta.persistence.criteria.Join
+import jakarta.persistence.criteria.JoinType
+import jakarta.persistence.criteria.Path
+import jakarta.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Root
+import jakarta.persistence.metamodel.Attribute
 
 open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
   private val enhancedSearch: EnhancedSearchImpl<RootEntityType>,
@@ -167,9 +166,10 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
     }
     if (isCountQuery) {
       val initialPath = enhancedSearch.root.get<Any>(splited[0])
+      val model = initialPath.model
       if (
-        initialPath is SingularAttributePath<*> &&
-        initialPath.attribute.persistentAttributeType in COUNT_QUERY_ALLOW_GET_ATTRIBUTE_TYPE
+        model is Attribute<*, *> &&
+        model.persistentAttributeType in COUNT_QUERY_ALLOW_GET_ATTRIBUTE_TYPE
       ) {
         return splited.takeLast(splited.size - 1).fold(initialPath as Path<Any>) { join, foldedColumn ->
           join.get<Any>(foldedColumn)

@@ -1,7 +1,7 @@
 package zygarde.test.entity
 
 import zygarde.data.jpa.entity.AutoIntIdEntity
-import javax.persistence.Entity
+import jakarta.persistence.Entity
 
 @Entity
 open class AuthorGroup(

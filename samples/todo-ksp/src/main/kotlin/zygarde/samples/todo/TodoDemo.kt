@@ -26,7 +26,7 @@ import zygarde.samples.todo.generated.dto.applyFromUpdateTodoReq
 import zygarde.samples.todo.generated.dto.toTodoDto
 import zygarde.samples.todo.generated.search.description
 import zygarde.samples.todo.generated.service.TodoService
-import javax.persistence.Entity
+import jakarta.persistence.Entity
 
 const val createTodoReq = "CreateTodoReq"
 const val updateTodoReq = "UpdateTodoReq"

@@ -9,7 +9,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import zygarde.api.exception.ApiExceptionHandler
-import zygarde.api.exception.mapper.MissingKotlinParameterExceptionMapper
+import zygarde.api.exception.mapper.KotlinInvalidNullExceptionMapper
 import zygarde.api.tracing.ApiTracingFilter
 import zygarde.api.tracing.ApiTracingHandlerInterceptor
 import zygarde.json.JacksonCommon
@@ -21,7 +21,7 @@ class ZygardeSpringWebmvcConfig : WebMvcConfigurer {
 
   @ConditionalOnMissingBean
   @Bean
-  fun missingKotlinParameterExceptionMapper() = MissingKotlinParameterExceptionMapper()
+  fun kotlinInvalidNullExceptionMapper() = KotlinInvalidNullExceptionMapper()
 
   @Bean
   @ConditionalOnMissingBean

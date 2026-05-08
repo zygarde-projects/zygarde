@@ -27,9 +27,9 @@ class ZygardeJpaKspProcessor(
     invoked = true
 
     val zyModelAnnotationName = ZyModel::class.qualifiedName ?: return emptyList()
-    val entityAnnotationName = "javax.persistence.Entity"
-    val embeddableAnnotationName = "javax.persistence.Embeddable"
-    val mappedSuperclassAnnotationName = "javax.persistence.MappedSuperclass"
+    val entityAnnotationName = "jakarta.persistence.Entity"
+    val embeddableAnnotationName = "jakarta.persistence.Embeddable"
+    val mappedSuperclassAnnotationName = "jakarta.persistence.MappedSuperclass"
 
     val zyModelSymbols = resolver.getSymbolsWithAnnotation(zyModelAnnotationName)
       .filterIsInstance<KSClassDeclaration>()
