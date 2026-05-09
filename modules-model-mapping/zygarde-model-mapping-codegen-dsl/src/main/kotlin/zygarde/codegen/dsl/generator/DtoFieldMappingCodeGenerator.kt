@@ -186,9 +186,6 @@ $callDtoStatements
           ParameterSpec
             .builder(fieldName, fieldType)
             .also {
-              if (memberFromSuperInterface != null) {
-                it.addModifiers(KModifier.OVERRIDE)
-              }
               if (fieldType.isNullable) {
                 it.defaultValue("null")
               } else {
@@ -210,6 +207,11 @@ $callDtoStatements
             .builder(fieldName, fieldType)
             .initializer(fieldName)
             .mutable(true)
+            .also { p ->
+              if (memberFromSuperInterface != null) {
+                p.addModifiers(KModifier.OVERRIDE)
+              }
+            }
             .addAnnotation(
               AnnotationSpec.builder(Schema::class)
                 .addMember("description=%S", comment.orEmpty())
@@ -411,6 +413,7 @@ $callDtoStatements
           extensionClassBuilder.addFunction(
             FunSpec.builder("to${dto.name}")
               .receiver(modelClass)
+              .returns(ClassName(dtoPackageName, dto.name))
               .also { fb ->
                 toDtoFuncParameters.forEach {
                   fb.addParameter(it)

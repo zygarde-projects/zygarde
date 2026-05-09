@@ -23,9 +23,9 @@ fun String.toClassName(): ClassName {
 
 fun TypeName.kotlin(canBeNullable: Boolean = true): TypeName {
   val typeString = if (this is ParameterizedTypeName) {
-    this.rawType.toString()
+    this.rawType.copy(nullable = false).toString()
   } else {
-    this.toString()
+    this.copy(nullable = false).toString()
   }
   val genericTypes = if (this is ParameterizedTypeName) {
     this.typeArguments.map { it.kotlin(it.isNullable) }.toTypedArray()

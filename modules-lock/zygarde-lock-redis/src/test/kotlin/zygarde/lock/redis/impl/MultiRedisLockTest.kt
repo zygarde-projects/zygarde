@@ -2,10 +2,12 @@ package zygarde.lock.redis.impl
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.assertions.throwables.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.data.redis.RedisSystemException
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.script.RedisScript
 
@@ -75,5 +77,26 @@ class MultiRedisLockTest {
     assertThrows<IllegalStateException> {
       lockWithEmptyToken.acquire(listOf("key1"), "store", 10000L)
     }
+  }
+
+  @Test
+  fun `should return false and preserve interrupt when multi-key refresh is interrupted`() {
+    every { stringRedisTemplate.execute(any<RedisScript<Boolean>>(), any<List<String>>(), *anyVararg()) } throws
+      RedisSystemException("interrupted", InterruptedException())
+
+    val refreshed = lock.refresh(listOf("key1", "key2"), "store", "test-token", 10000L)
+
+    refreshed shouldBe false
+    Thread.interrupted() shouldBe true
+  }
+
+  @Test
+  fun `should rethrow non-interruption multi-key refresh exceptions`() {
+    val exception = RedisSystemException("redis down", IllegalStateException("down"))
+    every { stringRedisTemplate.execute(any<RedisScript<Boolean>>(), any<List<String>>(), *anyVararg()) } throws exception
+
+    shouldThrow<RedisSystemException> {
+      lock.refresh(listOf("key1", "key2"), "store", "test-token", 10000L)
+    } shouldBe exception
   }
 }

@@ -79,6 +79,70 @@ class ApiPropSharedGeneratorTest {
   }
 
   @Test
+  fun `generateToDtoExtensionFunction should handle providers refs and collections`() {
+    val provider = ClassName("com.example", "FieldProvider")
+    val entityProvider = ClassName("com.example", "EntityProvider")
+    val descriptions = listOf(
+      DtoFieldDescriptionVo(
+        entityFieldName = "name",
+        entityFieldType = String::class.asTypeName(),
+        dtoName = "MyDto",
+        dtoFieldName = "displayName",
+        dtoFieldType = String::class.asTypeName(),
+        comment = "Name",
+        valueProvider = provider,
+        generateToDtoExtension = true
+      ),
+      DtoFieldDescriptionVo(
+        entityFieldName = "ignored",
+        entityFieldType = String::class.asTypeName(),
+        dtoName = "MyDto",
+        dtoFieldName = "computed",
+        dtoFieldType = String::class.asTypeName(),
+        comment = "Computed",
+        entityValueProvider = entityProvider,
+        generateToDtoExtension = true
+      ),
+      DtoFieldDescriptionVo(
+        entityFieldName = "owner",
+        entityFieldType = ClassName("com.example", "Owner").copy(nullable = true),
+        dtoName = "MyDto",
+        dtoFieldName = "owner",
+        dtoFieldType = ClassName(dtoPackageName, "OwnerDto").copy(nullable = true),
+        comment = "Owner",
+        dtoRef = "OwnerDto",
+        generateToDtoExtension = true
+      ),
+      DtoFieldDescriptionVo(
+        entityFieldName = "tags",
+        entityFieldType = ClassName("com.example", "Tag"),
+        dtoName = "MyDto",
+        dtoFieldName = "tags",
+        dtoFieldType = ClassName(dtoPackageName, "TagDto"),
+        comment = "Tags",
+        dtoRef = "TagDto",
+        dtoRefCollection = true,
+        generateToDtoExtension = true
+      )
+    )
+
+    val output = ApiPropSharedGenerator.generateToDtoExtensionFunction(
+      entityTypeName,
+      dtoPackageName,
+      "MyDto",
+      descriptions
+    ).toString()
+
+    output shouldContain "displayName = this.name.let"
+    output shouldContain "FieldProvider().getValue(it)"
+    output shouldContain "EntityProvider().getValue(this)"
+    output shouldContain "owner = this.owner?."
+    output shouldContain "toOwnerDto()"
+    output shouldContain "tags = this.tags.map"
+    output shouldContain "toTagDto()"
+  }
+
+  @Test
   fun `generateApplyToEntityExtensionFunction should create function with correct name`() {
     // given
     val descriptions = listOf(
@@ -137,6 +201,44 @@ class ApiPropSharedGeneratorTest {
   }
 
   @Test
+  fun `generateApplyToEntityExtensionFunction should handle providers nullable DTO fields and version groups`() {
+    val provider = ClassName("com.example", "FieldProvider")
+    val descriptions = listOf(
+      DtoFieldDescriptionVo(
+        entityFieldName = "name",
+        entityFieldType = String::class.asTypeName(),
+        dtoName = "UpdateReq",
+        dtoFieldName = "name",
+        dtoFieldType = String::class.asTypeName().copy(nullable = true),
+        comment = "Name",
+        generateApplyToEntityExtension = true
+      ),
+      DtoFieldDescriptionVo(
+        entityFieldName = "code",
+        entityFieldType = Int::class.asTypeName(),
+        dtoName = "UpdateReq",
+        dtoFieldName = "code",
+        dtoFieldType = String::class.asTypeName().copy(nullable = true),
+        comment = "Code",
+        valueProvider = provider,
+        generateApplyToEntityExtension = true,
+        sinceApiVersion = 3
+      )
+    )
+
+    val output = ApiPropSharedGenerator.generateApplyToEntityExtensionFunction(
+      entityTypeName,
+      dtoPackageName,
+      "UpdateReq",
+      descriptions
+    ).toString()
+
+    output shouldContain "req.name?.let{ this.name = it }"
+    output shouldContain "if(apiVersion >= 3)"
+    output shouldContain "FieldProvider().getValue(it)"
+  }
+
+  @Test
   fun `generateSearchExtensionFunction should create function for EQ search`() {
     // given
     val descriptions = listOf(
@@ -163,6 +265,60 @@ class ApiPropSharedGeneratorTest {
     // then
     funSpec.name shouldBe "applyFromSearchReq"
     funSpec.toString() shouldContain "eq"
+  }
+
+  @Test
+  fun `generateSearchExtensionFunction should emit all supported operators and custom search field`() {
+    val searchTypes = listOf(
+      SearchType.EQ to "eq",
+      SearchType.NOT_EQ to "ne",
+      SearchType.LT to "lt",
+      SearchType.GT to "gt",
+      SearchType.LTE to "lte",
+      SearchType.GTE to "gte",
+      SearchType.IN_LIST to "inList",
+      SearchType.KEYWORD to "keyword",
+      SearchType.STARTS_WITH to "startsWith",
+      SearchType.ENDS_WITH to "endsWith",
+      SearchType.CONTAINS to "contains",
+      SearchType.LIST_CONTAINS_ANY to "containsAny",
+      SearchType.DATE_RANGE to "dateRange",
+      SearchType.DATE_TIME_RANGE to "dateTimeRange",
+    )
+    val descriptions = searchTypes.mapIndexed { idx, (searchType, _) ->
+      DtoFieldDescriptionVo(
+        entityFieldName = "field$idx",
+        entityFieldType = String::class.asTypeName(),
+        dtoName = "SearchReq",
+        dtoFieldName = "field$idx",
+        dtoFieldType = String::class.asTypeName(),
+        comment = "Field",
+        searchType = searchType,
+        searchForField = if (idx == 0) "actualField" else null
+      )
+    } + DtoFieldDescriptionVo(
+      entityFieldName = "ignored",
+      entityFieldType = String::class.asTypeName(),
+      dtoName = "SearchReq",
+      dtoFieldName = "ignored",
+      dtoFieldType = String::class.asTypeName(),
+      comment = "Ignored",
+      searchType = SearchType.NONE
+    )
+
+    val output = ApiPropSharedGenerator.generateSearchExtensionFunction(
+      entityTypeName,
+      dtoPackageName,
+      searchPackageName,
+      "SearchReq",
+      descriptions
+    ).toString()
+
+    output shouldContain "actualField() eq req.field0"
+    searchTypes.drop(1).forEachIndexed { idx, (_, token) ->
+      output shouldContain token
+      output shouldContain "req.field${idx + 1}"
+    }
   }
 
   @Test
@@ -210,6 +366,35 @@ class ApiPropSharedGeneratorTest {
     val extensionFile = extensionBuilder.build()
     extensionFile.name shouldBe "MyEntityDtoExtensions"
     extensionFile.members.size shouldBe 1 // toTestDto function
+  }
+
+  @Test
+  fun `buildDtoClassesAndExtensions should make search DTO fields nullable and generate all extension kinds`() {
+    val descriptions = listOf(
+      DtoFieldDescriptionVo(
+        entityFieldName = "name",
+        entityFieldType = String::class.asTypeName(),
+        dtoName = "SearchReq",
+        dtoFieldName = "name",
+        dtoFieldType = String::class.asTypeName(),
+        comment = "Name",
+        generateToDtoExtension = true,
+        generateApplyToEntityExtension = true,
+        searchType = SearchType.CONTAINS
+      )
+    )
+
+    val (dtoSpecs, extensionBuilder) = ApiPropSharedGenerator.buildDtoClassesAndExtensions(
+      entityTypeName = entityTypeName,
+      dtoPackageName = dtoPackageName,
+      searchPackageName = searchPackageName,
+      dtoExtensionName = "MyEntityDtoExtensions",
+      allDescriptions = descriptions,
+      dtoInheritMap = emptyMap()
+    )
+
+    dtoSpecs["SearchReq"]!!.propertySpecs.first().type.isNullable shouldBe true
+    extensionBuilder.build().members.size shouldBe 3
   }
 
   @Test
