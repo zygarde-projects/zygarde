@@ -2,6 +2,7 @@ package zygarde.codegen.generator
 
 import com.squareup.kotlinpoet.asTypeName
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.model.ApiFunctionToGenerateVo
@@ -55,5 +56,68 @@ class WebMvcApiGeneratorTest {
 
       // it.controllers.forEach { it.writeTo(System.out) }
     }
+  }
+
+  @Test
+  fun `should generate absolute mapping paths`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(
+        ApiToGenerateVo(
+          apiInterfacePackage = "com.example.api",
+          controllerPackage = "com.example.controller",
+          serviceInterfacePackage = "com.example.service",
+          apiName = "Todo",
+          basePath = "api",
+          functions = mutableListOf(
+            ApiFunctionToGenerateVo(
+              method = RequestMethod.GET,
+              functionName = "findTodos",
+              path = "todo",
+              serviceName = "TodoService",
+              serviceFunctionName = "findTodos",
+            )
+          ),
+          separateFeign = false
+        )
+      )
+    ).generateApis()
+
+    val apiInterface = generateApis.apiInterfaces.single().toString()
+    val controller = generateApis.controllers.single().toString()
+
+    apiInterface shouldContain """@GetMapping(value=["/api/todo"])"""
+    controller shouldContain """@GetMapping(value=["/api/todo"])"""
+  }
+
+  @Test
+  fun `should generate SpringDoc 2 ParameterObject annotation`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(
+        ApiToGenerateVo(
+          apiInterfacePackage = "com.example.api",
+          controllerPackage = "com.example.controller",
+          serviceInterfacePackage = "com.example.service",
+          apiName = "Todo",
+          basePath = "/api",
+          functions = mutableListOf(
+            ApiFunctionToGenerateVo(
+              method = RequestMethod.GET,
+              functionName = "searchTodos",
+              path = "/todo/search",
+              requestName = "req",
+              requestType = CreateTodoReq::class.asTypeName(),
+              serviceName = "TodoService",
+              serviceFunctionName = "searchTodos",
+            )
+          )
+        )
+      )
+    ).generateApis()
+
+    val controller = generateApis.controllers.single().toString()
+
+    controller shouldContain "import org.springdoc.core.annotations.ParameterObject"
+    controller shouldContain "@ParameterObject"
+    controller shouldContain """@GetMapping(value=["/api/todo/search"])"""
   }
 }

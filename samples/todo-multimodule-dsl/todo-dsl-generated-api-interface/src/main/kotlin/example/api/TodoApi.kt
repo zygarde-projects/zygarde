@@ -1,7 +1,6 @@
 package example.api
 
 import kotlin.Int
-import kotlin.Unit
 import kotlin.collections.Collection
 import zygarde.codegen.`data`.dto.CreateTodoReq
 import zygarde.codegen.`data`.dto.TodoDto
@@ -16,5 +15,5 @@ public interface TodoApi {
 
   public fun updateTodo(todoId: Int, req: UpdateTodoReq): TodoDto
 
-  public fun deleteTodo(todoId: Int): Unit
+  public fun deleteTodo(todoId: Int)
 }

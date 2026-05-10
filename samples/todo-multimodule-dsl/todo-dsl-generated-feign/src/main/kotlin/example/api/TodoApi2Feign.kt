@@ -7,6 +7,6 @@ import zygarde.codegen.`data`.dto.TodoDto
 
 @FeignClient(name = "TodoApi2")
 public interface TodoApi2Feign : TodoApi2 {
-  @GetMapping(value = ["api/todo2"])
-  public override fun getTodoList(): Collection<TodoDto>
+  @GetMapping(value = ["/api/todo2"])
+  override fun getTodoList(): Collection<TodoDto>
 }

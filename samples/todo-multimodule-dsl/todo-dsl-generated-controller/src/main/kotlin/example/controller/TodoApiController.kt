@@ -4,8 +4,8 @@ import example.api.TodoApi
 import example.service.TodoApiService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import java.lang.ThreadLocal
 import jakarta.validation.Valid
+import java.lang.ThreadLocal
 import kotlin.Int
 import kotlin.String
 import kotlin.collections.Collection
@@ -28,7 +28,7 @@ public class TodoApiController : TodoApi {
 
   @GetMapping(value = ["/api/todo"])
   @Operation(summary = "getTodoList")
-  public override fun getTodoList(): Collection<TodoDto> {
+  override fun getTodoList(): Collection<TodoDto> {
     val service = bean<TodoApiService>()
     val result = service.getTodoList()
     return result
@@ -36,7 +36,7 @@ public class TodoApiController : TodoApi {
 
   @GetMapping(value = ["/api/todo/{todoId}"])
   @Operation(summary = "getTodo")
-  public override fun getTodo(
+  override fun getTodo(
     @PathVariable(value = "todoId") todoId: Int
   ): TodoDto {
     val service = bean<TodoApiService>()
@@ -46,7 +46,7 @@ public class TodoApiController : TodoApi {
 
   @PostMapping(value = ["/api/todo"])
   @Operation(summary = "createTodo")
-  public override fun createTodo(
+  override fun createTodo(
     @RequestBody @Valid req: CreateTodoReq
   ): TodoDto {
     val service = bean<TodoApiService>()
@@ -58,7 +58,7 @@ public class TodoApiController : TodoApi {
 
   @PutMapping(value = ["/api/todo/{todoId}"])
   @Operation(summary = "updateTodo")
-  public override fun updateTodo(
+  override fun updateTodo(
     @PathVariable(value = "todoId") todoId: Int,
     @RequestBody @Valid
     req: UpdateTodoReq
@@ -70,7 +70,7 @@ public class TodoApiController : TodoApi {
 
   @DeleteMapping(value = ["/api/todo/{todoId}"])
   @Operation(summary = "deleteTodo")
-  public override fun deleteTodo(
+  override fun deleteTodo(
     @PathVariable(value = "todoId") todoId: Int
   ) {
     val service = bean<TodoApiService>()

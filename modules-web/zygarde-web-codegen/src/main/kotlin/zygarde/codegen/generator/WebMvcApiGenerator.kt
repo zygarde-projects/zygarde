@@ -13,7 +13,6 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springdoc.api.annotations.ParameterObject
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.cloud.openfeign.SpringQueryMap
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -44,6 +43,7 @@ class WebMvcApiGenerator(
   private val serviceInterfaceBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
 
   private val beanFunc = MemberName("zygarde.core.di.DiServiceContext", "bean")
+  private val parameterObjectAnnotation = ClassName("org.springdoc.core.annotations", "ParameterObject")
 
   fun generateApis(): WebApiGenerateResult {
     apis.forEach { it.generate() }
@@ -142,24 +142,7 @@ class WebMvcApiGenerator(
           }
         )
         .also { annSpec ->
-          val path = listOf(
-            basePath.orEmpty().let {
-              if (it.endsWith("/")) {
-                it.substring(0, it.length - 1)
-              } else {
-                it
-              }
-            },
-            func.path.let {
-              if (it.startsWith("/")) {
-                it.substring(1)
-              } else {
-                it
-              }
-            }
-          ).filter { it.isNotEmpty() }.joinToString("/")
-
-          annSpec.addMember("value=[%S]", path)
+          annSpec.addMember("value=[%S]", absoluteMappingPath(basePath, func.path))
         }
         .build()
 
@@ -257,7 +240,7 @@ class WebMvcApiGenerator(
                   paramSpec.addAnnotation(RequestBody::class)
                 }
                 if (func.method == RequestMethod.GET) {
-                  paramSpec.addAnnotation(ParameterObject::class)
+                  paramSpec.addAnnotation(parameterObjectAnnotation)
                 }
               }
               .addAnnotation(
@@ -383,5 +366,14 @@ class WebMvcApiGenerator(
         // .addMember("level = %T.WARNING", DeprecationLevel::class)
         .build()
     )
+  }
+
+  private fun absoluteMappingPath(basePath: String?, functionPath: String): String {
+    val path = listOf(basePath.orEmpty(), functionPath)
+      .map { it.trim('/') }
+      .filter { it.isNotEmpty() }
+      .joinToString("/")
+
+    return "/$path"
   }
 }
