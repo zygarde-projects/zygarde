@@ -11,24 +11,24 @@ import kotlin.String
 public data class SaveMarkReq(
   @Schema(
     description = "x",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   @field:NotEmpty
   @field:DecimalMax(value = "100")
   public var x: Int,
   @Schema(
     description = "y",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var y: Int,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var todo: TodoDto,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var longRemark: String
 ) : Serializable

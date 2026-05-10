@@ -9,12 +9,12 @@ import kotlin.String
 public data class TodoDto(
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var id: Int,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var description: String
 ) : Serializable

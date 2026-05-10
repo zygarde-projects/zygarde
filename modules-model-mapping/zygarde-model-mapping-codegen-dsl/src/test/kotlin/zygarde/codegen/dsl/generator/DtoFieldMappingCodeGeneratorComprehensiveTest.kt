@@ -112,6 +112,8 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
       it shouldContain "tags: List<String> = emptyList()"
       it shouldContain "owner: OwnerDto? = null"
       it shouldContain """description="Owner DTO""""
+      it shouldContain "requiredMode=Schema.RequiredMode.REQUIRED"
+      it shouldContain "requiredMode=Schema.RequiredMode.NOT_REQUIRED"
       it shouldContain """@field:NotBlank(message="required")"""
       it shouldContain "externalOwner: ExternalOwnerDto"
       it shouldContain "nullableOwners: Collection<OwnerDto>?"

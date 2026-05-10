@@ -362,6 +362,7 @@ class ApiPropSharedGeneratorTest {
     dtoSpec.name shouldBe "TestDto"
     dtoSpec.propertySpecs.size shouldBe 2
     dtoSpec.propertySpecs.map { it.name } shouldBe listOf("name", "age")
+    dtoSpec.toString() shouldContain "requiredMode=io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED"
 
     val extensionFile = extensionBuilder.build()
     extensionFile.name shouldBe "MyEntityDtoExtensions"
@@ -394,6 +395,7 @@ class ApiPropSharedGeneratorTest {
     )
 
     dtoSpecs["SearchReq"]!!.propertySpecs.first().type.isNullable shouldBe true
+    dtoSpecs["SearchReq"]!!.toString() shouldContain "requiredMode=io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED"
     extensionBuilder.build().members.size shouldBe 3
   }
 

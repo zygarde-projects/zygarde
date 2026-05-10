@@ -68,9 +68,9 @@ The processor generates:
 ```kotlin
 @Schema
 data class UserDto(
-    @Schema(description = "user name", required = true)
+    @Schema(description = "user name", requiredMode = Schema.RequiredMode.REQUIRED)
     var name: String,
-    @Schema(description = "user email", required = true)
+    @Schema(description = "user email", requiredMode = Schema.RequiredMode.REQUIRED)
     var email: String
 ) : Serializable
 ```

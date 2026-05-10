@@ -20,6 +20,7 @@ import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.extension.kotlinpoet.kotlin
+import zygarde.codegen.generator.shared.addSchemaRequiredMode
 import zygarde.codegen.meta.CodegenSealedInterface
 import zygarde.core.annotation.Comment
 import java.io.Serializable
@@ -215,7 +216,7 @@ $callDtoStatements
             .addAnnotation(
               AnnotationSpec.builder(Schema::class)
                 .addMember("description=%S", comment.orEmpty())
-                .addMember("required=%L", !fieldType.isNullable)
+                .addSchemaRequiredMode(!fieldType.isNullable)
                 .build()
             )
             .also { p ->

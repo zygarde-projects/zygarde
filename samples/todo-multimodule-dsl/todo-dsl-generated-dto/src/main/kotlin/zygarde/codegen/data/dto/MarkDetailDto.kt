@@ -14,57 +14,57 @@ import kotlin.collections.emptyList
 public data class MarkDetailDto(
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var id: Int,
   @Schema(
     description = "x",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var x: Int,
   @Schema(
     description = "y",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var y: Int,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var comments: Collection<String> = emptyList(),
   @Schema(
     description = "extra string",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var extraStr: String,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var extraMap1: Map<String, Any>,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var extraMap2: Map<String, Int?>,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var extraMap3: Map<String, List<String>>,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var extraMap4: Map<String, List<Int?>>,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var todo: TodoDto,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var longRemark: String
 ) : Serializable

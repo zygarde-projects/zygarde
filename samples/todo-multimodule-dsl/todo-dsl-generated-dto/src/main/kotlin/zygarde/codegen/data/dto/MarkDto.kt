@@ -9,22 +9,22 @@ import kotlin.String
 public data class MarkDto(
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var id: Int,
   @Schema(
     description = "x",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var x: Int,
   @Schema(
     description = "y",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var y: Int,
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var longRemark: String
 ) : Serializable

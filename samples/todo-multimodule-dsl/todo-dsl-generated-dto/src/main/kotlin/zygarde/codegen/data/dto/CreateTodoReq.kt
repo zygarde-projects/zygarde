@@ -8,7 +8,7 @@ import kotlin.String
 public data class CreateTodoReq(
   @Schema(
     description = "",
-    required = true
+    requiredMode = Schema.RequiredMode.REQUIRED
   )
   public var description: String
 ) : Serializable

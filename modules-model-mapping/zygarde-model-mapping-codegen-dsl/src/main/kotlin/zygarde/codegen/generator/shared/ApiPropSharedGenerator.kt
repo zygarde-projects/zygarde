@@ -43,6 +43,10 @@ fun TypeName?.validValueProvider(): TypeName? {
   }
 }
 
+fun AnnotationSpec.Builder.addSchemaRequiredMode(required: Boolean): AnnotationSpec.Builder {
+  return addMember("requiredMode=%T.RequiredMode.%L", Schema::class, if (required) "REQUIRED" else "NOT_REQUIRED")
+}
+
 object ApiPropSharedGenerator {
   fun generateToDtoExtensionFunction(
     entityTypeName: TypeName,
@@ -262,7 +266,7 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
             .addAnnotation(
               AnnotationSpec.builder(Schema::class)
                 .addMember("description=%S", dto.comment)
-                .addMember("required=%L", !fieldType.isNullable)
+                .addSchemaRequiredMode(!fieldType.isNullable)
                 .build()
             ).build().also { dtoBuilder.addProperty(it) }
         }
