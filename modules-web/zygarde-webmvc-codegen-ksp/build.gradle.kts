@@ -13,7 +13,7 @@ dependencies {
 
   implementation(platform(project(":zygarde-bom-codegen")))
   implementation("com.squareup:kotlinpoet")
-  implementation("com.squareup:kotlinpoet-ksp:1.16.0")
+  implementation("com.squareup:kotlinpoet-ksp:1.18.1")
   implementation("com.google.devtools.ksp:symbol-processing-api:1.9.25-1.0.20")
 
   testImplementation(platform(project(":zygarde-bom-codegen-test")))

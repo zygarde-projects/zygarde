@@ -1,7 +1,7 @@
 apply(plugin = "org.springframework.boot")
 
 dependencies {
-  testImplementation("commons-io:commons-io:2.2")
+  testImplementation("commons-io:commons-io:2.22.0")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

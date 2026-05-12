@@ -7,10 +7,10 @@ buildscript {
 }
 
 plugins {
-  id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
-  id("io.gitlab.arturbosch.detekt") version "1.23.5"
+  id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+  id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.springframework.boot") version "3.5.14"
-  id("io.spring.dependency-management") version "1.1.4"
+  id("io.spring.dependency-management") version "1.1.7"
   id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
   kotlin("jvm") version "1.9.25"
   kotlin("plugin.spring") version "1.9.25"
@@ -146,9 +146,9 @@ subprojects {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("io.kotest:kotest-assertions-shared-jvm:5.9.0")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.0")
-    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("io.kotest:kotest-assertions-shared-jvm:5.9.1")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.1")
+    testImplementation("io.mockk:mockk:1.13.17")
   }
 
   configurations.all {
@@ -176,7 +176,7 @@ subprojects {
   }
 
   jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.14"
   }
 
   tasks.withType<JacocoReport> {

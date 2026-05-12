@@ -18,7 +18,7 @@ dependencies {
   testImplementation(project(":zygarde-test"))
   testImplementation(project(":zygarde-test-feign"))
   testImplementation(project(":todo-dsl-generated-feign"))
-  testImplementation("io.github.classgraph:classgraph:4.8.21")
+  testImplementation("io.github.classgraph:classgraph:4.8.184")
   testImplementation("com.h2database:h2")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

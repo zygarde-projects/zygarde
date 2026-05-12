@@ -16,7 +16,7 @@ dependencies {
   kapt("com.google.auto.service:auto-service")
 
   testImplementation(platform(project(":zygarde-bom-codegen-test")))
-  testImplementation("commons-io:commons-io:2.2")
+  testImplementation("commons-io:commons-io:2.22.0")
   testImplementation("com.github.tschuchortdev:kotlin-compile-testing")
   testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
