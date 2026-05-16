@@ -22,6 +22,7 @@ class TodoGraphQlServiceImpl(
   override fun todos(filter: TodoFilter?): Collection<TodoDto> {
     return todoDao.search {
       id() eq filter?.idEq
+      id() inList filter?.idsIn
       description() contains filter?.descriptionContains
     }.map(TodoDtoBuilder::build)
   }

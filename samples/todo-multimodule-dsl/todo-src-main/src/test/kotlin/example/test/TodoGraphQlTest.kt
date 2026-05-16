@@ -63,6 +63,21 @@ class TodoGraphQlTest(
     graphQlTester.document(
       """
       query {
+        todos(filter: { idsIn: [$secondId] }) {
+          id
+          description
+        }
+      }
+      """.trimIndent()
+    )
+      .execute()
+      .path("todos[*].description")
+      .entityList(String::class.java)
+      .containsExactly("second graphql todo")
+
+    graphQlTester.document(
+      """
+      query {
         todosByIds(ids: [$secondId]) {
           id
           description

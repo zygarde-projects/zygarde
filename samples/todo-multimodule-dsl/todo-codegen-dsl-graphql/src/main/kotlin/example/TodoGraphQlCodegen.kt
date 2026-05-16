@@ -57,6 +57,7 @@ class TodoGraphQlCodegen : GraphQlDslCodegen() {
 
       input("TodoFilter") {
         field<Int>("idEq", nullable = true)
+        collectionField<Int>("idsIn", nullable = true)
         field<String>("descriptionContains", nullable = true)
       }
     }

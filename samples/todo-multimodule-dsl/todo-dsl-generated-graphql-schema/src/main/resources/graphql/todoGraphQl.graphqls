@@ -21,5 +21,6 @@ input TodoInput {
 
 input TodoFilter {
   idEq: Int
+  idsIn: [Int!]
   descriptionContains: String
 }
