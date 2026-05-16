@@ -144,8 +144,18 @@ class GraphQlApiGenerator(
       typeDefinitions.forEach { typeDefinition ->
         appendLine()
         appendLine("${typeDefinition.kind.schemaKeyword()} ${typeDefinition.name} {")
-        typeDefinition.fields.forEach { field ->
-          appendLine("  ${field.name}: ${field.toSchemaType()}")
+        when (typeDefinition.kind) {
+          GraphQlTypeDefinitionKind.TYPE,
+          GraphQlTypeDefinitionKind.INPUT -> {
+            typeDefinition.fields.forEach { field ->
+              appendLine("  ${field.name}: ${field.toSchemaType()}")
+            }
+          }
+          GraphQlTypeDefinitionKind.ENUM -> {
+            typeDefinition.enumValues.forEach { enumValue ->
+              appendLine("  $enumValue")
+            }
+          }
         }
         appendLine("}")
       }
@@ -220,6 +230,7 @@ class GraphQlApiGenerator(
     return when (this) {
       GraphQlTypeDefinitionKind.TYPE -> "type"
       GraphQlTypeDefinitionKind.INPUT -> "input"
+      GraphQlTypeDefinitionKind.ENUM -> "enum"
     }
   }
 }

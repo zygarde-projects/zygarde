@@ -30,6 +30,11 @@ class DslGraphQlSchema(
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
   }
 
+  fun enumType(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
+    val typeDefinition = DslGraphQlTypeDefinition.enumType(name).also(dsl)
+    typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
+  }
+
   fun toGraphQlApiToGenerateVo(): GraphQlApiToGenerateVo {
     return GraphQlApiToGenerateVo(
       controllerPackage = config.controllerPackage,

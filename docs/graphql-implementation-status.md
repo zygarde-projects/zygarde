@@ -11,21 +11,21 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- Extended the Todo GraphQL filter sample with a nullable list input field: `TodoFilter.idsIn: [Int!]`.
-- Regenerated the Todo GraphQL SDL from the DSL sample so `collectionField<Int>("idsIn", nullable = true)` is represented in generated schema output.
-- Wired `TodoGraphQlServiceImpl.todos(...)` to apply `filter.idsIn` through the existing JPA search `inList` operator.
-- Added Spring GraphQL sample test coverage that queries `todos(filter: { idsIn: [...] })` and verifies the requested todo is returned.
+- Added GraphQL enum type-definition support to the codegen model with `GraphQlTypeDefinitionKind.ENUM` and `enumValues`.
+- Extended the GraphQL DSL with `enumType("Name") { value("VALUE") }`.
+- Updated `GraphQlApiGenerator` to emit SDL `enum` blocks alongside generated `type` and `input` blocks.
+- Added generator and DSL tests covering enum arguments, enum fields, and enum SDL output.
 
 ## Validation
 
-- `rtk ./gradlew :todo-codegen-dsl-graphql:run` - passed.
-- `rtk ./gradlew :todo-src-main:test --tests example.test.TodoGraphQlTest` - passed.
-- `rtk ./gradlew :todo-codegen-dsl-graphql:ktlintCheck :todo-src-core:ktlintCheck :todo-src-main:ktlintCheck` - passed.
+- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed.
+- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed.
 
 ## Next Work
 
 - Add nullable response documentation to user-facing GraphQL DSL docs once those docs are introduced or expanded.
 - Consider argument default values and input field nullability ergonomics in the DSL, especially for filter inputs.
+- Consider generating enum SDL automatically from model-mapping metadata or Kotlin enum types so users do not need to duplicate enum values manually.
 - Consider using collection fields in sample SDL if a future sample model needs list-valued GraphQL fields.
 - Decide whether generated schemas should remain split per DSL schema or eventually be aggregated into one schema artifact.
 - Continue toward automatic SDL generation from model-mapping metadata so generated GraphQL types do not need to be duplicated manually in DSL declarations.

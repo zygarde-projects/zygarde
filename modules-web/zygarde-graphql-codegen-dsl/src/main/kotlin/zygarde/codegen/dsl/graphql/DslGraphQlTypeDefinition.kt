@@ -10,6 +10,7 @@ class DslGraphQlTypeDefinition private constructor(
   private val name: String,
 ) {
   private val fields: MutableList<GraphQlFieldToGenerateVo> = mutableListOf()
+  private val enumValues: MutableList<String> = mutableListOf()
 
   fun field(name: String, graphQlType: String, nullable: Boolean = false) {
     fields.add(
@@ -49,11 +50,16 @@ class DslGraphQlTypeDefinition private constructor(
     collectionField(name, T::class, nullable, itemNullable)
   }
 
+  fun value(name: String) {
+    enumValues.add(name)
+  }
+
   fun toGraphQlTypeDefinitionToGenerateVo(): GraphQlTypeDefinitionToGenerateVo {
     return GraphQlTypeDefinitionToGenerateVo(
       kind = kind,
       name = name,
       fields = fields,
+      enumValues = enumValues,
     )
   }
 
@@ -64,6 +70,10 @@ class DslGraphQlTypeDefinition private constructor(
 
     fun input(name: String): DslGraphQlTypeDefinition {
       return DslGraphQlTypeDefinition(GraphQlTypeDefinitionKind.INPUT, name)
+    }
+
+    fun enumType(name: String): DslGraphQlTypeDefinition {
+      return DslGraphQlTypeDefinition(GraphQlTypeDefinitionKind.ENUM, name)
     }
   }
 }

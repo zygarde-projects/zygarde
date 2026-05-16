@@ -13,6 +13,11 @@ class GraphQlDslCodegenTest {
 
   data class TodoFilter(val descriptionContains: String?)
 
+  enum class TodoStatus {
+    OPEN,
+    DONE,
+  }
+
   @Test
   fun `should convert query mutation nullable argument collection response and scalar response`() {
     val dsl = object : GraphQlDslCodegen() {
@@ -26,6 +31,7 @@ class GraphQlDslCodegenTest {
           query("todos") {
             collectionArgument<Int>("ids")
             argument<TodoFilter>("filter", "TodoFilter", nullable = true)
+            argument<TodoStatus>("status", nullable = true)
             returnsCollection<TodoDto>("Todo", nullable = true, itemNullable = true)
             serviceName = "TodoGraphQlService"
           }
@@ -44,6 +50,10 @@ class GraphQlDslCodegenTest {
             field<String>("descriptionContains", nullable = true)
             collectionField<Int>("ids")
           }
+          enumType("TodoStatus") {
+            value("OPEN")
+            value("DONE")
+          }
         }
       }
     }
@@ -53,7 +63,7 @@ class GraphQlDslCodegenTest {
     val api = dsl.apisToGenerate.single()
     api.apiName shouldBe "TodoGraphQl"
     api.functions shouldHaveSize 3
-    api.typeDefinitions shouldHaveSize 2
+    api.typeDefinitions shouldHaveSize 3
 
     api.functions[0].apply {
       operation shouldBe GraphQlOperation.QUERY
@@ -75,6 +85,10 @@ class GraphQlDslCodegenTest {
         itemNullable shouldBe false
       }
       arguments[1].nullable shouldBe true
+      arguments[2].apply {
+        graphQlType shouldBe "TodoStatus"
+        nullable shouldBe true
+      }
       responseCollection shouldBe true
       responseNullable shouldBe true
       responseItemNullable shouldBe true
@@ -111,5 +125,7 @@ class GraphQlDslCodegenTest {
       collection shouldBe true
       itemNullable shouldBe false
     }
+    api.typeDefinitions[2].kind shouldBe GraphQlTypeDefinitionKind.ENUM
+    api.typeDefinitions[2].enumValues shouldBe mutableListOf("OPEN", "DONE")
   }
 }

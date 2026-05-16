@@ -18,6 +18,11 @@ data class GraphQlGeneratorTestTodoInput(val description: String)
 
 data class GraphQlGeneratorTestTodoFilter(val descriptionContains: String?)
 
+enum class GraphQlGeneratorTestTodoStatus {
+  OPEN,
+  DONE,
+}
+
 class GraphQlApiGeneratorTest {
   @Test
   fun `should generate controller service interface and schema`() {
@@ -58,6 +63,12 @@ class GraphQlApiGeneratorTest {
                   type = GraphQlGeneratorTestTodoFilter::class.asTypeName(),
                   graphQlType = "TodoFilter",
                   nullable = true,
+                ),
+                GraphQlArgumentToGenerateVo(
+                  name = "status",
+                  type = GraphQlGeneratorTestTodoStatus::class.asTypeName(),
+                  graphQlType = "TodoStatus",
+                  nullable = true,
                 )
               ),
               responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
@@ -87,6 +98,7 @@ class GraphQlApiGeneratorTest {
               fields = mutableListOf(
                 GraphQlFieldToGenerateVo("id", "Int"),
                 GraphQlFieldToGenerateVo("description", "String"),
+                GraphQlFieldToGenerateVo("status", "TodoStatus"),
                 GraphQlFieldToGenerateVo("tags", "String", collection = true),
                 GraphQlFieldToGenerateVo("previousDescriptions", "String", nullable = true, collection = true, itemNullable = true),
               )
@@ -98,6 +110,11 @@ class GraphQlApiGeneratorTest {
                 GraphQlFieldToGenerateVo("description", "String"),
                 GraphQlFieldToGenerateVo("tags", "String", collection = true),
               )
+            ),
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.ENUM,
+              name = "TodoStatus",
+              enumValues = mutableListOf("OPEN", "DONE"),
             )
           )
         )
@@ -115,28 +132,36 @@ class GraphQlApiGeneratorTest {
     controller shouldContain "public fun todo(@Argument id: Int): GraphQlGeneratorTestTodoDto?"
     controller shouldContain "@Argument ids: Collection<Int>"
     controller shouldContain "filter: GraphQlGeneratorTestTodoFilter?"
+    controller shouldContain "status: GraphQlGeneratorTestTodoStatus?"
     controller shouldContain "val service = bean<TodoGraphQlService>()"
     controller shouldContain "return service.todo(id)"
-    controller shouldContain "return service.todos(ids, filter)"
+    controller shouldContain "return service.todos(ids, filter, status)"
     controller shouldContain "return service.createTodo(input)"
 
     val serviceInterface = result.serviceInterfaces.single().toString()
     serviceInterface shouldContain "public interface TodoGraphQlService"
     serviceInterface shouldContain "public fun todo(id: Int): GraphQlGeneratorTestTodoDto?"
-    serviceInterface shouldContain "public fun todos(ids: Collection<Int>, filter: GraphQlGeneratorTestTodoFilter?):"
+    serviceInterface shouldContain "public fun todos("
+    serviceInterface shouldContain "ids: Collection<Int>"
+    serviceInterface shouldContain "filter: GraphQlGeneratorTestTodoFilter?"
+    serviceInterface shouldContain "status: GraphQlGeneratorTestTodoStatus?"
     serviceInterface shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
     serviceInterface shouldContain "public fun createTodo(input: GraphQlGeneratorTestTodoInput): GraphQlGeneratorTestTodoDto"
 
     val schema = result.schemas.single().content
     schema shouldContain "type Query"
     schema shouldContain "todo(id: Int!): Todo"
-    schema shouldContain "todos(ids: [Int!]!, filter: TodoFilter): [Todo!]!"
+    schema shouldContain "todos(ids: [Int!]!, filter: TodoFilter, status: TodoStatus): [Todo!]!"
     schema shouldContain "type Mutation"
     schema shouldContain "createTodo(input: TodoInput!): Todo!"
     schema shouldContain "type Todo"
+    schema shouldContain "status: TodoStatus!"
     schema shouldContain "tags: [String!]!"
     schema shouldContain "previousDescriptions: [String]"
     schema shouldContain "input TodoInput"
+    schema shouldContain "enum TodoStatus"
+    schema shouldContain "  OPEN"
+    schema shouldContain "  DONE"
   }
 
   @Test
