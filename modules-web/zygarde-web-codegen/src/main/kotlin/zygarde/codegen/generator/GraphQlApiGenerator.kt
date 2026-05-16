@@ -35,6 +35,7 @@ class GraphQlApiGenerator(
 
   fun generateApis(): GraphQlGenerateResult {
     apis.forEach { it.generate() }
+    val emittedOperationTypes = mutableSetOf<String>()
 
     controllerFileSpecBuilderMap.forEach { (controllerName, fileSpecBuilder) ->
       controllerBuilderMap[controllerName]?.build()?.let(fileSpecBuilder::addType)
@@ -46,7 +47,7 @@ class GraphQlApiGenerator(
     return GraphQlGenerateResult(
       controllers = controllerFileSpecBuilderMap.values.map { it.build() },
       serviceInterfaces = serviceInterfaceFileSpecBuilderMap.values.map { it.build() },
-      schemas = apis.map { it.toSchemaGenerateResult() },
+      schemas = apis.map { it.toSchemaGenerateResult(emittedOperationTypes) },
     )
   }
 
@@ -123,10 +124,12 @@ class GraphQlApiGenerator(
     }
   }
 
-  private fun GraphQlApiToGenerateVo.toSchemaGenerateResult(): GraphQlSchemaGenerateResult {
+  private fun GraphQlApiToGenerateVo.toSchemaGenerateResult(
+    emittedOperationTypes: MutableSet<String>
+  ): GraphQlSchemaGenerateResult {
     val schema = buildString {
-      appendOperationType(functions.filter { it.operation == GraphQlOperation.QUERY }, "Query")
-      appendOperationType(functions.filter { it.operation == GraphQlOperation.MUTATION }, "Mutation")
+      appendOperationType(functions.filter { it.operation == GraphQlOperation.QUERY }, "Query", emittedOperationTypes)
+      appendOperationType(functions.filter { it.operation == GraphQlOperation.MUTATION }, "Mutation", emittedOperationTypes)
       typeDefinitions.forEach { typeDefinition ->
         appendLine()
         appendLine("${typeDefinition.kind.schemaKeyword()} ${typeDefinition.name} {")
@@ -145,7 +148,8 @@ class GraphQlApiGenerator(
 
   private fun StringBuilder.appendOperationType(
     functions: List<GraphQlFunctionToGenerateVo>,
-    typeName: String
+    typeName: String,
+    emittedOperationTypes: MutableSet<String>
   ) {
     if (functions.isEmpty()) {
       return
@@ -154,7 +158,12 @@ class GraphQlApiGenerator(
     if (isNotEmpty()) {
       appendLine()
     }
-    appendLine("type $typeName {")
+    val keyword = if (emittedOperationTypes.add(typeName)) {
+      "type"
+    } else {
+      "extend type"
+    }
+    appendLine("$keyword $typeName {")
     functions.forEach { function ->
       appendLine("  ${function.functionName}${function.arguments.toSchemaArguments()}: ${function.toSchemaResponseType()}")
     }

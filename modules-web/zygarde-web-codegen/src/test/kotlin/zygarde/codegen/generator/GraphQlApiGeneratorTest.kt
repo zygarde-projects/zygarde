@@ -106,4 +106,79 @@ class GraphQlApiGeneratorTest {
     schema shouldContain "type Todo"
     schema shouldContain "input TodoInput"
   }
+
+  @Test
+  fun `should extend operation root types after first generated schema`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "TodoGraphQl",
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.QUERY,
+              functionName = "todos",
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+              responseCollection = true,
+            )
+          ),
+        ),
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "ArchiveGraphQl",
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.QUERY,
+              functionName = "archivedTodos",
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+              responseCollection = true,
+            ),
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.MUTATION,
+              functionName = "restoreTodo",
+              arguments = mutableListOf(
+                GraphQlArgumentToGenerateVo(
+                  name = "id",
+                  type = Int::class.asTypeName(),
+                  graphQlType = "Int",
+                )
+              ),
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+            )
+          ),
+        ),
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "AdminGraphQl",
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.MUTATION,
+              functionName = "deleteArchivedTodo",
+              arguments = mutableListOf(
+                GraphQlArgumentToGenerateVo(
+                  name = "id",
+                  type = Int::class.asTypeName(),
+                  graphQlType = "Int",
+                )
+              ),
+              responseType = Boolean::class.asTypeName(),
+              responseGraphQlType = "Boolean",
+            )
+          ),
+        )
+      )
+    ).generateApis()
+
+    result.schemas shouldHaveSize 3
+    result.schemas[0].content shouldContain "type Query"
+    result.schemas[1].content shouldContain "extend type Query"
+    result.schemas[1].content shouldContain "type Mutation"
+    result.schemas[2].content shouldContain "extend type Mutation"
+  }
 }
