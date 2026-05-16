@@ -69,6 +69,7 @@ class GraphQlApiGeneratorTest {
                   type = GraphQlGeneratorTestTodoStatus::class.asTypeName(),
                   graphQlType = "TodoStatus",
                   nullable = true,
+                  defaultValue = "OPEN",
                 )
               ),
               responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
@@ -107,7 +108,7 @@ class GraphQlApiGeneratorTest {
               kind = GraphQlTypeDefinitionKind.INPUT,
               name = "TodoInput",
               fields = mutableListOf(
-                GraphQlFieldToGenerateVo("description", "String"),
+                GraphQlFieldToGenerateVo("description", "String", defaultValue = "\"new todo\""),
                 GraphQlFieldToGenerateVo("tags", "String", collection = true),
               )
             ),
@@ -151,7 +152,7 @@ class GraphQlApiGeneratorTest {
     val schema = result.schemas.single().content
     schema shouldContain "type Query"
     schema shouldContain "todo(id: Int!): Todo"
-    schema shouldContain "todos(ids: [Int!]!, filter: TodoFilter, status: TodoStatus): [Todo!]!"
+    schema shouldContain "todos(ids: [Int!]!, filter: TodoFilter, status: TodoStatus = OPEN): [Todo!]!"
     schema shouldContain "type Mutation"
     schema shouldContain "createTodo(input: TodoInput!): Todo!"
     schema shouldContain "type Todo"
@@ -159,6 +160,7 @@ class GraphQlApiGeneratorTest {
     schema shouldContain "tags: [String!]!"
     schema shouldContain "previousDescriptions: [String]"
     schema shouldContain "input TodoInput"
+    schema shouldContain "description: String! = \"new todo\""
     schema shouldContain "enum TodoStatus"
     schema shouldContain "  OPEN"
     schema shouldContain "  DONE"

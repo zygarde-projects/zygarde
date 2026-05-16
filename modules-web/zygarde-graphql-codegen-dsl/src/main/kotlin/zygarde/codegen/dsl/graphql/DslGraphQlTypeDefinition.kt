@@ -12,25 +12,34 @@ class DslGraphQlTypeDefinition private constructor(
   private val fields: MutableList<GraphQlFieldToGenerateVo> = mutableListOf()
   private val enumValues: MutableList<String> = mutableListOf()
 
-  fun field(name: String, graphQlType: String, nullable: Boolean = false) {
+  fun field(name: String, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null) {
+    requireDefaultValueSupported(defaultValue)
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
         graphQlType = graphQlType,
         nullable = nullable,
+        defaultValue = defaultValue,
       )
     )
   }
 
-  fun field(name: String, type: KClass<*>, nullable: Boolean = false) {
-    field(name, type.defaultGraphQlType(), nullable)
+  fun field(name: String, type: KClass<*>, nullable: Boolean = false, defaultValue: String? = null) {
+    field(name, type.defaultGraphQlType(), nullable, defaultValue)
   }
 
-  inline fun <reified T : Any> field(name: String, nullable: Boolean = false) {
-    field(name, T::class, nullable)
+  inline fun <reified T : Any> field(name: String, nullable: Boolean = false, defaultValue: String? = null) {
+    field(name, T::class, nullable, defaultValue)
   }
 
-  fun collectionField(name: String, graphQlType: String, nullable: Boolean = false, itemNullable: Boolean = false) {
+  fun collectionField(
+    name: String,
+    graphQlType: String,
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+    defaultValue: String? = null,
+  ) {
+    requireDefaultValueSupported(defaultValue)
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
@@ -38,20 +47,38 @@ class DslGraphQlTypeDefinition private constructor(
         nullable = nullable,
         collection = true,
         itemNullable = itemNullable,
+        defaultValue = defaultValue,
       )
     )
   }
 
-  fun collectionField(name: String, type: KClass<*>, nullable: Boolean = false, itemNullable: Boolean = false) {
-    collectionField(name, type.defaultGraphQlType(), nullable, itemNullable)
+  fun collectionField(
+    name: String,
+    type: KClass<*>,
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+    defaultValue: String? = null,
+  ) {
+    collectionField(name, type.defaultGraphQlType(), nullable, itemNullable, defaultValue)
   }
 
-  inline fun <reified T : Any> collectionField(name: String, nullable: Boolean = false, itemNullable: Boolean = false) {
-    collectionField(name, T::class, nullable, itemNullable)
+  inline fun <reified T : Any> collectionField(
+    name: String,
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+    defaultValue: String? = null,
+  ) {
+    collectionField(name, T::class, nullable, itemNullable, defaultValue)
   }
 
   fun value(name: String) {
     enumValues.add(name)
+  }
+
+  private fun requireDefaultValueSupported(defaultValue: String?) {
+    require(defaultValue == null || kind == GraphQlTypeDefinitionKind.INPUT) {
+      "GraphQL field default values are only supported on input fields"
+    }
   }
 
   fun toGraphQlTypeDefinitionToGenerateVo(): GraphQlTypeDefinitionToGenerateVo {

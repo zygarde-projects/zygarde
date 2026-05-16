@@ -20,30 +20,43 @@ class DslGraphQlFunction(
   private var responseNullable: Boolean = false
   private var responseItemNullable: Boolean = false
 
-  fun argument(name: String, type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
+  fun argument(
+    name: String,
+    type: KClass<*>,
+    graphQlType: String = type.defaultGraphQlType(),
+    nullable: Boolean = false,
+    defaultValue: String? = null,
+  ) {
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
         type = type.asTypeName(),
         graphQlType = graphQlType,
         nullable = nullable,
+        defaultValue = defaultValue,
       )
     )
   }
 
-  fun argument(name: String, type: TypeName, graphQlType: String, nullable: Boolean = false) {
+  fun argument(name: String, type: TypeName, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null) {
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
         type = type,
         graphQlType = graphQlType,
         nullable = nullable,
+        defaultValue = defaultValue,
       )
     )
   }
 
-  inline fun <reified T : Any> argument(name: String, graphQlType: String = T::class.defaultGraphQlType(), nullable: Boolean = false) {
-    argument(name, T::class, graphQlType, nullable)
+  inline fun <reified T : Any> argument(
+    name: String,
+    graphQlType: String = T::class.defaultGraphQlType(),
+    nullable: Boolean = false,
+    defaultValue: String? = null,
+  ) {
+    argument(name, T::class, graphQlType, nullable, defaultValue)
   }
 
   fun collectionArgument(
@@ -52,6 +65,7 @@ class DslGraphQlFunction(
     graphQlType: String = type.defaultGraphQlType(),
     nullable: Boolean = false,
     itemNullable: Boolean = false,
+    defaultValue: String? = null,
   ) {
     arguments.add(
       GraphQlArgumentToGenerateVo(
@@ -61,6 +75,7 @@ class DslGraphQlFunction(
         nullable = nullable,
         collection = true,
         itemNullable = itemNullable,
+        defaultValue = defaultValue,
       )
     )
   }
@@ -71,6 +86,7 @@ class DslGraphQlFunction(
     graphQlType: String,
     nullable: Boolean = false,
     itemNullable: Boolean = false,
+    defaultValue: String? = null,
   ) {
     arguments.add(
       GraphQlArgumentToGenerateVo(
@@ -80,6 +96,7 @@ class DslGraphQlFunction(
         nullable = nullable,
         collection = true,
         itemNullable = itemNullable,
+        defaultValue = defaultValue,
       )
     )
   }
@@ -89,8 +106,9 @@ class DslGraphQlFunction(
     graphQlType: String = T::class.defaultGraphQlType(),
     nullable: Boolean = false,
     itemNullable: Boolean = false,
+    defaultValue: String? = null,
   ) {
-    collectionArgument(name, T::class, graphQlType, nullable, itemNullable)
+    collectionArgument(name, T::class, graphQlType, nullable, itemNullable, defaultValue)
   }
 
   fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {

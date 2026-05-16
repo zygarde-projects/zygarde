@@ -11,20 +11,22 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- Added GraphQL enum type-definition support to the codegen model with `GraphQlTypeDefinitionKind.ENUM` and `enumValues`.
-- Extended the GraphQL DSL with `enumType("Name") { value("VALUE") }`.
-- Updated `GraphQlApiGenerator` to emit SDL `enum` blocks alongside generated `type` and `input` blocks.
-- Added generator and DSL tests covering enum arguments, enum fields, and enum SDL output.
+- Added raw GraphQL SDL default-value support to generated operation arguments via `GraphQlArgumentToGenerateVo.defaultValue`.
+- Added input-field default-value support via `GraphQlFieldToGenerateVo.defaultValue` and the GraphQL DSL `field(..., defaultValue = "...")` / `collectionField(..., defaultValue = "...")` options.
+- Extended the GraphQL DSL argument and collection-argument builders with `defaultValue`.
+- Guarded the DSL against invalid default values on object `type` fields; defaults are only valid for arguments and input object fields.
+- Added generator and DSL tests covering argument defaults, input field defaults, and invalid object-field defaults.
 
 ## Validation
 
+- `rtk ./gradlew :zygarde-web-codegen:ktlintFormat :zygarde-graphql-codegen-dsl:ktlintFormat` - passed.
 - `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed.
 - `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed.
 
 ## Next Work
 
 - Add nullable response documentation to user-facing GraphQL DSL docs once those docs are introduced or expanded.
-- Consider argument default values and input field nullability ergonomics in the DSL, especially for filter inputs.
+- Consider adding safer typed helpers for GraphQL default values so callers do not need to pass raw SDL literals.
 - Consider generating enum SDL automatically from model-mapping metadata or Kotlin enum types so users do not need to duplicate enum values manually.
 - Consider using collection fields in sample SDL if a future sample model needs list-valued GraphQL fields.
 - Decide whether generated schemas should remain split per DSL schema or eventually be aggregated into one schema artifact.

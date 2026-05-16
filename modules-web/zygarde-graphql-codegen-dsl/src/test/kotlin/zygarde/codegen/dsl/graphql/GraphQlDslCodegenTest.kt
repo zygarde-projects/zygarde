@@ -2,6 +2,7 @@ package zygarde.codegen.dsl.graphql
 
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Test
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
@@ -30,7 +31,7 @@ class GraphQlDslCodegenTest {
           }
           query("todos") {
             collectionArgument<Int>("ids")
-            argument<TodoFilter>("filter", "TodoFilter", nullable = true)
+            argument<TodoFilter>("filter", "TodoFilter", nullable = true, defaultValue = "{ descriptionContains: \"open\" }")
             argument<TodoStatus>("status", nullable = true)
             returnsCollection<TodoDto>("Todo", nullable = true, itemNullable = true)
             serviceName = "TodoGraphQlService"
@@ -47,8 +48,8 @@ class GraphQlDslCodegenTest {
             collectionField<String>("previousDescriptions", nullable = true, itemNullable = true)
           }
           input("TodoFilter") {
-            field<String>("descriptionContains", nullable = true)
-            collectionField<Int>("ids")
+            field<String>("descriptionContains", nullable = true, defaultValue = "\"open\"")
+            collectionField<Int>("ids", defaultValue = "[]")
           }
           enumType("TodoStatus") {
             value("OPEN")
@@ -85,6 +86,7 @@ class GraphQlDslCodegenTest {
         itemNullable shouldBe false
       }
       arguments[1].nullable shouldBe true
+      arguments[1].defaultValue shouldBe "{ descriptionContains: \"open\" }"
       arguments[2].apply {
         graphQlType shouldBe "TodoStatus"
         nullable shouldBe true
@@ -124,8 +126,17 @@ class GraphQlDslCodegenTest {
       nullable shouldBe false
       collection shouldBe true
       itemNullable shouldBe false
+      defaultValue shouldBe "[]"
     }
     api.typeDefinitions[2].kind shouldBe GraphQlTypeDefinitionKind.ENUM
     api.typeDefinitions[2].enumValues shouldBe mutableListOf("OPEN", "DONE")
+  }
+
+  @Test
+  fun `should reject default values on object type fields`() {
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.type("Todo")
+        .field<String>("description", defaultValue = "\"open\"")
+    }.message shouldBe "GraphQL field default values are only supported on input fields"
   }
 }

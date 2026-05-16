@@ -148,7 +148,8 @@ class GraphQlApiGenerator(
           GraphQlTypeDefinitionKind.TYPE,
           GraphQlTypeDefinitionKind.INPUT -> {
             typeDefinition.fields.forEach { field ->
-              appendLine("  ${field.name}: ${field.toSchemaType()}")
+              val defaultValue = field.defaultValue.takeIf { typeDefinition.kind == GraphQlTypeDefinitionKind.INPUT }
+              appendLine("  ${field.name}: ${field.toSchemaType()}${defaultValue.toSchemaDefaultValue()}")
             }
           }
           GraphQlTypeDefinitionKind.ENUM -> {
@@ -196,7 +197,7 @@ class GraphQlApiGenerator(
       return ""
     }
     return joinToString(prefix = "(", postfix = ")") { argument ->
-      "${argument.name}: ${argument.toSchemaType()}"
+      "${argument.name}: ${argument.toSchemaType()}${argument.defaultValue.toSchemaDefaultValue()}"
     }
   }
 
@@ -224,6 +225,10 @@ class GraphQlApiGenerator(
       graphQlType
     }
     return itemType + if (nullable) "" else "!"
+  }
+
+  private fun String?.toSchemaDefaultValue(): String {
+    return this?.let { " = $it" }.orEmpty()
   }
 
   private fun GraphQlTypeDefinitionKind.schemaKeyword(): String {

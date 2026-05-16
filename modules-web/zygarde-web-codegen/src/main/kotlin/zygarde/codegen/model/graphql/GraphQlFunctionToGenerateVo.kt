@@ -22,6 +22,7 @@ data class GraphQlArgumentToGenerateVo(
   var nullable: Boolean = false,
   var collection: Boolean = false,
   var itemNullable: Boolean = false,
+  var defaultValue: String? = null,
 )
 
 data class GraphQlTypeDefinitionToGenerateVo(
@@ -37,6 +38,7 @@ data class GraphQlFieldToGenerateVo(
   var nullable: Boolean = false,
   var collection: Boolean = false,
   var itemNullable: Boolean = false,
+  var defaultValue: String? = null,
 )
 
 enum class GraphQlOperation {
