@@ -1,0 +1,51 @@
+package zygarde.codegen.dsl.graphql
+
+import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlOperation
+import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+
+class DslGraphQlSchema(
+  private val config: GraphQlDslCodegenConfig,
+  private val schemaName: String,
+) {
+  private val functions: MutableList<GraphQlFunctionToGenerateVo> = mutableListOf()
+  private val typeDefinitions: MutableList<GraphQlTypeDefinitionToGenerateVo> = mutableListOf()
+
+  fun query(functionName: String, dsl: DslGraphQlFunction.() -> Unit) {
+    buildForOperation(functionName, GraphQlOperation.QUERY, dsl)
+  }
+
+  fun mutation(functionName: String, dsl: DslGraphQlFunction.() -> Unit) {
+    buildForOperation(functionName, GraphQlOperation.MUTATION, dsl)
+  }
+
+  fun type(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
+    val typeDefinition = DslGraphQlTypeDefinition.type(name).also(dsl)
+    typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
+  }
+
+  fun input(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
+    val typeDefinition = DslGraphQlTypeDefinition.input(name).also(dsl)
+    typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
+  }
+
+  fun toGraphQlApiToGenerateVo(): GraphQlApiToGenerateVo {
+    return GraphQlApiToGenerateVo(
+      controllerPackage = config.controllerPackage,
+      serviceInterfacePackage = config.serviceInterfacePackage,
+      apiName = schemaName,
+      functions = functions,
+      typeDefinitions = typeDefinitions,
+    )
+  }
+
+  private fun buildForOperation(
+    functionName: String,
+    operation: GraphQlOperation,
+    dsl: DslGraphQlFunction.() -> Unit
+  ) {
+    val dslFunction = DslGraphQlFunction(functionName, operation).also(dsl)
+    functions.add(dslFunction.toGraphQlFunctionToGenerateVo())
+  }
+}

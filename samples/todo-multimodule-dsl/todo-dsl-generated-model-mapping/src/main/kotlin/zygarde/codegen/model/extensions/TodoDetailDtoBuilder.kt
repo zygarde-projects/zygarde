@@ -10,11 +10,11 @@ public object TodoDetailDtoBuilder {
   public fun build(
     todo: Todo,
     note: Note,
-    remark: String
+    remark: String,
   ): TodoDetailDto = TodoDetailDto(
-    id = AutoIntIdValueProvider().getValue(todo),
-    description = todo.description,
-    title = note.title,
-    remark = remark
+  id = AutoIntIdValueProvider().getValue(todo),
+  description = todo.description,
+  title = note.title,
+  remark = remark
   )
 }

@@ -10,8 +10,12 @@ dependencies {
   implementation(project(":todo-dsl-generated-api-interface"))
   implementation(project(":todo-dsl-generated-controller"))
   implementation(project(":todo-dsl-generated-dto"))
+  implementation(project(":todo-dsl-generated-graphql-controller"))
+  implementation(project(":todo-dsl-generated-graphql-schema"))
+  implementation(project(":todo-dsl-generated-graphql-service-interface"))
   implementation(project(":todo-dsl-generated-model-mapping"))
   implementation(project(":todo-dsl-generated-service-interface"))
+  implementation("org.springframework.boot:spring-boot-starter-graphql")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
@@ -20,6 +24,7 @@ dependencies {
   testImplementation(project(":todo-dsl-generated-feign"))
   testImplementation("io.github.classgraph:classgraph:4.8.184")
   testImplementation("com.h2database:h2")
+  testImplementation("org.springframework.graphql:spring-graphql-test")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

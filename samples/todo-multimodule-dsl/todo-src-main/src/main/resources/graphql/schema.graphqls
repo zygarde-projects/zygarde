@@ -1,0 +1,34 @@
+extend type Query {
+  authors: [Author!]!
+  books(filter: BookFilter): [Book!]!
+}
+
+extend type Mutation {
+  createAuthor(input: AuthorInput!): Author!
+  createBook(input: BookInput!): Book!
+}
+
+type Author {
+  id: Int!
+  name: String!
+}
+
+type Book {
+  id: Int!
+  title: String!
+  author: Author!
+}
+
+input AuthorInput {
+  name: String!
+}
+
+input BookInput {
+  title: String!
+  authorId: Int!
+}
+
+input BookFilter {
+  titleContains: String
+  authorNameContains: String
+}

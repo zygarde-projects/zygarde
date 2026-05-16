@@ -7,8 +7,8 @@ import kotlin.String
 @Schema
 public data class UpdateNoteReq(
   @Schema(
-    description = "",
-    requiredMode = Schema.RequiredMode.REQUIRED
+    description="",
+    requiredMode=Schema.RequiredMode.REQUIRED,
   )
-  public var title: String
+  public var title: String,
 ) : Serializable

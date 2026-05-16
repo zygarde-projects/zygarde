@@ -1,0 +1,24 @@
+type Query {
+  todos(filter: TodoFilter): [Todo!]!
+  todo(id: Int!): Todo!
+}
+
+type Mutation {
+  createTodo(input: TodoInput!): Todo!
+  updateTodo(id: Int!, input: TodoInput!): Todo!
+  deleteTodo(id: Int!): Boolean!
+}
+
+type Todo {
+  id: Int!
+  description: String!
+}
+
+input TodoInput {
+  description: String!
+}
+
+input TodoFilter {
+  idEq: Int
+  descriptionContains: String
+}

@@ -7,9 +7,9 @@ import zygarde.codegen.`value`.AutoIntIdValueProvider
 
 public object MarkDtoBuilder {
   public fun build(mark: Mark, longRemark: String): MarkDto = MarkDto(
-    id = AutoIntIdValueProvider().getValue(mark),
-    x = mark.x,
-    y = mark.y,
-    longRemark = longRemark
+  id = AutoIntIdValueProvider().getValue(mark),
+  x = mark.x,
+  y = mark.y,
+  longRemark = longRemark
   )
 }

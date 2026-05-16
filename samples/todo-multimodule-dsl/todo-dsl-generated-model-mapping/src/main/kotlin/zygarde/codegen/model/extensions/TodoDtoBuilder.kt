@@ -6,7 +6,7 @@ import zygarde.codegen.`value`.AutoIntIdValueProvider
 
 public object TodoDtoBuilder {
   public fun build(todo: Todo): TodoDto = TodoDto(
-    id = AutoIntIdValueProvider().getValue(todo),
-    description = todo.description
+  id = AutoIntIdValueProvider().getValue(todo),
+  description = todo.description
   )
 }
