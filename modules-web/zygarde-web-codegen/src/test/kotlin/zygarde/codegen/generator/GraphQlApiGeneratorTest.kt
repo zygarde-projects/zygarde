@@ -48,6 +48,12 @@ class GraphQlApiGeneratorTest {
               functionName = "todos",
               arguments = mutableListOf(
                 GraphQlArgumentToGenerateVo(
+                  name = "ids",
+                  type = Int::class.asTypeName(),
+                  graphQlType = "Int",
+                  collection = true,
+                ),
+                GraphQlArgumentToGenerateVo(
                   name = "filter",
                   type = GraphQlGeneratorTestTodoFilter::class.asTypeName(),
                   graphQlType = "TodoFilter",
@@ -104,22 +110,24 @@ class GraphQlApiGeneratorTest {
     controller shouldContain "@QueryMapping"
     controller shouldContain "@MutationMapping"
     controller shouldContain "public fun todo(@Argument id: Int): GraphQlGeneratorTestTodoDto?"
-    controller shouldContain "@Argument filter: GraphQlGeneratorTestTodoFilter?"
+    controller shouldContain "@Argument ids: Collection<Int>"
+    controller shouldContain "filter: GraphQlGeneratorTestTodoFilter?"
     controller shouldContain "val service = bean<TodoGraphQlService>()"
     controller shouldContain "return service.todo(id)"
-    controller shouldContain "return service.todos(filter)"
+    controller shouldContain "return service.todos(ids, filter)"
     controller shouldContain "return service.createTodo(input)"
 
     val serviceInterface = result.serviceInterfaces.single().toString()
     serviceInterface shouldContain "public interface TodoGraphQlService"
     serviceInterface shouldContain "public fun todo(id: Int): GraphQlGeneratorTestTodoDto?"
-    serviceInterface shouldContain "public fun todos(filter: GraphQlGeneratorTestTodoFilter?): Collection<GraphQlGeneratorTestTodoDto>"
+    serviceInterface shouldContain "public fun todos(ids: Collection<Int>, filter: GraphQlGeneratorTestTodoFilter?):"
+    serviceInterface shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
     serviceInterface shouldContain "public fun createTodo(input: GraphQlGeneratorTestTodoInput): GraphQlGeneratorTestTodoDto"
 
     val schema = result.schemas.single().content
     schema shouldContain "type Query"
     schema shouldContain "todo(id: Int!): Todo"
-    schema shouldContain "todos(filter: TodoFilter): [Todo!]!"
+    schema shouldContain "todos(ids: [Int!]!, filter: TodoFilter): [Todo!]!"
     schema shouldContain "type Mutation"
     schema shouldContain "createTodo(input: TodoInput!): Todo!"
     schema shouldContain "type Todo"
@@ -227,5 +235,46 @@ class GraphQlApiGeneratorTest {
     result.controllers.single().toString() shouldContain "public fun nullableTodos(): Collection<GraphQlGeneratorTestTodoDto?>?"
     result.serviceInterfaces.single().toString() shouldContain "public fun nullableTodos(): Collection<GraphQlGeneratorTestTodoDto?>?"
     result.schemas.single().content shouldContain "nullableTodos: [Todo]"
+  }
+
+  @Test
+  fun `should generate nullable collection argument and nullable collection argument items`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "TodoGraphQl",
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.QUERY,
+              functionName = "todosByOptionalIds",
+              arguments = mutableListOf(
+                GraphQlArgumentToGenerateVo(
+                  name = "ids",
+                  type = Int::class.asTypeName(),
+                  graphQlType = "Int",
+                  nullable = true,
+                  collection = true,
+                  itemNullable = true,
+                )
+              ),
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+              responseCollection = true,
+            )
+          ),
+        )
+      )
+    ).generateApis()
+
+    val controller = result.controllers.single().toString()
+    controller shouldContain "public fun todosByOptionalIds(@Argument ids: Collection<Int?>?):"
+    controller shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
+
+    val serviceInterface = result.serviceInterfaces.single().toString()
+    serviceInterface shouldContain "public fun todosByOptionalIds(ids: Collection<Int?>?):"
+    serviceInterface shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
+    result.schemas.single().content shouldContain "todosByOptionalIds(ids: [Int]): [Todo!]!"
   }
 }

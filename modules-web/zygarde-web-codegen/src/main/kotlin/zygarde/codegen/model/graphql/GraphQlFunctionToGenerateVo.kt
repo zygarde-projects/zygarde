@@ -20,6 +20,8 @@ data class GraphQlArgumentToGenerateVo(
   var type: TypeName,
   var graphQlType: String,
   var nullable: Boolean = false,
+  var collection: Boolean = false,
+  var itemNullable: Boolean = false,
 )
 
 data class GraphQlTypeDefinitionToGenerateVo(

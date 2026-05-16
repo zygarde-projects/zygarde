@@ -11,28 +11,24 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- Added nullable GraphQL response support to the DSL and generated API model.
-- `returns(..., nullable = true)` now generates nullable Kotlin controller/service return types and nullable SDL object/scalar responses.
-- `returnsCollection(..., nullable = true, itemNullable = true)` now generates nullable Kotlin collections/items and matching SDL list/item nullability.
-- Regenerated the Todo GraphQL sample so the single `todo(id)` query is `Todo` instead of `Todo!`; the service now returns `null` for missing rows instead of throwing through `getById`.
-- Added focused generator, DSL, and sample GraphQL tests for nullable response behavior.
+- Added collection argument support to the GraphQL generation model, API generator, and DSL.
+- `collectionArgument<T>(...)` now generates Kotlin `Collection<T>` resolver/service parameters and SDL list arguments such as `[Int!]!`.
+- Nullable collection arguments and nullable list items are supported, including Kotlin `Collection<T?>?` and SDL `[T]`.
+- Added focused generator and DSL tests for collection argument behavior.
 
 ## Validation
 
 - `rtk ./gradlew -p modules-web/zygarde-web-codegen test` - passed.
 - `rtk ./gradlew -p modules-web/zygarde-graphql-codegen-dsl test` - passed.
-- `rtk ./gradlew -p samples/todo-multimodule-dsl/todo-codegen-dsl-graphql run` - passed; regenerated sample GraphQL artifacts.
-- `rtk ./gradlew -p samples/todo-multimodule-dsl/todo-src-main test --tests example.test.TodoGraphQlTest` - passed.
 - `rtk ./gradlew -p modules-web/zygarde-web-codegen ktlintCheck` - passed.
 - `rtk ./gradlew -p modules-web/zygarde-graphql-codegen-dsl ktlintCheck` - passed.
-- `rtk ./gradlew -p samples/todo-multimodule-dsl/todo-src-main ktlintCheck` - passed.
-- `rtk ./gradlew -p samples/todo-multimodule-dsl/todo-dsl-generated-graphql-controller ktlintCheck` - passed.
-- `rtk ./gradlew -p samples/todo-multimodule-dsl/todo-dsl-generated-graphql-service-interface ktlintCheck` - passed.
 
 ## Next Work
 
 - Add nullable response documentation to user-facing GraphQL DSL docs once those docs are introduced or expanded.
 - Consider argument default values and input field nullability ergonomics in the DSL, especially for filter inputs.
+- Consider adding `collectionField<T>(...)` KClass/reified overloads to match `collectionArgument<T>(...)` ergonomics.
+- Consider using collection arguments in the Todo sample, for example an `ids` filter/list query, if sample coverage should demonstrate this feature end to end.
 - Decide whether generated schemas should remain split per DSL schema or eventually be aggregated into one schema artifact.
 - Continue toward automatic SDL generation from model-mapping metadata so generated GraphQL types do not need to be duplicated manually in DSL declarations.
 

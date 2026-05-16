@@ -24,6 +24,7 @@ class GraphQlDslCodegenTest {
             serviceName = "TodoGraphQlService"
           }
           query("todos") {
+            collectionArgument<Int>("ids")
             argument<TodoFilter>("filter", "TodoFilter", nullable = true)
             returnsCollection<TodoDto>("Todo", nullable = true, itemNullable = true)
             serviceName = "TodoGraphQlService"
@@ -64,7 +65,13 @@ class GraphQlDslCodegenTest {
     api.functions[1].apply {
       operation shouldBe GraphQlOperation.QUERY
       functionName shouldBe "todos"
-      arguments.single().nullable shouldBe true
+      arguments[0].apply {
+        graphQlType shouldBe "Int"
+        nullable shouldBe false
+        collection shouldBe true
+        itemNullable shouldBe false
+      }
+      arguments[1].nullable shouldBe true
       responseCollection shouldBe true
       responseNullable shouldBe true
       responseItemNullable shouldBe true

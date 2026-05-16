@@ -113,17 +113,26 @@ class GraphQlApiGenerator(
   }
 
   private fun GraphQlArgumentToGenerateVo.toParameterSpec(): ParameterSpec {
-    return ParameterSpec.builder(name, type.copy(nullable = nullable)).build()
+    val parameterType = if (collection) {
+      type.toCollectionType(itemNullable = itemNullable, nullable = nullable)
+    } else {
+      type.copy(nullable = nullable)
+    }
+    return ParameterSpec.builder(name, parameterType).build()
   }
 
   private fun zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo.kotlinResponseType(): TypeName {
     return if (responseCollection) {
-      Collection::class.asTypeName()
-        .parameterizedBy(responseType.copy(nullable = responseItemNullable))
-        .copy(nullable = responseNullable)
+      responseType.toCollectionType(itemNullable = responseItemNullable, nullable = responseNullable)
     } else {
       responseType.copy(nullable = responseNullable)
     }
+  }
+
+  private fun TypeName.toCollectionType(itemNullable: Boolean, nullable: Boolean): TypeName {
+    return Collection::class.asTypeName()
+      .parameterizedBy(copy(nullable = itemNullable))
+      .copy(nullable = nullable)
   }
 
   private fun GraphQlApiToGenerateVo.toSchemaGenerateResult(
@@ -177,8 +186,17 @@ class GraphQlApiGenerator(
       return ""
     }
     return joinToString(prefix = "(", postfix = ")") { argument ->
-      "${argument.name}: ${argument.graphQlType}${if (argument.nullable) "" else "!"}"
+      "${argument.name}: ${argument.toSchemaType()}"
     }
+  }
+
+  private fun GraphQlArgumentToGenerateVo.toSchemaType(): String {
+    val itemType = if (collection) {
+      "[${graphQlType}${if (itemNullable) "" else "!"}]"
+    } else {
+      graphQlType
+    }
+    return itemType + if (nullable) "" else "!"
   }
 
   private fun GraphQlFunctionToGenerateVo.toSchemaResponseType(): String {

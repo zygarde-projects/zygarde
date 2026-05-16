@@ -46,6 +46,53 @@ class DslGraphQlFunction(
     argument(name, T::class, graphQlType, nullable)
   }
 
+  fun collectionArgument(
+    name: String,
+    type: KClass<*>,
+    graphQlType: String = type.defaultGraphQlType(),
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+  ) {
+    arguments.add(
+      GraphQlArgumentToGenerateVo(
+        name = name,
+        type = type.asTypeName(),
+        graphQlType = graphQlType,
+        nullable = nullable,
+        collection = true,
+        itemNullable = itemNullable,
+      )
+    )
+  }
+
+  fun collectionArgument(
+    name: String,
+    type: TypeName,
+    graphQlType: String,
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+  ) {
+    arguments.add(
+      GraphQlArgumentToGenerateVo(
+        name = name,
+        type = type,
+        graphQlType = graphQlType,
+        nullable = nullable,
+        collection = true,
+        itemNullable = itemNullable,
+      )
+    )
+  }
+
+  inline fun <reified T : Any> collectionArgument(
+    name: String,
+    graphQlType: String = T::class.defaultGraphQlType(),
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+  ) {
+    collectionArgument(name, T::class, graphQlType, nullable, itemNullable)
+  }
+
   fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
     responseType = type.asTypeName()
     responseGraphQlType = graphQlType
