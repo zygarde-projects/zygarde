@@ -87,6 +87,8 @@ class GraphQlApiGeneratorTest {
               fields = mutableListOf(
                 GraphQlFieldToGenerateVo("id", "Int"),
                 GraphQlFieldToGenerateVo("description", "String"),
+                GraphQlFieldToGenerateVo("tags", "String", collection = true),
+                GraphQlFieldToGenerateVo("previousDescriptions", "String", nullable = true, collection = true, itemNullable = true),
               )
             ),
             GraphQlTypeDefinitionToGenerateVo(
@@ -94,6 +96,7 @@ class GraphQlApiGeneratorTest {
               name = "TodoInput",
               fields = mutableListOf(
                 GraphQlFieldToGenerateVo("description", "String"),
+                GraphQlFieldToGenerateVo("tags", "String", collection = true),
               )
             )
           )
@@ -131,6 +134,8 @@ class GraphQlApiGeneratorTest {
     schema shouldContain "type Mutation"
     schema shouldContain "createTodo(input: TodoInput!): Todo!"
     schema shouldContain "type Todo"
+    schema shouldContain "tags: [String!]!"
+    schema shouldContain "previousDescriptions: [String]"
     schema shouldContain "input TodoInput"
   }
 

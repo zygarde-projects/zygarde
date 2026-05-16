@@ -41,6 +41,14 @@ class DslGraphQlTypeDefinition private constructor(
     )
   }
 
+  fun collectionField(name: String, type: KClass<*>, nullable: Boolean = false, itemNullable: Boolean = false) {
+    collectionField(name, type.defaultGraphQlType(), nullable, itemNullable)
+  }
+
+  inline fun <reified T : Any> collectionField(name: String, nullable: Boolean = false, itemNullable: Boolean = false) {
+    collectionField(name, T::class, nullable, itemNullable)
+  }
+
   fun toGraphQlTypeDefinitionToGenerateVo(): GraphQlTypeDefinitionToGenerateVo {
     return GraphQlTypeDefinitionToGenerateVo(
       kind = kind,

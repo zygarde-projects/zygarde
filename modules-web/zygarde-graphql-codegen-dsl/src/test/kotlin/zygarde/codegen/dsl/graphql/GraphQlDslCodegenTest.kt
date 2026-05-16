@@ -37,9 +37,12 @@ class GraphQlDslCodegenTest {
           type("Todo") {
             field<Int>("id")
             field<String>("description")
+            collectionField<String>("tags")
+            collectionField<String>("previousDescriptions", nullable = true, itemNullable = true)
           }
           input("TodoFilter") {
             field<String>("descriptionContains", nullable = true)
+            collectionField<Int>("ids")
           }
         }
       }
@@ -89,6 +92,24 @@ class GraphQlDslCodegenTest {
     }
 
     api.typeDefinitions[0].kind shouldBe GraphQlTypeDefinitionKind.TYPE
+    api.typeDefinitions[0].fields[2].apply {
+      graphQlType shouldBe "String"
+      nullable shouldBe false
+      collection shouldBe true
+      itemNullable shouldBe false
+    }
+    api.typeDefinitions[0].fields[3].apply {
+      graphQlType shouldBe "String"
+      nullable shouldBe true
+      collection shouldBe true
+      itemNullable shouldBe true
+    }
     api.typeDefinitions[1].kind shouldBe GraphQlTypeDefinitionKind.INPUT
+    api.typeDefinitions[1].fields[1].apply {
+      graphQlType shouldBe "Int"
+      nullable shouldBe false
+      collection shouldBe true
+      itemNullable shouldBe false
+    }
   }
 }
