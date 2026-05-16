@@ -13,6 +13,8 @@ public interface TodoGraphQlService {
 
   public fun todo(id: Int): TodoDto?
 
+  public fun todosByIds(ids: Collection<Int>): Collection<TodoDto>
+
   public fun createTodo(input: CreateTodoReq): TodoDto
 
   public fun updateTodo(id: Int, input: UpdateTodoReq): TodoDto

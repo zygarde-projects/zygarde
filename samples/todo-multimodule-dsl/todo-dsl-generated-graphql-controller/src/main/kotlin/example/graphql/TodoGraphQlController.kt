@@ -27,6 +27,12 @@ public class TodoGraphQlController {
     return service.todo(id)
   }
 
+  @QueryMapping
+  public fun todosByIds(@Argument ids: Collection<Int>): Collection<TodoDto> {
+    val service = bean<TodoGraphQlService>()
+    return service.todosByIds(ids)
+  }
+
   @MutationMapping
   public fun createTodo(@Argument input: CreateTodoReq): TodoDto {
     val service = bean<TodoGraphQlService>()

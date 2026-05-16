@@ -62,6 +62,21 @@ class TodoGraphQlTest(
 
     graphQlTester.document(
       """
+      query {
+        todosByIds(ids: [$secondId]) {
+          id
+          description
+        }
+      }
+      """.trimIndent()
+    )
+      .execute()
+      .path("todosByIds[*].description")
+      .entityList(String::class.java)
+      .containsExactly("second graphql todo")
+
+    graphQlTester.document(
+      """
       mutation {
         updateTodo(id: $secondId, input: { description: "updated graphql todo" }) {
           description

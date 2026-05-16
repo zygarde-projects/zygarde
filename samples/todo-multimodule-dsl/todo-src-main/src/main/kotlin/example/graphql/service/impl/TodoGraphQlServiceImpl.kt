@@ -30,6 +30,12 @@ class TodoGraphQlServiceImpl(
     return todoDao.findById(id).orElse(null)?.let(TodoDtoBuilder::build)
   }
 
+  override fun todosByIds(ids: Collection<Int>): Collection<TodoDto> {
+    return todoDao.search {
+      id() inList ids
+    }.map(TodoDtoBuilder::build)
+  }
+
   override fun createTodo(input: CreateTodoReq): TodoDto {
     return todoApiService.createTodo(input) {}
   }

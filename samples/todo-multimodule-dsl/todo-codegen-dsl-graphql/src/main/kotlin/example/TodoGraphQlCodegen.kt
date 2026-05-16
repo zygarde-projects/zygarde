@@ -21,6 +21,12 @@ class TodoGraphQlCodegen : GraphQlDslCodegen() {
         serviceName = "TodoGraphQlService"
       }
 
+      query("todosByIds") {
+        collectionArgument<Int>("ids")
+        returnsCollection<TodoDto>("Todo")
+        serviceName = "TodoGraphQlService"
+      }
+
       mutation("createTodo") {
         argument<CreateTodoReq>("input", "TodoInput")
         returns<TodoDto>("Todo")
