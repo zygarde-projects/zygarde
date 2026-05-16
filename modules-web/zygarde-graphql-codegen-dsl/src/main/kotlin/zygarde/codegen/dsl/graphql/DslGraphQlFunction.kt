@@ -17,6 +17,8 @@ class DslGraphQlFunction(
   private var responseType: TypeName? = null
   private var responseGraphQlType: String? = null
   private var responseCollection: Boolean = false
+  private var responseNullable: Boolean = false
+  private var responseItemNullable: Boolean = false
 
   fun argument(name: String, type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
     arguments.add(
@@ -44,36 +46,53 @@ class DslGraphQlFunction(
     argument(name, T::class, graphQlType, nullable)
   }
 
-  fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType()) {
+  fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
     responseType = type.asTypeName()
     responseGraphQlType = graphQlType
     responseCollection = false
+    responseNullable = nullable
+    responseItemNullable = false
   }
 
-  fun returns(type: TypeName, graphQlType: String) {
+  fun returns(type: TypeName, graphQlType: String, nullable: Boolean = false) {
     responseType = type
     responseGraphQlType = graphQlType
     responseCollection = false
+    responseNullable = nullable
+    responseItemNullable = false
   }
 
-  inline fun <reified T : Any> returns(graphQlType: String = T::class.defaultGraphQlType()) {
-    returns(T::class, graphQlType)
+  inline fun <reified T : Any> returns(graphQlType: String = T::class.defaultGraphQlType(), nullable: Boolean = false) {
+    returns(T::class, graphQlType, nullable)
   }
 
-  fun returnsCollection(type: KClass<*>, graphQlType: String = type.defaultGraphQlType()) {
+  fun returnsCollection(
+    type: KClass<*>,
+    graphQlType: String = type.defaultGraphQlType(),
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+  ) {
     responseType = type.asTypeName()
     responseGraphQlType = graphQlType
     responseCollection = true
+    responseNullable = nullable
+    responseItemNullable = itemNullable
   }
 
-  fun returnsCollection(type: TypeName, graphQlType: String) {
+  fun returnsCollection(type: TypeName, graphQlType: String, nullable: Boolean = false, itemNullable: Boolean = false) {
     responseType = type
     responseGraphQlType = graphQlType
     responseCollection = true
+    responseNullable = nullable
+    responseItemNullable = itemNullable
   }
 
-  inline fun <reified T : Any> returnsCollection(graphQlType: String = T::class.defaultGraphQlType()) {
-    returnsCollection(T::class, graphQlType)
+  inline fun <reified T : Any> returnsCollection(
+    graphQlType: String = T::class.defaultGraphQlType(),
+    nullable: Boolean = false,
+    itemNullable: Boolean = false,
+  ) {
+    returnsCollection(T::class, graphQlType, nullable, itemNullable)
   }
 
   fun toGraphQlFunctionToGenerateVo(): GraphQlFunctionToGenerateVo {
@@ -84,6 +103,8 @@ class DslGraphQlFunction(
       responseType = requireNotNull(responseType) { "GraphQL function $functionName must declare a response type" },
       responseGraphQlType = requireNotNull(responseGraphQlType) { "GraphQL function $functionName must declare a GraphQL response type" },
       responseCollection = responseCollection,
+      responseNullable = responseNullable,
+      responseItemNullable = responseItemNullable,
       serviceName = serviceName,
       serviceFunctionName = serviceFunctionName ?: functionName,
     )

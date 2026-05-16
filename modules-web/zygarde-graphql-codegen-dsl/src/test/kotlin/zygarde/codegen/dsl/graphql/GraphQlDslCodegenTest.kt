@@ -18,9 +18,14 @@ class GraphQlDslCodegenTest {
     val dsl = object : GraphQlDslCodegen() {
       override fun codegen() {
         schema("TodoGraphQl") {
+          query("todo") {
+            argument<Int>("id")
+            returns<TodoDto>("Todo", nullable = true)
+            serviceName = "TodoGraphQlService"
+          }
           query("todos") {
             argument<TodoFilter>("filter", "TodoFilter", nullable = true)
-            returnsCollection<TodoDto>("Todo")
+            returnsCollection<TodoDto>("Todo", nullable = true, itemNullable = true)
             serviceName = "TodoGraphQlService"
           }
           mutation("deleteTodo") {
@@ -43,23 +48,36 @@ class GraphQlDslCodegenTest {
 
     val api = dsl.apisToGenerate.single()
     api.apiName shouldBe "TodoGraphQl"
-    api.functions shouldHaveSize 2
+    api.functions shouldHaveSize 3
     api.typeDefinitions shouldHaveSize 2
 
     api.functions[0].apply {
       operation shouldBe GraphQlOperation.QUERY
-      functionName shouldBe "todos"
-      arguments.single().nullable shouldBe true
-      responseCollection shouldBe true
+      functionName shouldBe "todo"
+      arguments.single().graphQlType shouldBe "Int"
+      responseCollection shouldBe false
+      responseNullable shouldBe true
       responseGraphQlType shouldBe "Todo"
       serviceName shouldBe "TodoGraphQlService"
     }
 
     api.functions[1].apply {
+      operation shouldBe GraphQlOperation.QUERY
+      functionName shouldBe "todos"
+      arguments.single().nullable shouldBe true
+      responseCollection shouldBe true
+      responseNullable shouldBe true
+      responseItemNullable shouldBe true
+      responseGraphQlType shouldBe "Todo"
+      serviceName shouldBe "TodoGraphQlService"
+    }
+
+    api.functions[2].apply {
       operation shouldBe GraphQlOperation.MUTATION
       functionName shouldBe "deleteTodo"
       arguments.single().graphQlType shouldBe "Int"
       responseCollection shouldBe false
+      responseNullable shouldBe false
       responseGraphQlType shouldBe "Boolean"
     }
 

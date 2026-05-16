@@ -22,7 +22,7 @@ public class TodoGraphQlController {
   }
 
   @QueryMapping
-  public fun todo(@Argument id: Int): TodoDto {
+  public fun todo(@Argument id: Int): TodoDto? {
     val service = bean<TodoGraphQlService>()
     return service.todo(id)
   }

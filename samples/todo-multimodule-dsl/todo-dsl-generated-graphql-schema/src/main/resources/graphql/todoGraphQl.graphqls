@@ -1,6 +1,6 @@
 type Query {
   todos(filter: TodoFilter): [Todo!]!
-  todo(id: Int!): Todo!
+  todo(id: Int!): Todo
 }
 
 type Mutation {

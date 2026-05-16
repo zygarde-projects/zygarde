@@ -100,6 +100,19 @@ class TodoGraphQlTest(
       .entity(Boolean::class.java)
       .isEqualTo(true)
 
+    graphQlTester.document(
+      """
+      query {
+        todo(id: $secondId) {
+          description
+        }
+      }
+      """.trimIndent()
+    )
+      .execute()
+      .path("todo")
+      .valueIsNull()
+
     val remainingCount = graphQlTester.document(
       """
       query {

@@ -11,7 +11,7 @@ import zygarde.codegen.`data`.dto.UpdateTodoReq
 public interface TodoGraphQlService {
   public fun todos(filter: TodoFilter?): Collection<TodoDto>
 
-  public fun todo(id: Int): TodoDto
+  public fun todo(id: Int): TodoDto?
 
   public fun createTodo(input: CreateTodoReq): TodoDto
 

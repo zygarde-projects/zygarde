@@ -118,9 +118,11 @@ class GraphQlApiGenerator(
 
   private fun zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo.kotlinResponseType(): TypeName {
     return if (responseCollection) {
-      Collection::class.asTypeName().parameterizedBy(responseType)
+      Collection::class.asTypeName()
+        .parameterizedBy(responseType.copy(nullable = responseItemNullable))
+        .copy(nullable = responseNullable)
     } else {
-      responseType
+      responseType.copy(nullable = responseNullable)
     }
   }
 
@@ -181,9 +183,9 @@ class GraphQlApiGenerator(
 
   private fun GraphQlFunctionToGenerateVo.toSchemaResponseType(): String {
     return if (responseCollection) {
-      "[$responseGraphQlType!]!"
+      "[${responseGraphQlType}${if (responseItemNullable) "" else "!"}]" + if (responseNullable) "" else "!"
     } else {
-      "$responseGraphQlType!"
+      responseGraphQlType + if (responseNullable) "" else "!"
     }
   }
 

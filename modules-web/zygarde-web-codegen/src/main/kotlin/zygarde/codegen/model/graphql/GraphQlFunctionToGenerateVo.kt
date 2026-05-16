@@ -9,6 +9,8 @@ data class GraphQlFunctionToGenerateVo(
   var responseType: TypeName,
   var responseGraphQlType: String,
   var responseCollection: Boolean = false,
+  var responseNullable: Boolean = false,
+  var responseItemNullable: Boolean = false,
   var serviceName: String? = null,
   var serviceFunctionName: String? = null,
 )

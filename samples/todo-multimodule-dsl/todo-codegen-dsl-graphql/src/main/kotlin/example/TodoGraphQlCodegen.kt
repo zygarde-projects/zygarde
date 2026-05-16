@@ -17,7 +17,7 @@ class TodoGraphQlCodegen : GraphQlDslCodegen() {
 
       query("todo") {
         argument<Int>("id")
-        returns<TodoDto>("Todo")
+        returns<TodoDto>("Todo", nullable = true)
         serviceName = "TodoGraphQlService"
       }
 
