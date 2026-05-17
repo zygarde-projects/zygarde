@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl.graphql
 
+import zygarde.codegen.model.graphql.GraphQlEnumValueToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
@@ -14,7 +15,7 @@ class DslGraphQlTypeDefinition private constructor(
 ) {
   var description: String? = null
   private val fields: MutableList<GraphQlFieldToGenerateVo> = mutableListOf()
-  private val enumValues: MutableList<String> = mutableListOf()
+  private val enumValues: MutableList<GraphQlEnumValueToGenerateVo> = mutableListOf()
 
   init {
     requireGraphQlName(name, "GraphQL type definition name")
@@ -109,10 +110,11 @@ class DslGraphQlTypeDefinition private constructor(
     collectionField(name, T::class, nullable, itemNullable, defaultValue, description)
   }
 
-  fun value(name: String) {
+  fun value(name: String, description: String? = null) {
     requireGraphQlName(name, "GraphQL enum value")
-    requireUniqueGraphQlName(name, enumValues, "GraphQL enum value")
-    enumValues.add(name)
+    requireUniqueGraphQlName(name, enumValues.map { it.name }, "GraphQL enum value")
+    requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '${this.name}' value '$name'")
+    enumValues.add(GraphQlEnumValueToGenerateVo(name = name, description = description))
   }
 
   inline fun <reified T : Enum<T>> values() {

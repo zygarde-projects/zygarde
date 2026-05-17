@@ -182,12 +182,14 @@ input("TodoFilter") {
 
 ```kotlin
 enumType("TodoStatus") {           // 手動列出 enum value
-  value("OPEN")
+  value("OPEN", description = "尚未完成")  // 個別 value 可加 description
   value("DONE")
 }
 
 enumType<TodoStatus>()             // 由 Kotlin enum 自動推導所有 value,SDL 名稱用 simpleName
 ```
+
+`enumType<T>()` 由 Kotlin enum 推導時不會帶入 description;需要個別 value 的 description 時請改用手動 `value(name, description)` 寫法。
 
 ### `scalar` — 自訂 scalar
 
@@ -202,7 +204,7 @@ scalar<Long>()                     // SDL 名稱由型別推導,此例為 "Long"
 
 ## 描述(GraphQL description)
 
-operation 函式、operation 參數、型別定義與 `type` / `input` 的個別 field 都可以加上 SDL description,會在 schema 產出物寫成 GraphQL 的 block string(`"""..."""`),於 introspection / GraphiQL 顯示。
+operation 函式、operation 參數、型別定義、`type` / `input` 的個別 field 與 `enum` 的個別 value 都可以加上 SDL description,會在 schema 產出物寫成 GraphQL 的 block string(`"""..."""`),於 introspection / GraphiQL 顯示。
 
 ```kotlin
 schema("TodoGraphQl") {
@@ -224,11 +226,12 @@ schema("TodoGraphQl") {
 - `type` / `input` / `enumType` 區塊同樣用 `description = "..."` 屬性;會寫在型別宣告之前。
 - `type` / `input` 的 `field` / `collectionField` 用具名參數 `description = "..."` 設定;會寫在該 field 之前(縮排兩格)。
 - operation 的 `argument` / `collectionArgument` 用具名參數 `description = "..."` 設定。只要有任一參數帶 description,該 operation field 的參數會改用多行排版,每個參數各自一行並寫上 block string。
+- `enumType` 的 `value` 用具名參數 `description = "..."` 設定;會寫在該 value 之前(縮排兩格)。
 - `scalar(name)` / `scalar<T>()` 用具名參數 `description = "..."` 設定。
 - description 預設為 `null`(不輸出)。設定後不可為空白字串,否則會以 `... description must not be blank` 失敗。
 - 單行 description 產出 `"""text"""`;含換行(或以 `"` 結尾)時改用多行 block string,內容會逐行縮排。description 內的 `"""` 會自動跳脫成 `\"""`。
 
-目前 description 支援 operation 函式、operation 參數、型別定義與 `type` / `input` field 層級;個別 enum value 的 description 尚未支援。
+description 支援已涵蓋 operation 函式、operation 參數、型別定義、`type` / `input` field 與 `enum` value 各層級。
 
 ## 型別對應(`defaultGraphQlType`)
 
@@ -365,9 +368,7 @@ mutation todo → fun mutationTodo(...)
 
 ## 目前限制與後續
 
-DSL 目前涵蓋 query / mutation / subscription、參數、型別定義、預設值與 operation / argument / 型別 / field 層級的 description。以下尚未由 DSL 支援,需要時請手寫 resolver:
-
-- **enum value 的 description** — 目前 description 支援 operation 函式、operation 參數、型別定義與 `type` / `input` field;個別 enum value 尚未支援。
+DSL 目前涵蓋 query / mutation / subscription、參數、型別定義、預設值與 operation / argument / 型別 / field / enum value 層級的 description。以下尚未由 DSL 支援,需要時請手寫 resolver:
 
 - **巢狀 field resolver / `@SchemaMapping` / `@BatchMapping`** — 解決 N+1 的 DataLoader / batch resolver 仍須手寫(可參考 `samples/todo-multimodule-dsl` 內手寫的 `BookGraphQlController`)。
 - **subscription 回傳型別** — 產生器只輸出宣告的回傳型別。要串真正的 Spring GraphQL subscription,呼叫端需自行選用 reactive publisher 型別(例如以 `TypeName` 多載傳入 `Flux<T>`)。

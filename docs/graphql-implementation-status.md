@@ -1,34 +1,37 @@
 # GraphQL Implementation Status
 
-Last updated: 2026-05-17 (argument description support round)
+Last updated: 2026-05-17 (enum-value description support round)
 
 ## Current State
 
 - GraphQL feasibility and design notes live in `doc/graphql-support-investigation.md`.
-- `modules-web/zygarde-web-codegen` contains the initial `GraphQlApiGenerator` and GraphQL generation value objects, including query, mutation, subscription, object type, input, enum, scalar, nullable collection, raw SDL default-value, operation/type-definition description, `type`/`input` field description, and operation-argument description support.
-- `modules-web/zygarde-graphql-codegen-dsl` contains the first DSL entry point for query, mutation, subscription, type, input, enum, and scalar declarations, including Kotlin enum value derivation helpers, `GraphQlDefaultValue` helpers for safer SDL default-value literals, operation/type-definition descriptions, `field`/`collectionField` descriptions, and `argument`/`collectionArgument` descriptions.
+- `modules-web/zygarde-web-codegen` contains the `GraphQlApiGenerator` and GraphQL generation value objects, including query, mutation, subscription, object type, input, enum, scalar, nullable collection, raw SDL default-value, and SDL descriptions for operations, type definitions, `type`/`input` fields, operation arguments, and individual enum values.
+- `modules-web/zygarde-graphql-codegen-dsl` contains the DSL entry point for query, mutation, subscription, type, input, enum, and scalar declarations, including Kotlin enum value derivation helpers, `GraphQlDefaultValue` helpers for safer SDL default-value literals, and descriptions for operations, type definitions, `field`/`collectionField`, `argument`/`collectionArgument`, and `value` (enum values).
 - `samples/todo-multimodule-dsl` has a generated Todo GraphQL sample plus handwritten Book/Author GraphQL coverage for relation filtering and `@BatchMapping`.
 
 ## Changed In This Round
 
-- Extended GraphQL SDL description support to individual operation arguments, completing the operation / type-definition / field / argument description arc (only enum-value descriptions remain).
+- Completed the GraphQL SDL description arc: individual enum values can now carry descriptions, so descriptions are now supported at the operation / type-definition / field / argument / enum-value levels.
 - Production changes:
-  - `GraphQlArgumentToGenerateVo` gained a nullable `description` field.
-  - `GraphQlApiGenerator.validateGraphQlNames` now validates each operation-argument description (rejecting a non-null but blank value) with the label `GraphQL <operation> field '<fieldName>' argument '<argumentName>'`.
-  - `GraphQlApiGenerator.toSchemaArguments` now takes the enclosing field indent and renders arguments multi-line whenever any argument carries a description: each argument lands on its own line at `fieldIndent + 2 spaces`, preceded by its block-string description, with the closing `)` aligned to the field indent. When no argument has a description the rendering stays inline (`(name: Type)`), so existing output is byte-for-byte unchanged. The shared `toSchemaDescription` block-string / escaping logic is reused.
-  - DSL: all six `DslGraphQlFunction.argument` / `collectionArgument` overloads (raw `KClass`, `TypeName`, reified) gained a `description` parameter; the four base overloads validate the description eagerly via a private `requireArgumentDescription` helper.
-- Argument descriptions are opt-in and default to `null`, so existing generated sample output is unchanged and no sample regeneration was needed.
-- Enum-value-level descriptions remain the only deferred description case: `enumValues` is still a `MutableList<String>` and would need to become a VO list to carry per-value descriptions.
+  - New `GraphQlEnumValueToGenerateVo(name, description?)` VO; `GraphQlTypeDefinitionToGenerateVo.enumValues` changed from `MutableList<String>` to `MutableList<GraphQlEnumValueToGenerateVo>`.
+  - `GraphQlApiGenerator.validateGraphQlNames` now validates each enum value name and its description (rejecting a non-null but blank value) with the label `GraphQL enum '<name>' value '<value>'`.
+  - `GraphQlApiGenerator` duplicate detection maps `enumValues` to `.name` before `firstDuplicateOrNull()`; the existing `GraphQL enum '<name>' value '<value>' is already declared` message is unchanged.
+  - Enum SDL rendering now prepends each value with `toSchemaDescription("  ")` (the same shared block-string / escaping logic), so a value with no description is rendered byte-for-byte as before.
+  - DSL: `DslGraphQlTypeDefinition.value(name)` gained an optional `description` parameter, validated eagerly via `requireGraphQlDescription`. `enumValues` storage is now a `GraphQlEnumValueToGenerateVo` list. The reified `values<T>()` helper still derives all values from a Kotlin enum with `null` descriptions.
+- Tests updated to the new VO shape; new tests added:
+  - Generator: `should render GraphQL enum value descriptions in generated schema` and `should reject blank GraphQL enum value descriptions before rendering generated output`.
+  - DSL: `should carry GraphQL enum value descriptions through the DSL`, plus an enum-value blank-description case added to `should reject blank GraphQL descriptions`.
+- `doc/graphql-dsl-guide.md` updated: the `enumType` section shows `value(name, description)`, the description section lists the `enum` value level, and the "current limitations" section no longer lists enum-value descriptions as unsupported.
+- Enum-value descriptions are opt-in and default to `null`, so existing generated sample output is unchanged and no sample regeneration was needed.
 
 ## Validation
 
-- `./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - `BUILD SUCCESSFUL`. Both test suites pass, including the two new generator tests (render multi-line argument descriptions / reject blank argument description) and the extended DSL tests (`argument`/`collectionArgument` descriptions carried through and blank argument description rejected).
+- `./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` — `BUILD SUCCESSFUL`. Both test suites pass, including the new enum-value-description generator and DSL tests.
 - detekt is not wired to these modules' sources (prior rounds reported `NO-SOURCE`), so it was not re-run this round.
 
 ## Next Work
 
-- Add enum-value descriptions; this needs `enumValues` to become a VO list rather than `MutableList<String>`, plus ripple changes through the DSL `value()`/`values<T>()` helpers, generator validation, duplicate detection, and rendering.
-- Optionally add operation-argument / field descriptions to the `samples/todo-multimodule-dsl` GraphQL DSL and regenerate to demonstrate the feature end-to-end.
+- Optionally add operation-argument / field / enum-value descriptions to the `samples/todo-multimodule-dsl` GraphQL DSL and regenerate to demonstrate the description features end-to-end.
 - Link `doc/graphql-dsl-guide.md` from a top-level docs index or README if/when a docs index exists.
 - Consider generating enum SDL automatically from model-mapping metadata so users do not need to declare enum GraphQL types manually.
 - Consider adding a generated sample subscription once the sample app has an event source worth exposing.
@@ -47,8 +50,8 @@ Last updated: 2026-05-17 (argument description support round)
 - GraphQL names that are Kotlin reserved identifiers are valid SDL names; generated Kotlin declarations are handled by KotlinPoet, and generated call sites escape those references explicitly.
 - GraphQL name validation follows the GraphQL lexical name grammar (`[_A-Za-z][_0-9A-Za-z]*`) and rejects the reserved `__` introspection-name prefix.
 - Generated Spring GraphQL bindings carry explicit annotation names, so runtime field/argument binding is not dependent on reflected Kotlin method or parameter names.
-- Scalar SDL declarations are generated, but runtime scalar registration remains separate; custom scalar coercing still needs Spring GraphQL/GraphQL Java configuration.
-- GraphQL descriptions render as block strings (`"""..."""`); operation fields, type definitions, `type`/`input` fields, and operation arguments carry them so far, and a set-but-blank description fails fast.
+- GraphQL descriptions render as block strings (`"""..."""`); operations, type definitions, `type`/`input` fields, operation arguments, and enum values all carry them, and a set-but-blank description fails fast.
 - Operation arguments render inline (`(name: Type)`) until at least one argument carries a description, at which point the whole argument list switches to multi-line rendering so each argument can carry a block string.
+- `enumType<T>()` derives values from a Kotlin enum and cannot carry per-value descriptions; the manual `value(name, description)` form is required for those.
 - GraphQL runtime support is still sample/codegen focused; no dedicated `zygarde-graphql` runtime module exists yet.
 - Error handling, authentication context injection, custom scalar registration, pagination shape, and generated DataLoader/batch resolver support remain open design and implementation areas.

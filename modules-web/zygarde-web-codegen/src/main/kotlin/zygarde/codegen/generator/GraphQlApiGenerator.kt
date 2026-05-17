@@ -101,7 +101,8 @@ class GraphQlApiGenerator(
           "GraphQL enum '$name' must declare at least one value"
         }
         enumValues.forEach { enumValue ->
-          requireGraphQlName(enumValue, "GraphQL enum value")
+          requireGraphQlName(enumValue.name, "GraphQL enum value")
+          requireGraphQlDescription(enumValue.description, "GraphQL enum '$name' value '${enumValue.name}'")
         }
       }
       GraphQlTypeDefinitionKind.SCALAR -> Unit
@@ -154,7 +155,8 @@ class GraphQlApiGenerator(
             }
         }
         GraphQlTypeDefinitionKind.ENUM -> {
-          typeDefinition.enumValues.firstDuplicateOrNull()
+          typeDefinition.enumValues.map { it.name }
+            .firstDuplicateOrNull()
             ?.let { duplicateName ->
               throw IllegalArgumentException("GraphQL enum '${typeDefinition.name}' value '$duplicateName' is already declared")
             }
@@ -304,7 +306,8 @@ class GraphQlApiGenerator(
           }
           GraphQlTypeDefinitionKind.ENUM -> {
             typeDefinition.enumValues.forEach { enumValue ->
-              appendLine("  $enumValue")
+              append(enumValue.description.toSchemaDescription("  "))
+              appendLine("  ${enumValue.name}")
             }
           }
           GraphQlTypeDefinitionKind.SCALAR -> Unit

@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Test
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlEnumValueToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
@@ -125,7 +126,10 @@ class GraphQlApiGeneratorTest {
             GraphQlTypeDefinitionToGenerateVo(
               kind = GraphQlTypeDefinitionKind.ENUM,
               name = "TodoStatus",
-              enumValues = mutableListOf("OPEN", "DONE"),
+              enumValues = mutableListOf(
+                GraphQlEnumValueToGenerateVo("OPEN"),
+                GraphQlEnumValueToGenerateVo("DONE"),
+              ),
             ),
             GraphQlTypeDefinitionToGenerateVo(
               kind = GraphQlTypeDefinitionKind.SCALAR,
@@ -693,7 +697,10 @@ class GraphQlApiGeneratorTest {
               GraphQlTypeDefinitionToGenerateVo(
                 kind = GraphQlTypeDefinitionKind.ENUM,
                 name = "TodoStatus",
-                enumValues = mutableListOf("OPEN", "OPEN"),
+                enumValues = mutableListOf(
+                  GraphQlEnumValueToGenerateVo("OPEN"),
+                  GraphQlEnumValueToGenerateVo("OPEN"),
+                ),
               )
             )
           )
@@ -866,6 +873,55 @@ class GraphQlApiGeneratorTest {
         )
       ).generateApis()
     }.message shouldBe "GraphQL query field 'todo' argument 'id' description must not be blank"
+  }
+
+  @Test
+  fun `should render GraphQL enum value descriptions in generated schema`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        graphQlApi(
+          typeDefinitions = mutableListOf(
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.ENUM,
+              name = "TodoStatus",
+              enumValues = mutableListOf(
+                GraphQlEnumValueToGenerateVo("OPEN", description = "Not yet done"),
+                GraphQlEnumValueToGenerateVo("DONE", description = "Completed\nand archived"),
+                GraphQlEnumValueToGenerateVo("CANCELLED"),
+              ),
+            )
+          )
+        )
+      )
+    ).generateApis()
+
+    val schema = result.schemas.single().content
+    schema shouldContain "enum TodoStatus {\n" +
+      "  \"\"\"Not yet done\"\"\"\n" +
+      "  OPEN\n" +
+      "  \"\"\"\n  Completed\n  and archived\n  \"\"\"\n" +
+      "  DONE\n" +
+      "  CANCELLED\n" +
+      "}"
+  }
+
+  @Test
+  fun `should reject blank GraphQL enum value descriptions before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.ENUM,
+                name = "TodoStatus",
+                enumValues = mutableListOf(GraphQlEnumValueToGenerateVo("OPEN", description = " ")),
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL enum 'TodoStatus' value 'OPEN' description must not be blank"
   }
 
   private fun graphQlApi(

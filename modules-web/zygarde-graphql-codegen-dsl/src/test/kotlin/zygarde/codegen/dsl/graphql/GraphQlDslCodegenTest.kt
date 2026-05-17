@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Test
+import zygarde.codegen.model.graphql.GraphQlEnumValueToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 
@@ -151,7 +152,10 @@ class GraphQlDslCodegenTest {
       defaultValue shouldBe "[]"
     }
     api.typeDefinitions[2].kind shouldBe GraphQlTypeDefinitionKind.ENUM
-    api.typeDefinitions[2].enumValues shouldBe mutableListOf("OPEN", "DONE")
+    api.typeDefinitions[2].enumValues shouldBe mutableListOf(
+      GraphQlEnumValueToGenerateVo("OPEN"),
+      GraphQlEnumValueToGenerateVo("DONE"),
+    )
     api.typeDefinitions[3].kind shouldBe GraphQlTypeDefinitionKind.SCALAR
     api.typeDefinitions[3].name shouldBe "Long"
   }
@@ -221,6 +225,34 @@ class GraphQlDslCodegenTest {
     shouldThrow<IllegalArgumentException> {
       DslGraphQlFunction("todo", GraphQlOperation.QUERY).argument<Int>("id", description = " ")
     }.message shouldBe "GraphQL query field 'todo' argument 'id' description must not be blank"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.enumType("TodoStatus").value("OPEN", description = " ")
+    }.message shouldBe "GraphQL enum 'TodoStatus' value 'OPEN' description must not be blank"
+  }
+
+  @Test
+  fun `should carry GraphQL enum value descriptions through the DSL`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("TodoGraphQl") {
+          enumType("TodoStatus") {
+            description = "Lifecycle state of a todo"
+            value("OPEN", description = "Not yet done")
+            value("DONE")
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    val enumType = dsl.apisToGenerate.single().typeDefinitions.single()
+    enumType.description shouldBe "Lifecycle state of a todo"
+    enumType.enumValues shouldBe mutableListOf(
+      GraphQlEnumValueToGenerateVo("OPEN", description = "Not yet done"),
+      GraphQlEnumValueToGenerateVo("DONE"),
+    )
   }
 
   @Test

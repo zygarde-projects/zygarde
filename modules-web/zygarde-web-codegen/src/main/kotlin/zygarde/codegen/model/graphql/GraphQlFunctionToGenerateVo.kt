@@ -31,7 +31,12 @@ data class GraphQlTypeDefinitionToGenerateVo(
   var kind: GraphQlTypeDefinitionKind,
   var name: String,
   var fields: MutableList<GraphQlFieldToGenerateVo> = mutableListOf(),
-  var enumValues: MutableList<String> = mutableListOf(),
+  var enumValues: MutableList<GraphQlEnumValueToGenerateVo> = mutableListOf(),
+  var description: String? = null,
+)
+
+data class GraphQlEnumValueToGenerateVo(
+  var name: String,
   var description: String? = null,
 )
 
