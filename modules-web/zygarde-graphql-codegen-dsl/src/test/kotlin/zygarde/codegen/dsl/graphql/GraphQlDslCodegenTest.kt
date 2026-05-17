@@ -3,17 +3,41 @@ package zygarde.codegen.dsl.graphql
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import zygarde.codegen.model.graphql.GraphQlEnumValueToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
+import zygarde.core.annotation.Comment
 
 class GraphQlDslCodegenTest {
+  class Todo {
+    var id: Int? = null
+
+    @Comment("what needs to be done")
+    var description: String = ""
+    var status: TodoStatus = TodoStatus.OPEN
+  }
+
   data class TodoDto(val id: Int, val description: String)
 
   data class TodoInput(val description: String)
 
   data class TodoFilter(val descriptionContains: String?)
+
+  data class AuthorDto(val id: Int, val name: String)
+
+  data class BookDto(val id: Int, val title: String)
+
+  class Author {
+    var id: Int? = null
+    var name: String = ""
+  }
+
+  class Book {
+    var id: Int? = null
+    var title: String = ""
+  }
 
   enum class TodoStatus {
     OPEN,
@@ -158,6 +182,190 @@ class GraphQlDslCodegenTest {
     )
     api.typeDefinitions[3].kind shouldBe GraphQlTypeDefinitionKind.SCALAR
     api.typeDefinitions[3].name shouldBe "Long"
+  }
+
+  @Test
+  fun `should derive GraphQL type definitions from entity projections and bind operation types`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("TodoGraphQl") {
+          type<TodoDto>("Todo") {
+            fromAutoIntId(Todo::id)
+            from(Todo::description, Todo::status)
+          }
+          input<TodoInput>("TodoInput") {
+            applyTo(Todo::description)
+          }
+          mutation("createTodo") {
+            argument<TodoInput>("input")
+            returns<TodoDto>()
+            serviceName = "TodoGraphQlService"
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    val api = dsl.apisToGenerate.single()
+    api.functions.single().apply {
+      arguments.single().graphQlType shouldBe "TodoInput"
+      responseGraphQlType shouldBe "Todo"
+    }
+    api.typeDefinitions.map { it.name } shouldBe listOf("Todo", "TodoStatus", "TodoInput")
+    api.typeDefinitions.single { it.name == "Todo" }.apply {
+      kind shouldBe GraphQlTypeDefinitionKind.TYPE
+      fields.map { it.name } shouldBe listOf("id", "description", "status")
+      fields.single { it.name == "id" }.apply {
+        graphQlType shouldBe "ID"
+        nullable shouldBe false
+      }
+      fields.single { it.name == "description" }.apply {
+        graphQlType shouldBe "String"
+        description shouldBe "what needs to be done"
+      }
+      fields.single { it.name == "status" }.graphQlType shouldBe "TodoStatus"
+    }
+    api.typeDefinitions.single { it.name == "TodoInput" }.apply {
+      kind shouldBe GraphQlTypeDefinitionKind.INPUT
+      fields.single().name shouldBe "description"
+    }
+  }
+
+  @Test
+  fun `should add nullable nested reference fields to entity projections`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("BookGraphQl") {
+          type<AuthorDto>("Author") {
+            fromAutoIntId(Author::id)
+            from(Author::name)
+          }
+          type<BookDto>("Book") {
+            fromAutoIntId(Book::id)
+            from(Book::title)
+            ref<AuthorDto>("author", nullable = true)
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    dsl.apisToGenerate.single()
+      .typeDefinitions.single { it.name == "Book" }
+      .fields.single { it.name == "author" }
+      .apply {
+        graphQlType shouldBe "Author"
+        nullable shouldBe true
+        collection shouldBe false
+      }
+  }
+
+  @Test
+  fun `should add nested reference collection fields to entity projections`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("BookGraphQl") {
+          bindGraphQlType<BookDto>("Book")
+          type<AuthorDto>("Author") {
+            fromAutoIntId(Author::id)
+            from(Author::name)
+            refCollection<BookDto>("books")
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    dsl.apisToGenerate.single()
+      .typeDefinitions.single { it.name == "Author" }
+      .fields.single { it.name == "books" }
+      .apply {
+        graphQlType shouldBe "Book"
+        nullable shouldBe false
+        collection shouldBe true
+        itemNullable shouldBe false
+      }
+  }
+
+  @Test
+  fun `should support bidirectional nested references with pre-registered GraphQL type names`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("BookGraphQl") {
+          bindGraphQlType<AuthorDto>("Author")
+          bindGraphQlType<BookDto>("Book")
+
+          type<AuthorDto>("Author") {
+            fromAutoIntId(Author::id)
+            from(Author::name)
+            refCollection<BookDto>("books")
+          }
+          type<BookDto>("Book") {
+            fromAutoIntId(Book::id)
+            from(Book::title)
+            ref<AuthorDto>("author", nullable = true)
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    val api = dsl.apisToGenerate.single()
+    api.typeDefinitions.single { it.name == "Author" }
+      .fields.single { it.name == "books" }
+      .graphQlType shouldBe "Book"
+    api.typeDefinitions.single { it.name == "Book" }
+      .fields.single { it.name == "author" }
+      .graphQlType shouldBe "Author"
+  }
+
+  @Test
+  fun `should fail fast when nested reference type is not bound`() {
+    val ex = shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("BookGraphQl") {
+            type<BookDto>("Book") {
+              fromAutoIntId(Book::id)
+              from(Book::title)
+              ref<AuthorDto>("author")
+            }
+          }
+        }
+      }.codegen()
+    }
+
+    ex.message shouldContain "requires a GraphQL type binding"
+    ex.message shouldContain "AuthorDto"
+  }
+
+  @Test
+  fun `should allow explicit nested reference GraphQL type names without binding`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("BookGraphQl") {
+          type<BookDto>("Book") {
+            fromAutoIntId(Book::id)
+            from(Book::title)
+            ref("author", graphQlType = "Author", nullable = true)
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    dsl.apisToGenerate.single()
+      .typeDefinitions.single { it.name == "Book" }
+      .fields.single { it.name == "author" }
+      .apply {
+        graphQlType shouldBe "Author"
+        nullable shouldBe true
+      }
   }
 
   @Test

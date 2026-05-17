@@ -15,6 +15,10 @@ import zygarde.core.annotation.Comment
 import java.time.LocalDate
 
 class GraphQlDtoDerivationTest {
+  data class BookDto(val id: Int, val title: String)
+
+  data class CreateBookReq(val title: String)
+
   class Author {
     var id: Int = 0
     var name: String = ""
@@ -191,6 +195,24 @@ class GraphQlDtoDerivationTest {
         typeFrom(TestDto.BookDto, name = "Book")
       }
     }
+  }
+
+  @Test
+  fun `should bind derived DTO GraphQL names to operation arguments and responses`() {
+    val api = deriveSchema {
+      mapScalar<LocalDate>("Date")
+      scalar("Date")
+      typeFrom<BookDto>(TestDto.BookDto, name = "Book")
+      inputFrom<CreateBookReq>(TestDto.CreateBookReq, name = "CreateBookInput")
+      mutation("createBook") {
+        argument<CreateBookReq>("input")
+        returns<BookDto>()
+      }
+    }
+
+    val mutation = api.functions.single()
+    mutation.arguments.single().graphQlType shouldBe "CreateBookInput"
+    mutation.responseGraphQlType shouldBe "Book"
   }
 
   @Test

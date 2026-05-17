@@ -6,6 +6,7 @@ dependencies {
   implementation(project(":todo-src-core"))
   implementation(project(":todo-dsl-generated-dto"))
   implementation(project(":todo-codegen-dsl-models"))
+  implementation(project(":zygarde-jpa"))
   implementation(project(":zygarde-graphql-codegen-dsl"))
   // typeFrom / inputFrom reference model-mapping CodegenDto declarations directly.
   implementation(project(":zygarde-model-mapping-codegen-dsl"))

@@ -14,6 +14,7 @@ import kotlin.reflect.KClass
 class DslGraphQlFunction(
   val functionName: String,
   val operation: GraphQlOperation,
+  private val graphQlTypeResolver: (KClass<*>) -> String = { it.defaultGraphQlType() },
 ) {
   var serviceName: String? = null
   var serviceFunctionName: String? = null
@@ -33,7 +34,7 @@ class DslGraphQlFunction(
   fun argument(
     name: String,
     type: KClass<*>,
-    graphQlType: String = type.defaultGraphQlType(),
+    graphQlType: String = graphQlTypeOf(type),
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
@@ -86,7 +87,7 @@ class DslGraphQlFunction(
 
   inline fun <reified T : Any> argument(
     name: String,
-    graphQlType: String = T::class.defaultGraphQlType(),
+    graphQlType: String = graphQlTypeOf(T::class),
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
@@ -98,7 +99,7 @@ class DslGraphQlFunction(
   fun collectionArgument(
     name: String,
     type: KClass<*>,
-    graphQlType: String = type.defaultGraphQlType(),
+    graphQlType: String = graphQlTypeOf(type),
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
@@ -157,7 +158,7 @@ class DslGraphQlFunction(
 
   inline fun <reified T : Any> collectionArgument(
     name: String,
-    graphQlType: String = T::class.defaultGraphQlType(),
+    graphQlType: String = graphQlTypeOf(T::class),
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
@@ -167,7 +168,7 @@ class DslGraphQlFunction(
     collectionArgument(name, T::class, graphQlType, nullable, itemNullable, defaultValue, description, deprecationReason)
   }
 
-  fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
+  fun returns(type: KClass<*>, graphQlType: String = graphQlTypeOf(type), nullable: Boolean = false) {
     requireGraphQlName(graphQlType, "GraphQL response type")
     responseType = type.asTypeName()
     responseGraphQlType = graphQlType
@@ -185,13 +186,13 @@ class DslGraphQlFunction(
     responseItemNullable = false
   }
 
-  inline fun <reified T : Any> returns(graphQlType: String = T::class.defaultGraphQlType(), nullable: Boolean = false) {
+  inline fun <reified T : Any> returns(graphQlType: String = graphQlTypeOf(T::class), nullable: Boolean = false) {
     returns(T::class, graphQlType, nullable)
   }
 
   fun returnsCollection(
     type: KClass<*>,
-    graphQlType: String = type.defaultGraphQlType(),
+    graphQlType: String = graphQlTypeOf(type),
     nullable: Boolean = false,
     itemNullable: Boolean = false,
   ) {
@@ -213,12 +214,15 @@ class DslGraphQlFunction(
   }
 
   inline fun <reified T : Any> returnsCollection(
-    graphQlType: String = T::class.defaultGraphQlType(),
+    graphQlType: String = graphQlTypeOf(T::class),
     nullable: Boolean = false,
     itemNullable: Boolean = false,
   ) {
     returnsCollection(T::class, graphQlType, nullable, itemNullable)
   }
+
+  @PublishedApi
+  internal fun graphQlTypeOf(type: KClass<*>): String = graphQlTypeResolver(type)
 
   private fun requireArgumentDescription(name: String, description: String?) {
     requireGraphQlDescription(description, "GraphQL ${operation.name.lowercase()} field '$functionName' argument '$name'")

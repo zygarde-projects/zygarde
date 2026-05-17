@@ -15,6 +15,17 @@ type Todo {
   description: String!
 }
 
+type Author {
+  id: ID!
+  name: String!
+}
+
+type Book {
+  id: ID!
+  title: String!
+  author: Author
+}
+
 input TodoInput {
   description: String!
 }

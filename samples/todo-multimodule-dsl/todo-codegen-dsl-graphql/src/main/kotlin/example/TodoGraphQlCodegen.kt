@@ -9,34 +9,62 @@ import zygarde.codegen.dsl.graphql.GraphQlDslCodegen
 class TodoGraphQlCodegen : GraphQlDslCodegen() {
   override fun codegen() {
     schema("TodoGraphQl") {
+      type<TodoDto>("Todo") {
+        fromAutoIntId(Todo::id)
+        from(Todo::description)
+      }
+
+      type<GraphQlAuthor>("Author") {
+        fromAutoIntId(GraphQlAuthor::id)
+        from(GraphQlAuthor::name)
+      }
+
+      type<GraphQlBook>("Book") {
+        fromAutoIntId(GraphQlBook::id)
+        from(GraphQlBook::title)
+        ref<GraphQlAuthor>("author", nullable = true)
+      }
+
+      input<CreateTodoReq>("TodoInput") {
+        applyTo(Todo::description)
+      }
+      bindGraphQlType<UpdateTodoReq>("TodoInput")
+
+      input("TodoFilter") {
+        field<Int>("idEq", nullable = true)
+        collectionField<Int>("idsIn", nullable = true)
+        field<String>("descriptionContains", nullable = true)
+      }
+      bindGraphQlType<TodoFilter>("TodoFilter")
+
       query("todos") {
-        argument<TodoFilter>("filter", "TodoFilter", nullable = true)
-        returnsCollection<TodoDto>("Todo")
+        argument<TodoFilter>("filter", nullable = true)
+        returnsCollection<TodoDto>()
         serviceName = "TodoGraphQlService"
       }
 
       query("todo") {
         argument<Int>("id")
-        returns<TodoDto>("Todo", nullable = true)
+        returns<TodoDto>(nullable = true)
         serviceName = "TodoGraphQlService"
       }
 
       query("todosByIds") {
         collectionArgument<Int>("ids")
-        returnsCollection<TodoDto>("Todo")
+        returnsCollection<TodoDto>()
         serviceName = "TodoGraphQlService"
       }
 
       mutation("createTodo") {
-        argument<CreateTodoReq>("input", "TodoInput")
-        returns<TodoDto>("Todo")
+        argument<CreateTodoReq>("input")
+        returns<TodoDto>()
         serviceName = "TodoGraphQlService"
       }
 
       mutation("updateTodo") {
         argument<Int>("id")
-        argument<UpdateTodoReq>("input", "TodoInput")
-        returns<TodoDto>("Todo")
+        argument<UpdateTodoReq>("input")
+        returns<TodoDto>()
         serviceName = "TodoGraphQlService"
       }
 
@@ -44,17 +72,6 @@ class TodoGraphQlCodegen : GraphQlDslCodegen() {
         argument<Int>("id")
         returns<Boolean>("Boolean")
         serviceName = "TodoGraphQlService"
-      }
-
-      // `Todo` and `TodoInput` are derived from model-mapping DTOs instead of
-      // being re-declared by hand. `TodoFilter` has no DTO and stays manual.
-      typeFrom(TodoModelDslCodegen.TodoDtos.TodoDto, name = "Todo")
-      inputFrom(TodoModelDslCodegen.TodoDtos.CreateTodoReq, name = "TodoInput")
-
-      input("TodoFilter") {
-        field<Int>("idEq", nullable = true)
-        collectionField<Int>("idsIn", nullable = true)
-        field<String>("descriptionContains", nullable = true)
       }
     }
   }

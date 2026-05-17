@@ -218,6 +218,58 @@ union("Listed", listOf("Book", "Author"))                      // 成員型別�
 
 `type` / `input` / `enum` 不可為空 — 沒有任何 field / value 會以 `must declare at least one field/value` 失敗。需要無欄位的型別請改用 `scalar(...)`;需要型別聯集請用 `union(...)`。
 
+## 從 entity property 宣告 GraphQL projection
+
+若 GraphQL API 想直接維持 Zygarde 的 entity-first 心智模型,也可以用 `type<T>()` / `input<T>()` 的 projection DSL 從 entity property 產生 GraphQL `type` / `input`,並同時註冊 Kotlin 型別對應的 GraphQL 名稱:
+
+```kotlin
+schema("TodoGraphQl") {
+  type<TodoDto>("Todo") {
+    fromAutoIntId(Todo::id)
+    from(Todo::description)
+  }
+
+  input<CreateTodoReq>("TodoInput") {
+    applyTo(Todo::description)
+  }
+  bindGraphQlType<UpdateTodoReq>("TodoInput") // 多個 Kotlin DTO 共用同一個 GraphQL input 時使用
+
+  mutation("createTodo") {
+    argument<CreateTodoReq>("input") // 自動解析成 TodoInput
+    returns<TodoDto>()               // 自動解析成 Todo
+  }
+}
+```
+
+這個 DSL 是明確 allowlist:只有寫進 `from(...)` / `applyTo(...)` 的欄位會出現在 GraphQL schema,不會掃描 entity 全欄位。欄位名稱、nullability 與 `@Comment` / Hibernate `@Comment` 會從 entity property 帶入;`fromAutoIntId` / `fromAutoLongId` 會映射成 GraphQL 內建 `ID`。
+
+projection DSL 只負責 GraphQL schema 與 operation type binding;實際 DTO class 仍由既有 model-mapping codegen 產生。若已經有 model-mapping DTO metadata,也可以繼續使用下方的 `typeFrom` / `inputFrom`。
+
+使用 `argument<T>()` / `returns<T>()` 的自動型別解析時,請先宣告 `type<T>()` / `input<T>()` / `bindGraphQlType<T>()`,再宣告引用該型別的 operation。
+
+projection DSL 也可以明確宣告 nested relation field。這只會產生 SDL field,不會產生 `@BatchMapping` / `@SchemaMapping`,resolver 仍由 application 手寫:
+
+```kotlin
+schema("BookGraphQl") {
+  bindGraphQlType<AuthorDto>("Author")
+  bindGraphQlType<BookDto>("Book")
+
+  type<AuthorDto>("Author") {
+    fromAutoIntId(GraphQlAuthor::id)
+    from(GraphQlAuthor::name)
+    refCollection<BookDto>("books")
+  }
+
+  type<BookDto>("Book") {
+    fromAutoIntId(GraphQlBook::id)
+    from(GraphQlBook::title)
+    ref<AuthorDto>("author", nullable = true)
+  }
+}
+```
+
+`ref<T>()` / `refCollection<T>()` 會用已註冊的 GraphQL 型別名稱;註冊來源包含 `type<T>()` / `input<T>()` / `bindGraphQlType<T>()`。若沒有 binding 會 fail fast,避免把 Kotlin class name 誤當 GraphQL type name。也可以直接傳明確名稱,例如 `ref("author", graphQlType = "Author", nullable = true)` 或 `refCollection("books", graphQlType = "Book")`。
+
 ## 從 model-mapping DTO 自動推導型別:`typeFrom` / `inputFrom`
 
 手動 `type` / `input` 的問題是:同一個 DTO 的欄位形狀已經在 model-mapping 的 `ModelMappingCodegenSpec` 宣告過一次,GraphQL schema 又得照抄一次,兩邊容易漂移。

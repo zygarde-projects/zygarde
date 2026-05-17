@@ -26,8 +26,9 @@ class BookGraphQlTest(
     )
       .execute()
       .path("createAuthor.id")
-      .entity(Int::class.java)
+      .entity(String::class.java)
       .get()
+      .toInt()
 
     graphQlTester.document(
       """

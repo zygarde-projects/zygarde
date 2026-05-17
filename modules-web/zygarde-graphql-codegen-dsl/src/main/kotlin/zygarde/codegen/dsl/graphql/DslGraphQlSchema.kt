@@ -10,6 +10,7 @@ import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
 import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 import zygarde.codegen.model.graphql.requireUniqueGraphQlName
+import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 
 class DslGraphQlSchema(
@@ -22,6 +23,15 @@ class DslGraphQlSchema(
 
   private val typeMapper: GraphQlTypeMapper = GraphQlTypeMapper()
   private val dtoDeriver: GraphQlDtoDeriver by lazy { GraphQlDtoDeriver(modelMappingMetadata, typeMapper) }
+  private val graphQlTypeNamesByKotlinType: MutableMap<KClass<*>, String> = mutableMapOf()
+
+  fun bindGraphQlType(type: KClass<*>, graphQlType: String) {
+    registerGraphQlType(type, graphQlType)
+  }
+
+  inline fun <reified T : Any> bindGraphQlType(graphQlType: String) {
+    bindGraphQlType(T::class, graphQlType)
+  }
 
   fun query(functionName: String, dsl: DslGraphQlFunction.() -> Unit) {
     buildForOperation(functionName, GraphQlOperation.QUERY, dsl)
@@ -41,10 +51,34 @@ class DslGraphQlSchema(
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
   }
 
+  fun type(type: KClass<*>, name: String = type.defaultGraphQlType(), dsl: DslGraphQlEntityProjectionDefinition.() -> Unit) {
+    addEntityProjection(type, name, GraphQlTypeDefinitionKind.TYPE, dsl)
+  }
+
+  @JvmName("entityType")
+  inline fun <reified T : Any> type(
+    name: String = T::class.defaultGraphQlType(),
+    noinline dsl: DslGraphQlEntityProjectionDefinition.() -> Unit,
+  ) {
+    type(T::class, name, dsl)
+  }
+
   fun input(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
     requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
     val typeDefinition = DslGraphQlTypeDefinition.input(name).also(dsl)
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
+  }
+
+  fun input(type: KClass<*>, name: String = type.defaultGraphQlType(), dsl: DslGraphQlEntityProjectionDefinition.() -> Unit) {
+    addEntityProjection(type, name, GraphQlTypeDefinitionKind.INPUT, dsl)
+  }
+
+  @JvmName("entityInput")
+  inline fun <reified T : Any> input(
+    name: String = T::class.defaultGraphQlType(),
+    noinline dsl: DslGraphQlEntityProjectionDefinition.() -> Unit,
+  ) {
+    input(T::class, name, dsl)
   }
 
   fun enumType(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
@@ -128,6 +162,17 @@ class DslGraphQlSchema(
     deriveDtoTypeDefinition(dto, GraphQlTypeDefinitionKind.TYPE, "type", name, description, exclude)
   }
 
+  @JvmName("typedTypeFrom")
+  inline fun <reified T : Any> typeFrom(
+    dto: CodegenDto,
+    name: String = dto.name,
+    description: String? = null,
+    exclude: Set<String> = emptySet(),
+  ) {
+    typeFrom(dto, name, description, exclude)
+    registerGraphQlType(T::class, name)
+  }
+
   /** Derive a GraphQL `input` declaration from a model-mapping DTO. See [typeFrom]. */
   fun inputFrom(
     dto: CodegenDto,
@@ -136,6 +181,17 @@ class DslGraphQlSchema(
     exclude: Set<String> = emptySet(),
   ) {
     deriveDtoTypeDefinition(dto, GraphQlTypeDefinitionKind.INPUT, "input", name, description, exclude)
+  }
+
+  @JvmName("typedInputFrom")
+  inline fun <reified T : Any> inputFrom(
+    dto: CodegenDto,
+    name: String = dto.name,
+    description: String? = null,
+    exclude: Set<String> = emptySet(),
+  ) {
+    inputFrom(dto, name, description, exclude)
+    registerGraphQlType(T::class, name)
   }
 
   private fun deriveDtoTypeDefinition(
@@ -175,7 +231,46 @@ class DslGraphQlSchema(
       functions.filter { it.operation == operation }.map { it.functionName },
       "GraphQL ${operation.name.lowercase()} field"
     )
-    val dslFunction = DslGraphQlFunction(functionName, operation).also(dsl)
+    val dslFunction = DslGraphQlFunction(functionName, operation, ::resolveGraphQlType).also(dsl)
     functions.add(dslFunction.toGraphQlFunctionToGenerateVo())
+  }
+
+  private fun addEntityProjection(
+    type: KClass<*>,
+    name: String,
+    kind: GraphQlTypeDefinitionKind,
+    dsl: DslGraphQlEntityProjectionDefinition.() -> Unit,
+  ) {
+    requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
+    registerGraphQlType(type, name)
+    val projection = DslGraphQlEntityProjectionDefinition(kind, name, typeMapper, ::resolveReferenceGraphQlType).also(dsl).build()
+    typeDefinitions.add(projection.typeDefinition)
+    projection.additionalTypeDefinitions.forEach { additionalTypeDefinition ->
+      if (typeDefinitions.none { it.name == additionalTypeDefinition.name }) {
+        typeDefinitions.add(additionalTypeDefinition)
+      }
+    }
+  }
+
+  @PublishedApi
+  internal fun registerGraphQlType(type: KClass<*>, graphQlType: String) {
+    requireGraphQlName(graphQlType, "GraphQL type mapping for '${type.qualifiedName ?: type.java.name}'")
+    val existing = graphQlTypeNamesByKotlinType[type]
+    require(existing == null || existing == graphQlType) {
+      "Kotlin type '${type.qualifiedName ?: type.java.name}' is already mapped to GraphQL type '$existing'; cannot also map it to '$graphQlType'"
+    }
+    graphQlTypeNamesByKotlinType[type] = graphQlType
+  }
+
+  private fun resolveGraphQlType(type: KClass<*>): String = graphQlTypeNamesByKotlinType[type] ?: type.defaultGraphQlType()
+
+  private fun resolveReferenceGraphQlType(type: KClass<*>, fieldName: String): String {
+    return graphQlTypeNamesByKotlinType[type]
+      ?: throw IllegalArgumentException(
+        "GraphQL entity projection reference field '$fieldName' requires a GraphQL type binding for Kotlin type " +
+          "'${type.qualifiedName ?: type.java.name}'. Declare type<${type.simpleName ?: "T"}>(...), " +
+          "input<${type.simpleName ?: "T"}>(...), bindGraphQlType<${type.simpleName ?: "T"}>(\"Name\"), " +
+          "or pass graphQlType explicitly.",
+      )
   }
 }

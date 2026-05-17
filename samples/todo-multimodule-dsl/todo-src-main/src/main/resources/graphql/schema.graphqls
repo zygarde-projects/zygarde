@@ -8,17 +8,6 @@ extend type Mutation {
   createBook(input: BookInput!): Book!
 }
 
-type Author {
-  id: Int!
-  name: String!
-}
-
-type Book {
-  id: Int!
-  title: String!
-  author: Author!
-}
-
 input AuthorInput {
   name: String!
 }
