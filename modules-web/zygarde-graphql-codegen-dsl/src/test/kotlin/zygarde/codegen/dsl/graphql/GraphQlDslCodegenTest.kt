@@ -212,6 +212,29 @@ class GraphQlDslCodegenTest {
   }
 
   @Test
+  fun `should reject reserved GraphQL introspection names`() {
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            query("__todos") {
+              returns<TodoDto>("Todo")
+            }
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL query field must not start with '__' because GraphQL reserves introspection names"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.type("__Todo")
+    }.message shouldBe "GraphQL type definition name must not start with '__' because GraphQL reserves introspection names"
+
+    shouldThrow<IllegalArgumentException> {
+      GraphQlDefaultValue.enum("__OPEN")
+    }.message shouldBe "GraphQL enum default value must not start with '__' because GraphQL reserves introspection names"
+  }
+
+  @Test
   fun `should reject duplicate GraphQL declarations`() {
     shouldThrow<IllegalArgumentException> {
       object : GraphQlDslCodegen() {

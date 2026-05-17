@@ -6,6 +6,9 @@ fun requireGraphQlName(name: String, label: String) {
   require(graphQlNameRegex.matches(name)) {
     "$label must be a valid GraphQL name"
   }
+  require(!name.startsWith("__")) {
+    "$label must not start with '__' because GraphQL reserves introspection names"
+  }
 }
 
 fun requireUniqueGraphQlName(name: String, existingNames: Iterable<String>, label: String) {

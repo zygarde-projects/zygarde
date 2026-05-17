@@ -11,20 +11,17 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- Added duplicate GraphQL declaration validation before generated Kotlin/SDL output is rendered.
-- `GraphQlApiGenerator` now rejects duplicate operation fields across generated schemas, duplicate type definitions, duplicate function arguments, duplicate object/input fields, and duplicate enum values.
-- `modules-web/zygarde-graphql-codegen-dsl` now fails early when a DSL schema repeats an operation field or type definition, when a function repeats an argument, when a type/input repeats a field, or when an enum repeats a value.
-- Added focused generator and DSL tests for duplicate GraphQL declarations.
+- Enforced the GraphQL reserved introspection-name rule in the shared GraphQL name validator.
+- `GraphQlApiGenerator`, the GraphQL DSL, and `GraphQlDefaultValue` now reject names that start with `__` before generating Kotlin or SDL.
+- Added focused generator and DSL tests for reserved GraphQL introspection names.
 
 ## Validation
 
-- `rtk ./gradlew :zygarde-web-codegen:ktlintFormat :zygarde-graphql-codegen-dsl:ktlintFormat` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
-- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
 - `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
 
 ## Next Work
 
-- Decide whether GraphQL names beginning with `__` should be rejected in Zygarde helpers as reserved introspection names.
 - Add user-facing GraphQL DSL docs for `GraphQlDefaultValue`, nullable responses, and collection nullability once those docs are introduced or expanded.
 - Add user-facing docs for `subscription(...)` and clarify that callers must choose an appropriate Kotlin return type, such as a reactive publisher type, when wiring real Spring GraphQL subscriptions.
 - Add user-facing docs for `scalar(...)` declarations and clarify that SDL declaration does not register GraphQL Java runtime coercing by itself.
@@ -38,7 +35,7 @@ Last updated: 2026-05-17
 
 - No active blockers.
 - In this environment, Gradle validation needed sandbox escalation because the wrapper writes lock files under `~/.gradle`.
-- GraphQL name validation currently follows the GraphQL lexical name grammar (`[_A-Za-z][_0-9A-Za-z]*`) and does not yet enforce the `__` introspection-name reservation.
+- GraphQL name validation now follows the GraphQL lexical name grammar (`[_A-Za-z][_0-9A-Za-z]*`) and rejects the reserved `__` introspection-name prefix.
 - Scalar SDL declarations are now generated, but runtime scalar registration remains separate; custom scalar coercing still needs Spring GraphQL/GraphQL Java configuration.
 - GraphQL runtime support is still sample/codegen focused; no dedicated `zygarde-graphql` runtime module exists yet.
 - Error handling, authentication context injection, custom scalar registration, pagination shape, and generated DataLoader/batch resolver support remain open design and implementation areas.

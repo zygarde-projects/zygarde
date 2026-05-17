@@ -368,6 +368,29 @@ class GraphQlApiGeneratorTest {
   }
 
   @Test
+  fun `should reject reserved GraphQL introspection names before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          GraphQlApiToGenerateVo(
+            controllerPackage = "com.example.graphql",
+            serviceInterfacePackage = "com.example.graphql.service",
+            apiName = "TodoGraphQl",
+            functions = mutableListOf(
+              GraphQlFunctionToGenerateVo(
+                operation = GraphQlOperation.QUERY,
+                functionName = "__todos",
+                responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+                responseGraphQlType = "Todo",
+              )
+            ),
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL query field must not start with '__' because GraphQL reserves introspection names"
+  }
+
+  @Test
   fun `should reject duplicate GraphQL operation fields before rendering generated output`() {
     shouldThrow<IllegalArgumentException> {
       GraphQlApiGenerator(
