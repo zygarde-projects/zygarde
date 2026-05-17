@@ -305,6 +305,74 @@ class GraphQlDslCodegenTest {
   }
 
   @Test
+  fun `should carry GraphQL operation field argument and enum value deprecation reasons through the DSL`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("TodoGraphQl") {
+          query("legacyTodos") {
+            argument<Int>("limit", nullable = true, deprecationReason = "Use pagination")
+            collectionArgument<Int>("ids", nullable = true, deprecationReason = "Use cursors")
+            argument<Int>("offset", defaultValue = GraphQlDefaultValue.int(0))
+            returnsCollection<TodoDto>("Todo")
+            deprecationReason = "Use todos"
+          }
+          enumType("TodoStatus") {
+            value("OPEN")
+            value("ARCHIVED", deprecationReason = "Use DONE")
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    val api = dsl.apisToGenerate.single()
+    api.functions.single().deprecationReason shouldBe "Use todos"
+    api.functions.single().arguments[0].deprecationReason shouldBe "Use pagination"
+    api.functions.single().arguments[1].deprecationReason shouldBe "Use cursors"
+    api.functions.single().arguments[2].deprecationReason shouldBe null
+    api.typeDefinitions.single().enumValues shouldBe mutableListOf(
+      GraphQlEnumValueToGenerateVo("OPEN"),
+      GraphQlEnumValueToGenerateVo("ARCHIVED", deprecationReason = "Use DONE"),
+    )
+  }
+
+  @Test
+  fun `should reject deprecation on required GraphQL arguments`() {
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlFunction("todo", GraphQlOperation.QUERY).argument<Int>("id", deprecationReason = "gone")
+    }.message shouldBe "GraphQL query field 'todo' argument 'id' cannot be deprecated because it is a required argument"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlFunction("todo", GraphQlOperation.QUERY).collectionArgument<Int>("ids", deprecationReason = "gone")
+    }.message shouldBe "GraphQL query field 'todo' argument 'ids' cannot be deprecated because it is a required argument"
+  }
+
+  @Test
+  fun `should reject blank GraphQL operation field argument and enum value deprecation reasons`() {
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            query("todo") {
+              returns<TodoDto>("Todo")
+              deprecationReason = " "
+            }
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL query field 'todo' deprecation reason must not be blank"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlFunction("todo", GraphQlOperation.QUERY).argument<Int>("id", nullable = true, deprecationReason = " ")
+    }.message shouldBe "GraphQL query field 'todo' argument 'id' deprecation reason must not be blank"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.enumType("TodoStatus").value("OPEN", deprecationReason = " ")
+    }.message shouldBe "GraphQL enum 'TodoStatus' value 'OPEN' deprecation reason must not be blank"
+  }
+
+  @Test
   fun `should reject default values on object type fields`() {
     shouldThrow<IllegalArgumentException> {
       DslGraphQlTypeDefinition.type("Todo")

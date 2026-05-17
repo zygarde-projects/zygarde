@@ -14,6 +14,7 @@ data class GraphQlFunctionToGenerateVo(
   var serviceName: String? = null,
   var serviceFunctionName: String? = null,
   var description: String? = null,
+  var deprecationReason: String? = null,
 )
 
 data class GraphQlArgumentToGenerateVo(
@@ -25,6 +26,7 @@ data class GraphQlArgumentToGenerateVo(
   var itemNullable: Boolean = false,
   var defaultValue: String? = null,
   var description: String? = null,
+  var deprecationReason: String? = null,
 )
 
 data class GraphQlTypeDefinitionToGenerateVo(
@@ -38,6 +40,7 @@ data class GraphQlTypeDefinitionToGenerateVo(
 data class GraphQlEnumValueToGenerateVo(
   var name: String,
   var description: String? = null,
+  var deprecationReason: String? = null,
 )
 
 data class GraphQlFieldToGenerateVo(

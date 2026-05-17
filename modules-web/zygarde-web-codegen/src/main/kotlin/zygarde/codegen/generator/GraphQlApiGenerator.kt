@@ -62,19 +62,20 @@ class GraphQlApiGenerator(
 
   private fun GraphQlApiToGenerateVo.validateGraphQlNames() {
     functions.forEach { function ->
+      val fieldLabel = "GraphQL ${function.operation.name.lowercase()} field '${function.functionName}'"
       requireGraphQlName(function.functionName, "GraphQL ${function.operation.name.lowercase()} field")
       requireGraphQlName(function.responseGraphQlType, "GraphQL response type")
-      requireGraphQlDescription(
-        function.description,
-        "GraphQL ${function.operation.name.lowercase()} field '${function.functionName}'"
-      )
+      requireGraphQlDescription(function.description, fieldLabel)
+      requireGraphQlDeprecationReason(function.deprecationReason, fieldLabel)
       function.arguments.forEach { argument ->
+        val argumentLabel = "$fieldLabel argument '${argument.name}'"
         requireGraphQlName(argument.name, "GraphQL argument name")
         requireGraphQlName(argument.graphQlType, "GraphQL argument type")
-        requireGraphQlDescription(
-          argument.description,
-          "GraphQL ${function.operation.name.lowercase()} field '${function.functionName}' argument '${argument.name}'"
-        )
+        requireGraphQlDescription(argument.description, argumentLabel)
+        requireGraphQlDeprecationReason(argument.deprecationReason, argumentLabel)
+        require(argument.deprecationReason == null || argument.nullable || argument.defaultValue != null) {
+          "$argumentLabel cannot be deprecated because it is a required argument"
+        }
       }
     }
     typeDefinitions.forEach { it.validateGraphQlNames() }
@@ -114,6 +115,7 @@ class GraphQlApiGenerator(
         enumValues.forEach { enumValue ->
           requireGraphQlName(enumValue.name, "GraphQL enum value")
           requireGraphQlDescription(enumValue.description, "GraphQL enum '$name' value '${enumValue.name}'")
+          requireGraphQlDeprecationReason(enumValue.deprecationReason, "GraphQL enum '$name' value '${enumValue.name}'")
         }
       }
       GraphQlTypeDefinitionKind.SCALAR -> Unit
@@ -321,7 +323,7 @@ class GraphQlApiGenerator(
           GraphQlTypeDefinitionKind.ENUM -> {
             typeDefinition.enumValues.forEach { enumValue ->
               append(enumValue.description.toSchemaDescription("  "))
-              appendLine("  ${enumValue.name}")
+              appendLine("  ${enumValue.name}${enumValue.deprecationReason.toSchemaDeprecation()}")
             }
           }
           GraphQlTypeDefinitionKind.SCALAR -> Unit
@@ -356,7 +358,10 @@ class GraphQlApiGenerator(
     appendLine("$keyword $typeName {")
     functions.forEach { function ->
       append(function.description.toSchemaDescription("  "))
-      appendLine("  ${function.functionName}${function.arguments.toSchemaArguments("  ")}: ${function.toSchemaResponseType()}")
+      appendLine(
+        "  ${function.functionName}${function.arguments.toSchemaArguments("  ")}: ${function.toSchemaResponseType()}" +
+          function.deprecationReason.toSchemaDeprecation()
+      )
     }
     appendLine("}")
   }
@@ -367,7 +372,8 @@ class GraphQlApiGenerator(
     }
     if (none { it.description != null }) {
       return joinToString(prefix = "(", postfix = ")") { argument ->
-        "${argument.name}: ${argument.toSchemaType()}${argument.defaultValue.toSchemaDefaultValue()}"
+        "${argument.name}: ${argument.toSchemaType()}" +
+          "${argument.defaultValue.toSchemaDefaultValue()}${argument.deprecationReason.toSchemaDeprecation()}"
       }
     }
     val argumentIndent = "$fieldIndent  "
@@ -375,7 +381,10 @@ class GraphQlApiGenerator(
       appendLine("(")
       this@toSchemaArguments.forEach { argument ->
         append(argument.description.toSchemaDescription(argumentIndent))
-        appendLine("$argumentIndent${argument.name}: ${argument.toSchemaType()}${argument.defaultValue.toSchemaDefaultValue()}")
+        appendLine(
+          "$argumentIndent${argument.name}: ${argument.toSchemaType()}" +
+            "${argument.defaultValue.toSchemaDefaultValue()}${argument.deprecationReason.toSchemaDeprecation()}"
+        )
       }
       append("$fieldIndent)")
     }

@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
+import zygarde.codegen.model.graphql.requireGraphQlDeprecationReason
 import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 import zygarde.codegen.model.graphql.requireUniqueGraphQlName
@@ -17,6 +18,7 @@ class DslGraphQlFunction(
   var serviceName: String? = null
   var serviceFunctionName: String? = null
   var description: String? = null
+  var deprecationReason: String? = null
   private val arguments: MutableList<GraphQlArgumentToGenerateVo> = mutableListOf()
   private var responseType: TypeName? = null
   private var responseGraphQlType: String? = null
@@ -35,11 +37,13 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     requireArgumentDescription(name, description)
+    requireArgumentDeprecation(name, nullable, defaultValue, deprecationReason)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -48,6 +52,7 @@ class DslGraphQlFunction(
         nullable = nullable,
         defaultValue = defaultValue,
         description = description,
+        deprecationReason = deprecationReason,
       )
     )
   }
@@ -59,11 +64,13 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     requireArgumentDescription(name, description)
+    requireArgumentDeprecation(name, nullable, defaultValue, deprecationReason)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -72,6 +79,7 @@ class DslGraphQlFunction(
         nullable = nullable,
         defaultValue = defaultValue,
         description = description,
+        deprecationReason = deprecationReason,
       )
     )
   }
@@ -82,8 +90,9 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
-    argument(name, T::class, graphQlType, nullable, defaultValue, description)
+    argument(name, T::class, graphQlType, nullable, defaultValue, description, deprecationReason)
   }
 
   fun collectionArgument(
@@ -94,11 +103,13 @@ class DslGraphQlFunction(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     requireArgumentDescription(name, description)
+    requireArgumentDeprecation(name, nullable, defaultValue, deprecationReason)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -109,6 +120,7 @@ class DslGraphQlFunction(
         itemNullable = itemNullable,
         defaultValue = defaultValue,
         description = description,
+        deprecationReason = deprecationReason,
       )
     )
   }
@@ -121,11 +133,13 @@ class DslGraphQlFunction(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     requireArgumentDescription(name, description)
+    requireArgumentDeprecation(name, nullable, defaultValue, deprecationReason)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -136,6 +150,7 @@ class DslGraphQlFunction(
         itemNullable = itemNullable,
         defaultValue = defaultValue,
         description = description,
+        deprecationReason = deprecationReason,
       )
     )
   }
@@ -147,8 +162,9 @@ class DslGraphQlFunction(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
-    collectionArgument(name, T::class, graphQlType, nullable, itemNullable, defaultValue, description)
+    collectionArgument(name, T::class, graphQlType, nullable, itemNullable, defaultValue, description, deprecationReason)
   }
 
   fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
@@ -208,8 +224,23 @@ class DslGraphQlFunction(
     requireGraphQlDescription(description, "GraphQL ${operation.name.lowercase()} field '$functionName' argument '$name'")
   }
 
+  private fun requireArgumentDeprecation(
+    name: String,
+    nullable: Boolean,
+    defaultValue: String?,
+    deprecationReason: String?,
+  ) {
+    val argumentLabel = "GraphQL ${operation.name.lowercase()} field '$functionName' argument '$name'"
+    requireGraphQlDeprecationReason(deprecationReason, argumentLabel)
+    require(deprecationReason == null || nullable || defaultValue != null) {
+      "$argumentLabel cannot be deprecated because it is a required argument"
+    }
+  }
+
   fun toGraphQlFunctionToGenerateVo(): GraphQlFunctionToGenerateVo {
-    requireGraphQlDescription(description, "GraphQL ${operation.name.lowercase()} field '$functionName'")
+    val fieldLabel = "GraphQL ${operation.name.lowercase()} field '$functionName'"
+    requireGraphQlDescription(description, fieldLabel)
+    requireGraphQlDeprecationReason(deprecationReason, fieldLabel)
     return GraphQlFunctionToGenerateVo(
       operation = operation,
       functionName = functionName,
@@ -222,6 +253,7 @@ class DslGraphQlFunction(
       serviceName = serviceName,
       serviceFunctionName = serviceFunctionName,
       description = description,
+      deprecationReason = deprecationReason,
     )
   }
 }

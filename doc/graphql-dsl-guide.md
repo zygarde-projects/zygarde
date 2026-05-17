@@ -235,10 +235,15 @@ description 支援已涵蓋 operation 函式、operation 參數、型別定義�
 
 ## 棄用標記(GraphQL `@deprecated`)
 
-`type` / `input` 的 `field` / `collectionField` 可以加上 `deprecationReason`,在 SDL 產出物寫成 GraphQL 內建的 `@deprecated` directive,於 introspection / GraphiQL 標示為已棄用。
+operation field(`query` / `mutation` / `subscription`)、operation `argument` / `collectionArgument`、`type` / `input` 的 `field` / `collectionField`,以及 `enum` 的 `value` 都可以加上 `deprecationReason`,在 SDL 產出物寫成 GraphQL 內建的 `@deprecated` directive,於 introspection / GraphiQL 標示為已棄用。
 
 ```kotlin
 schema("TodoGraphQl") {
+  query("legacyTodos") {
+    argument<Int>("limit", nullable = true, deprecationReason = "Use pagination")
+    returnsCollection<TodoDto>("Todo")
+    deprecationReason = "Use todos"
+  }
   type("Todo") {
     field<Int>("id", deprecationReason = "Use uuid instead")
     field<String>("uuid")
@@ -247,12 +252,20 @@ schema("TodoGraphQl") {
     field<String>("legacyTag", nullable = true, deprecationReason = "Replaced by tags")
     field<String>("source", defaultValue = GraphQlDefaultValue.string("manual"), deprecationReason = "No longer tracked")
   }
+  enumType("TodoStatus") {
+    value("OPEN")
+    value("ARCHIVED", deprecationReason = "Use DONE")
+  }
 }
 ```
 
 產出的 SDL:
 
 ```graphql
+type Query {
+  legacyTodos(limit: Int @deprecated(reason: "Use pagination")): [Todo!]! @deprecated(reason: "Use todos")
+}
+
 type Todo {
   id: Int! @deprecated(reason: "Use uuid instead")
   uuid: String!
@@ -262,13 +275,18 @@ input TodoInput {
   legacyTag: String @deprecated(reason: "Replaced by tags")
   source: String! = "manual" @deprecated(reason: "No longer tracked")
 }
+
+enum TodoStatus {
+  OPEN
+  ARCHIVED @deprecated(reason: "Use DONE")
+}
 ```
 
-- `deprecationReason` 用具名參數設定;`@deprecated` 會寫在型別(與 `input` 預設值)之後。
+- operation field 的 `deprecationReason` 是 `DslGraphQlFunction` 的屬性;`field` / `collectionField` / `argument` / `collectionArgument` / `value` 則用具名參數設定。`@deprecated` 會寫在型別(與 `input` / argument 預設值)之後。
 - `reason` 是一般 GraphQL string,引號與控制字元會自動跳脫,不需自行處理。
 - `deprecationReason` 預設為 `null`(不輸出)。設定後不可為空白字串,否則會以 `... deprecation reason must not be blank` 失敗。
-- **`input` 的必填欄位不可棄用**:GraphQL 規範禁止棄用「non-null 且無 `defaultValue`」的 input 欄位;這種情況會以 `GraphQL input 'X' field 'Y' cannot be deprecated because it is a required input field` 失敗。要棄用 input 欄位,請讓它 `nullable = true` 或帶 `defaultValue`。物件 `type` 的欄位則無此限制。
-- 目前僅 `type` / `input` 的 field 支援 `@deprecated`;operation field、argument 與 enum value 的棄用標記尚未由 DSL 支援。
+- **必填的 input 欄位與 operation argument 不可棄用**:GraphQL 規範禁止棄用「non-null 且無 `defaultValue`」的 input 欄位或 argument;這種情況會以 `GraphQL input 'X' field 'Y' cannot be deprecated because it is a required input field` 或 `GraphQL query field 'X' argument 'Y' cannot be deprecated because it is a required argument` 失敗。要棄用 input 欄位或 argument,請讓它 `nullable = true` 或帶 `defaultValue`。operation field、物件 `type` 的欄位與 `enum` value 則無此限制。
+- `enumType<T>()` 由 Kotlin enum 推導值,無法帶 per-value 的 `deprecationReason`;要棄用個別 enum value 需改用手動 `value(name, deprecationReason = ...)`。
 
 ## 型別對應(`defaultGraphQlType`)
 
@@ -384,7 +402,7 @@ DSL 與產生器都會把錯誤擋在「產出檔案之前」,讓問題 fail fas
 - **唯一性** — `apiName`、operation field 名稱(同一 operation,跨所有 schema)、型別定義名稱(跨所有 schema)、函式參數名稱、型別欄位名稱、enum value 都必須唯一。
 - **非空** — `type` / `input` 至少要有一個 field,`enum` 至少要有一個 value。
 - **description** — operation 函式、operation 參數、型別定義與 `type` / `input` field 的 `description` 可省略;一旦設定就不可為空白字串。
-- **deprecation** — `type` / `input` field 的 `deprecationReason` 可省略;一旦設定就不可為空白字串,且不可用在 `input` 的必填(non-null 且無預設值)欄位。
+- **deprecation** — operation field、operation argument、`type` / `input` field 與 `enum` value 的 `deprecationReason` 可省略;一旦設定就不可為空白字串,且不可用在 `input` 的必填欄位或必填 argument(non-null 且無預設值)。
 - **預設值** — 只允許出現在 `input` 的欄位。
 - **回傳型別** — 每個 operation 函式都必須宣告。
 - **schema-only** — 一份 schema 只有型別定義、沒有任何 operation 時,只產生 SDL,不產生空的 Controller / Service interface,適合放共用的 scalar / 共用 type 片段。
@@ -406,12 +424,11 @@ mutation todo → fun mutationTodo(...)
 
 ## 目前限制與後續
 
-DSL 目前涵蓋 query / mutation / subscription、參數、型別定義、預設值、operation / argument / 型別 / field / enum value 層級的 description,以及 `type` / `input` field 的 `@deprecated` 標記。以下尚未由 DSL 支援,需要時請手寫 resolver:
+DSL 目前涵蓋 query / mutation / subscription、參數、型別定義、預設值、operation / argument / 型別 / field / enum value 層級的 description,以及 operation field / argument / `type` / `input` field / `enum` value 的 `@deprecated` 標記。以下尚未由 DSL 支援,需要時請手寫 resolver:
 
 - **巢狀 field resolver / `@SchemaMapping` / `@BatchMapping`** — 解決 N+1 的 DataLoader / batch resolver 仍須手寫(可參考 `samples/todo-multimodule-dsl` 內手寫的 `BookGraphQlController`)。
 - **subscription 回傳型別** — 產生器只輸出宣告的回傳型別。要串真正的 Spring GraphQL subscription,呼叫端需自行選用 reactive publisher 型別(例如以 `TypeName` 多載傳入 `Flux<T>`)。
 - **自訂 scalar coercing、錯誤處理、認證注入、分頁形狀** — 仍屬手寫 / 後續設計範圍,詳見 `doc/graphql-support-investigation.md`。
-- **operation field / argument / enum value 的 `@deprecated`** — 目前只有 `type` / `input` field 支援棄用標記;其他層級的 `@deprecated` 規劃中。
 - **由 model-mapping metadata 自動產生 SDL `type` / `input`** — 規劃中;目前型別定義需在 DSL 明確宣告。
 
 ## 相關檔案索引

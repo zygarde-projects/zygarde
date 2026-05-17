@@ -121,11 +121,15 @@ class DslGraphQlTypeDefinition private constructor(
     collectionField(name, T::class, nullable, itemNullable, defaultValue, description, deprecationReason)
   }
 
-  fun value(name: String, description: String? = null) {
+  fun value(name: String, description: String? = null, deprecationReason: String? = null) {
     requireGraphQlName(name, "GraphQL enum value")
     requireUniqueGraphQlName(name, enumValues.map { it.name }, "GraphQL enum value")
-    requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '${this.name}' value '$name'")
-    enumValues.add(GraphQlEnumValueToGenerateVo(name = name, description = description))
+    val valueLabel = "GraphQL ${kind.schemaKeyword()} '${this.name}' value '$name'"
+    requireGraphQlDescription(description, valueLabel)
+    requireGraphQlDeprecationReason(deprecationReason, valueLabel)
+    enumValues.add(
+      GraphQlEnumValueToGenerateVo(name = name, description = description, deprecationReason = deprecationReason)
+    )
   }
 
   inline fun <reified T : Enum<T>> values() {
