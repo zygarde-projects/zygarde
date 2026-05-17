@@ -165,6 +165,21 @@ class GraphQlDslCodegenTest {
   }
 
   @Test
+  fun `should reject empty GraphQL type definitions`() {
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.type("Todo").toGraphQlTypeDefinitionToGenerateVo()
+    }.message shouldBe "GraphQL type 'Todo' must declare at least one field"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.input("TodoInput").toGraphQlTypeDefinitionToGenerateVo()
+    }.message shouldBe "GraphQL input 'TodoInput' must declare at least one field"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.enumType("TodoStatus").toGraphQlTypeDefinitionToGenerateVo()
+    }.message shouldBe "GraphQL enum 'TodoStatus' must declare at least one value"
+  }
+
+  @Test
   fun `should build GraphQL default value literals`() {
     GraphQlDefaultValue.string("open \"todo\"\\\nnext") shouldBe "\"open \\\"todo\\\"\\\\\\nnext\""
     GraphQlDefaultValue.int(1) shouldBe "1"

@@ -100,6 +100,20 @@ class DslGraphQlTypeDefinition private constructor(
   }
 
   fun toGraphQlTypeDefinitionToGenerateVo(): GraphQlTypeDefinitionToGenerateVo {
+    when (kind) {
+      GraphQlTypeDefinitionKind.TYPE,
+      GraphQlTypeDefinitionKind.INPUT -> {
+        require(fields.isNotEmpty()) {
+          "GraphQL ${kind.schemaKeyword()} '$name' must declare at least one field"
+        }
+      }
+      GraphQlTypeDefinitionKind.ENUM -> {
+        require(enumValues.isNotEmpty()) {
+          "GraphQL enum '$name' must declare at least one value"
+        }
+      }
+      GraphQlTypeDefinitionKind.SCALAR -> Unit
+    }
     return GraphQlTypeDefinitionToGenerateVo(
       kind = kind,
       name = name,
@@ -120,5 +134,14 @@ class DslGraphQlTypeDefinition private constructor(
     fun enumType(name: String): DslGraphQlTypeDefinition {
       return DslGraphQlTypeDefinition(GraphQlTypeDefinitionKind.ENUM, name)
     }
+  }
+}
+
+private fun GraphQlTypeDefinitionKind.schemaKeyword(): String {
+  return when (this) {
+    GraphQlTypeDefinitionKind.TYPE -> "type"
+    GraphQlTypeDefinitionKind.INPUT -> "input"
+    GraphQlTypeDefinitionKind.ENUM -> "enum"
+    GraphQlTypeDefinitionKind.SCALAR -> "scalar"
   }
 }

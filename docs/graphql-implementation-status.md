@@ -11,14 +11,14 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- Schema-only GraphQL API declarations now generate SDL without emitting empty Spring controller or service-interface files.
-- Schema-only SDL no longer starts with a leading blank line before the first scalar, type, input, or enum declaration.
-- Added generator test coverage for schema-only GraphQL declarations.
+- GraphQL generator validation now rejects empty `type`, `input`, and `enum` declarations before rendering invalid SDL.
+- GraphQL DSL type builders now reject empty `type`, `input`, and `enum` declarations when converting DSL declarations to generation VOs.
+- Added focused generator and DSL test coverage for empty GraphQL type definition rejection.
 
 ## Validation
 
-- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
-- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
 
 ## Next Work
 
@@ -36,6 +36,7 @@ Last updated: 2026-05-17
 - No active blockers.
 - In this environment, Gradle validation needed sandbox escalation because the wrapper writes lock files under `~/.gradle`.
 - Schema-only GraphQL DSL declarations are useful for shared SDL fragments such as scalars and common object/input types; they now avoid stale empty generated Kotlin files.
+- Empty `type`, `input`, and `enum` declarations are now rejected in both the DSL and generator; use `scalar(...)` for fieldless scalar declarations.
 - GraphQL name validation now follows the GraphQL lexical name grammar (`[_A-Za-z][_0-9A-Za-z]*`) and rejects the reserved `__` introspection-name prefix.
 - Generated Spring GraphQL bindings now carry explicit annotation names, so runtime field/argument binding is no longer dependent on reflected Kotlin method or parameter names.
 - Scalar SDL declarations are now generated, but runtime scalar registration remains separate; custom scalar coercing still needs Spring GraphQL/GraphQL Java configuration.

@@ -71,12 +71,26 @@ class GraphQlApiGenerator(
 
   private fun GraphQlTypeDefinitionToGenerateVo.validateGraphQlNames() {
     requireGraphQlName(name, "GraphQL type definition name")
-    fields.forEach { field ->
-      requireGraphQlName(field.name, "GraphQL field name")
-      requireGraphQlName(field.graphQlType, "GraphQL field type")
-    }
-    enumValues.forEach { enumValue ->
-      requireGraphQlName(enumValue, "GraphQL enum value")
+    when (kind) {
+      GraphQlTypeDefinitionKind.TYPE,
+      GraphQlTypeDefinitionKind.INPUT -> {
+        require(fields.isNotEmpty()) {
+          "GraphQL ${kind.schemaKeyword()} '$name' must declare at least one field"
+        }
+        fields.forEach { field ->
+          requireGraphQlName(field.name, "GraphQL field name")
+          requireGraphQlName(field.graphQlType, "GraphQL field type")
+        }
+      }
+      GraphQlTypeDefinitionKind.ENUM -> {
+        require(enumValues.isNotEmpty()) {
+          "GraphQL enum '$name' must declare at least one value"
+        }
+        enumValues.forEach { enumValue ->
+          requireGraphQlName(enumValue, "GraphQL enum value")
+        }
+      }
+      GraphQlTypeDefinitionKind.SCALAR -> Unit
     }
   }
 

@@ -450,15 +450,66 @@ class GraphQlApiGeneratorTest {
         listOf(
           graphQlApi(
             apiName = "TodoGraphQl",
-            typeDefinitions = mutableListOf(GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.TYPE, "Todo"))
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.TYPE,
+                name = "Todo",
+                fields = mutableListOf(GraphQlFieldToGenerateVo("id", "Int")),
+              )
+            )
           ),
           graphQlApi(
             apiName = "ArchiveGraphQl",
-            typeDefinitions = mutableListOf(GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.INPUT, "Todo"))
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.INPUT,
+                name = "Todo",
+                fields = mutableListOf(GraphQlFieldToGenerateVo("id", "Int")),
+              )
+            )
           )
         )
       ).generateApis()
     }.message shouldBe "GraphQL type definition 'Todo' is already declared"
+  }
+
+  @Test
+  fun `should reject empty GraphQL type definitions before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.TYPE, "Todo")
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL type 'Todo' must declare at least one field"
+
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.INPUT, "TodoInput")
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL input 'TodoInput' must declare at least one field"
+
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.ENUM, "TodoStatus")
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL enum 'TodoStatus' must declare at least one value"
   }
 
   @Test
