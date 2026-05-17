@@ -20,6 +20,10 @@ class DslGraphQlSchema(
     buildForOperation(functionName, GraphQlOperation.MUTATION, dsl)
   }
 
+  fun subscription(functionName: String, dsl: DslGraphQlFunction.() -> Unit) {
+    buildForOperation(functionName, GraphQlOperation.SUBSCRIPTION, dsl)
+  }
+
   fun type(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
     val typeDefinition = DslGraphQlTypeDefinition.type(name).also(dsl)
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())

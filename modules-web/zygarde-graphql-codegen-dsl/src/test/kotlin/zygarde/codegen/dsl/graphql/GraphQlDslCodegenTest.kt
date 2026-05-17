@@ -20,7 +20,7 @@ class GraphQlDslCodegenTest {
   }
 
   @Test
-  fun `should convert query mutation nullable argument collection response and scalar response`() {
+  fun `should convert query mutation subscription nullable argument collection response and scalar response`() {
     val dsl = object : GraphQlDslCodegen() {
       override fun codegen() {
         schema("TodoGraphQl") {
@@ -39,6 +39,11 @@ class GraphQlDslCodegenTest {
           mutation("deleteTodo") {
             argument<Int>("id")
             returns<Boolean>()
+            serviceName = "TodoGraphQlService"
+          }
+          subscription("todoEvents") {
+            argument<Int>("id", nullable = true)
+            returns<TodoDto>("Todo")
             serviceName = "TodoGraphQlService"
           }
           type("Todo") {
@@ -63,7 +68,7 @@ class GraphQlDslCodegenTest {
 
     val api = dsl.apisToGenerate.single()
     api.apiName shouldBe "TodoGraphQl"
-    api.functions shouldHaveSize 3
+    api.functions shouldHaveSize 4
     api.typeDefinitions shouldHaveSize 3
 
     api.functions[0].apply {
@@ -105,6 +110,19 @@ class GraphQlDslCodegenTest {
       responseCollection shouldBe false
       responseNullable shouldBe false
       responseGraphQlType shouldBe "Boolean"
+    }
+
+    api.functions[3].apply {
+      operation shouldBe GraphQlOperation.SUBSCRIPTION
+      functionName shouldBe "todoEvents"
+      arguments.single().apply {
+        graphQlType shouldBe "Int"
+        nullable shouldBe true
+      }
+      responseCollection shouldBe false
+      responseNullable shouldBe false
+      responseGraphQlType shouldBe "Todo"
+      serviceName shouldBe "TodoGraphQlService"
     }
 
     api.typeDefinitions[0].kind shouldBe GraphQlTypeDefinitionKind.TYPE

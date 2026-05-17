@@ -13,6 +13,7 @@ import com.squareup.kotlinpoet.asTypeName
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.data.method.annotation.SubscriptionMapping
 import org.springframework.stereotype.Controller
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
@@ -80,6 +81,7 @@ class GraphQlApiGenerator(
           when (function.operation) {
             GraphQlOperation.QUERY -> QueryMapping::class
             GraphQlOperation.MUTATION -> MutationMapping::class
+            GraphQlOperation.SUBSCRIPTION -> SubscriptionMapping::class
           }
         )
         .returns(function.kotlinResponseType())
@@ -141,6 +143,7 @@ class GraphQlApiGenerator(
     val schema = buildString {
       appendOperationType(functions.filter { it.operation == GraphQlOperation.QUERY }, "Query", emittedOperationTypes)
       appendOperationType(functions.filter { it.operation == GraphQlOperation.MUTATION }, "Mutation", emittedOperationTypes)
+      appendOperationType(functions.filter { it.operation == GraphQlOperation.SUBSCRIPTION }, "Subscription", emittedOperationTypes)
       typeDefinitions.forEach { typeDefinition ->
         appendLine()
         appendLine("${typeDefinition.kind.schemaKeyword()} ${typeDefinition.name} {")

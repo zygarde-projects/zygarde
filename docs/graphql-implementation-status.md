@@ -5,17 +5,17 @@ Last updated: 2026-05-17
 ## Current State
 
 - GraphQL feasibility and design notes live in `doc/graphql-support-investigation.md`.
-- `modules-web/zygarde-web-codegen` contains the initial `GraphQlApiGenerator` and GraphQL generation value objects.
-- `modules-web/zygarde-graphql-codegen-dsl` contains the first DSL entry point for query, mutation, type, and input declarations.
+- `modules-web/zygarde-web-codegen` contains the initial `GraphQlApiGenerator` and GraphQL generation value objects, including query, mutation, subscription, object type, input, enum, nullable collection, and raw SDL default-value support.
+- `modules-web/zygarde-graphql-codegen-dsl` contains the first DSL entry point for query, mutation, subscription, type, input, and enum declarations.
 - `samples/todo-multimodule-dsl` has a generated Todo GraphQL sample plus handwritten Book/Author GraphQL coverage for relation filtering and `@BatchMapping`.
 
 ## Changed In This Round
 
-- Added raw GraphQL SDL default-value support to generated operation arguments via `GraphQlArgumentToGenerateVo.defaultValue`.
-- Added input-field default-value support via `GraphQlFieldToGenerateVo.defaultValue` and the GraphQL DSL `field(..., defaultValue = "...")` / `collectionField(..., defaultValue = "...")` options.
-- Extended the GraphQL DSL argument and collection-argument builders with `defaultValue`.
-- Guarded the DSL against invalid default values on object `type` fields; defaults are only valid for arguments and input object fields.
-- Added generator and DSL tests covering argument defaults, input field defaults, and invalid object-field defaults.
+- Added `GraphQlOperation.SUBSCRIPTION`.
+- Generated subscription resolver methods now use Spring GraphQL `@SubscriptionMapping`.
+- Generated SDL now emits `type Subscription` for the first subscription root and `extend type Subscription` for later generated schemas.
+- Added the GraphQL DSL `subscription("...") { ... }` schema builder entry point.
+- Added generator and DSL tests covering subscription codegen, service interface methods, SDL output, and operation-root extension behavior.
 
 ## Validation
 
@@ -26,8 +26,10 @@ Last updated: 2026-05-17
 ## Next Work
 
 - Add nullable response documentation to user-facing GraphQL DSL docs once those docs are introduced or expanded.
+- Add user-facing docs for `subscription(...)` and clarify that callers must choose an appropriate Kotlin return type, such as a reactive publisher type, when wiring real Spring GraphQL subscriptions.
 - Consider adding safer typed helpers for GraphQL default values so callers do not need to pass raw SDL literals.
 - Consider generating enum SDL automatically from model-mapping metadata or Kotlin enum types so users do not need to duplicate enum values manually.
+- Consider adding a generated sample subscription once the sample app has an event source worth exposing.
 - Consider using collection fields in sample SDL if a future sample model needs list-valued GraphQL fields.
 - Decide whether generated schemas should remain split per DSL schema or eventually be aggregated into one schema artifact.
 - Continue toward automatic SDL generation from model-mapping metadata so generated GraphQL types do not need to be duplicated manually in DSL declarations.

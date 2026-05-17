@@ -90,6 +90,13 @@ class GraphQlApiGeneratorTest {
               responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
               responseGraphQlType = "Todo",
               serviceName = "TodoGraphQlService",
+            ),
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.SUBSCRIPTION,
+              functionName = "todoEvents",
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+              serviceName = "TodoGraphQlService",
             )
           ),
           typeDefinitions = mutableListOf(
@@ -130,7 +137,9 @@ class GraphQlApiGeneratorTest {
     controller shouldContain "@Controller"
     controller shouldContain "@QueryMapping"
     controller shouldContain "@MutationMapping"
+    controller shouldContain "@SubscriptionMapping"
     controller shouldContain "public fun todo(@Argument id: Int): GraphQlGeneratorTestTodoDto?"
+    controller shouldContain "public fun todoEvents(): GraphQlGeneratorTestTodoDto"
     controller shouldContain "@Argument ids: Collection<Int>"
     controller shouldContain "filter: GraphQlGeneratorTestTodoFilter?"
     controller shouldContain "status: GraphQlGeneratorTestTodoStatus?"
@@ -138,6 +147,7 @@ class GraphQlApiGeneratorTest {
     controller shouldContain "return service.todo(id)"
     controller shouldContain "return service.todos(ids, filter, status)"
     controller shouldContain "return service.createTodo(input)"
+    controller shouldContain "return service.todoEvents()"
 
     val serviceInterface = result.serviceInterfaces.single().toString()
     serviceInterface shouldContain "public interface TodoGraphQlService"
@@ -148,6 +158,7 @@ class GraphQlApiGeneratorTest {
     serviceInterface shouldContain "status: GraphQlGeneratorTestTodoStatus?"
     serviceInterface shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
     serviceInterface shouldContain "public fun createTodo(input: GraphQlGeneratorTestTodoInput): GraphQlGeneratorTestTodoDto"
+    serviceInterface shouldContain "public fun todoEvents(): GraphQlGeneratorTestTodoDto"
 
     val schema = result.schemas.single().content
     schema shouldContain "type Query"
@@ -155,6 +166,8 @@ class GraphQlApiGeneratorTest {
     schema shouldContain "todos(ids: [Int!]!, filter: TodoFilter, status: TodoStatus = OPEN): [Todo!]!"
     schema shouldContain "type Mutation"
     schema shouldContain "createTodo(input: TodoInput!): Todo!"
+    schema shouldContain "type Subscription"
+    schema shouldContain "todoEvents: Todo!"
     schema shouldContain "type Todo"
     schema shouldContain "status: TodoStatus!"
     schema shouldContain "tags: [String!]!"
@@ -181,6 +194,12 @@ class GraphQlApiGeneratorTest {
               responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
               responseGraphQlType = "Todo",
               responseCollection = true,
+            ),
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.SUBSCRIPTION,
+              functionName = "todoEvents",
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
             )
           ),
         ),
@@ -228,6 +247,12 @@ class GraphQlApiGeneratorTest {
               ),
               responseType = Boolean::class.asTypeName(),
               responseGraphQlType = "Boolean",
+            ),
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.SUBSCRIPTION,
+              functionName = "adminEvents",
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
             )
           ),
         )
@@ -236,9 +261,11 @@ class GraphQlApiGeneratorTest {
 
     result.schemas shouldHaveSize 3
     result.schemas[0].content shouldContain "type Query"
+    result.schemas[0].content shouldContain "type Subscription"
     result.schemas[1].content shouldContain "extend type Query"
     result.schemas[1].content shouldContain "type Mutation"
     result.schemas[2].content shouldContain "extend type Mutation"
+    result.schemas[2].content shouldContain "extend type Subscription"
   }
 
   @Test

@@ -44,6 +44,7 @@ data class GraphQlFieldToGenerateVo(
 enum class GraphQlOperation {
   QUERY,
   MUTATION,
+  SUBSCRIPTION,
 }
 
 enum class GraphQlTypeDefinitionKind {
