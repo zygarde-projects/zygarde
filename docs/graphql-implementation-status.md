@@ -11,14 +11,14 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- Enforced the GraphQL reserved introspection-name rule in the shared GraphQL name validator.
-- `GraphQlApiGenerator`, the GraphQL DSL, and `GraphQlDefaultValue` now reject names that start with `__` before generating Kotlin or SDL.
-- Added focused generator and DSL tests for reserved GraphQL introspection names.
+- Generated Spring GraphQL controllers now emit explicit mapping names on `@QueryMapping`, `@MutationMapping`, and `@SubscriptionMapping`.
+- Generated controller arguments now emit explicit `@Argument(name = "...")` bindings instead of relying on parameter-name inference.
+- Regenerated the Todo DSL GraphQL sample controller so checked-in generated output matches the updated generator behavior.
 
 ## Validation
 
-- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
-- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :todo-codegen-dsl-graphql:run` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :todo-src-main:test --tests example.test.TodoGraphQlTest --tests example.test.BookGraphQlTest :zygarde-web-codegen:ktlintCheck :todo-dsl-generated-graphql-controller:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
 
 ## Next Work
 
@@ -36,6 +36,7 @@ Last updated: 2026-05-17
 - No active blockers.
 - In this environment, Gradle validation needed sandbox escalation because the wrapper writes lock files under `~/.gradle`.
 - GraphQL name validation now follows the GraphQL lexical name grammar (`[_A-Za-z][_0-9A-Za-z]*`) and rejects the reserved `__` introspection-name prefix.
+- Generated Spring GraphQL bindings now carry explicit annotation names, so runtime field/argument binding is no longer dependent on reflected Kotlin method or parameter names.
 - Scalar SDL declarations are now generated, but runtime scalar registration remains separate; custom scalar coercing still needs Spring GraphQL/GraphQL Java configuration.
 - GraphQL runtime support is still sample/codegen focused; no dedicated `zygarde-graphql` runtime module exists yet.
 - Error handling, authentication context injection, custom scalar registration, pagination shape, and generated DataLoader/batch resolver support remain open design and implementation areas.

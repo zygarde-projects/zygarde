@@ -1,5 +1,6 @@
 package zygarde.codegen.generator
 
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -154,13 +155,7 @@ class GraphQlApiGenerator(
         .returns(function.kotlinResponseType())
 
       val controllerFuncBuilder = FunSpec.builder(function.functionName)
-        .addAnnotation(
-          when (function.operation) {
-            GraphQlOperation.QUERY -> QueryMapping::class
-            GraphQlOperation.MUTATION -> MutationMapping::class
-            GraphQlOperation.SUBSCRIPTION -> SubscriptionMapping::class
-          }
-        )
+        .addAnnotation(function.toMappingAnnotationSpec())
         .returns(function.kotlinResponseType())
 
       val paramsToCallServiceInterface = mutableListOf<String>()
@@ -169,7 +164,7 @@ class GraphQlApiGenerator(
         serviceFuncBuilder.addParameter(parameter)
         controllerFuncBuilder.addParameter(
           parameter.toBuilder()
-            .addAnnotation(Argument::class)
+            .addAnnotation(argument.toArgumentAnnotationSpec())
             .build()
         )
         paramsToCallServiceInterface.add(argument.name)
@@ -198,6 +193,23 @@ class GraphQlApiGenerator(
       type.copy(nullable = nullable)
     }
     return ParameterSpec.builder(name, parameterType).build()
+  }
+
+  private fun GraphQlFunctionToGenerateVo.toMappingAnnotationSpec(): AnnotationSpec {
+    val annotation = when (operation) {
+      GraphQlOperation.QUERY -> QueryMapping::class
+      GraphQlOperation.MUTATION -> MutationMapping::class
+      GraphQlOperation.SUBSCRIPTION -> SubscriptionMapping::class
+    }
+    return AnnotationSpec.builder(annotation)
+      .addMember("name = %S", functionName)
+      .build()
+  }
+
+  private fun GraphQlArgumentToGenerateVo.toArgumentAnnotationSpec(): AnnotationSpec {
+    return AnnotationSpec.builder(Argument::class)
+      .addMember("name = %S", name)
+      .build()
   }
 
   private fun zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo.kotlinResponseType(): TypeName {

@@ -15,38 +15,39 @@ import zygarde.core.di.DiServiceContext.bean
 
 @Controller
 public class TodoGraphQlController {
-  @QueryMapping
-  public fun todos(@Argument filter: TodoFilter?): Collection<TodoDto> {
+  @QueryMapping(name = "todos")
+  public fun todos(@Argument(name = "filter") filter: TodoFilter?): Collection<TodoDto> {
     val service = bean<TodoGraphQlService>()
     return service.todos(filter)
   }
 
-  @QueryMapping
-  public fun todo(@Argument id: Int): TodoDto? {
+  @QueryMapping(name = "todo")
+  public fun todo(@Argument(name = "id") id: Int): TodoDto? {
     val service = bean<TodoGraphQlService>()
     return service.todo(id)
   }
 
-  @QueryMapping
-  public fun todosByIds(@Argument ids: Collection<Int>): Collection<TodoDto> {
+  @QueryMapping(name = "todosByIds")
+  public fun todosByIds(@Argument(name = "ids") ids: Collection<Int>): Collection<TodoDto> {
     val service = bean<TodoGraphQlService>()
     return service.todosByIds(ids)
   }
 
-  @MutationMapping
-  public fun createTodo(@Argument input: CreateTodoReq): TodoDto {
+  @MutationMapping(name = "createTodo")
+  public fun createTodo(@Argument(name = "input") input: CreateTodoReq): TodoDto {
     val service = bean<TodoGraphQlService>()
     return service.createTodo(input)
   }
 
-  @MutationMapping
-  public fun updateTodo(@Argument id: Int, @Argument input: UpdateTodoReq): TodoDto {
+  @MutationMapping(name = "updateTodo")
+  public fun updateTodo(@Argument(name = "id") id: Int, @Argument(name = "input")
+      input: UpdateTodoReq): TodoDto {
     val service = bean<TodoGraphQlService>()
     return service.updateTodo(id, input)
   }
 
-  @MutationMapping
-  public fun deleteTodo(@Argument id: Int): Boolean {
+  @MutationMapping(name = "deleteTodo")
+  public fun deleteTodo(@Argument(name = "id") id: Int): Boolean {
     val service = bean<TodoGraphQlService>()
     return service.deleteTodo(id)
   }

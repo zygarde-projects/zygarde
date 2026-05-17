@@ -141,12 +141,13 @@ class GraphQlApiGeneratorTest {
 
     val controller = result.controllers.single().toString()
     controller shouldContain "@Controller"
-    controller shouldContain "@QueryMapping"
-    controller shouldContain "@MutationMapping"
-    controller shouldContain "@SubscriptionMapping"
-    controller shouldContain "public fun todo(@Argument id: Int): GraphQlGeneratorTestTodoDto?"
+    controller shouldContain "@QueryMapping(name = \"todo\")"
+    controller shouldContain "@QueryMapping(name = \"todos\")"
+    controller shouldContain "@MutationMapping(name = \"createTodo\")"
+    controller shouldContain "@SubscriptionMapping(name = \"todoEvents\")"
+    controller shouldContain "public fun todo(@Argument(name = \"id\") id: Int): GraphQlGeneratorTestTodoDto?"
     controller shouldContain "public fun todoEvents(): GraphQlGeneratorTestTodoDto"
-    controller shouldContain "@Argument ids: Collection<Int>"
+    controller shouldContain "@Argument(name = \"ids\") ids: Collection<Int>"
     controller shouldContain "filter: GraphQlGeneratorTestTodoFilter?"
     controller shouldContain "status: GraphQlGeneratorTestTodoStatus?"
     controller shouldContain "val service = bean<TodoGraphQlService>()"
@@ -335,7 +336,7 @@ class GraphQlApiGeneratorTest {
     ).generateApis()
 
     val controller = result.controllers.single().toString()
-    controller shouldContain "public fun todosByOptionalIds(@Argument ids: Collection<Int?>?):"
+    controller shouldContain "public fun todosByOptionalIds(@Argument(name = \"ids\") ids: Collection<Int?>?):"
     controller shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
 
     val serviceInterface = result.serviceInterfaces.single().toString()
