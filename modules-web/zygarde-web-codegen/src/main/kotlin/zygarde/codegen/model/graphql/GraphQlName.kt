@@ -16,3 +16,11 @@ fun requireUniqueGraphQlName(name: String, existingNames: Iterable<String>, labe
     "$label '$name' is already declared"
   }
 }
+
+fun requireGraphQlDescription(description: String?, label: String) {
+  if (description != null) {
+    require(description.isNotBlank()) {
+      "$label description must not be blank"
+    }
+  }
+}

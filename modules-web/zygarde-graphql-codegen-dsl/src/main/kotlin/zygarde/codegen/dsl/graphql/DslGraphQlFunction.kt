@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
+import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 import zygarde.codegen.model.graphql.requireUniqueGraphQlName
 import kotlin.reflect.KClass
@@ -15,6 +16,7 @@ class DslGraphQlFunction(
 ) {
   var serviceName: String? = null
   var serviceFunctionName: String? = null
+  var description: String? = null
   private val arguments: MutableList<GraphQlArgumentToGenerateVo> = mutableListOf()
   private var responseType: TypeName? = null
   private var responseGraphQlType: String? = null
@@ -183,6 +185,7 @@ class DslGraphQlFunction(
   }
 
   fun toGraphQlFunctionToGenerateVo(): GraphQlFunctionToGenerateVo {
+    requireGraphQlDescription(description, "GraphQL ${operation.name.lowercase()} field '$functionName'")
     return GraphQlFunctionToGenerateVo(
       operation = operation,
       functionName = functionName,
@@ -194,6 +197,7 @@ class DslGraphQlFunction(
       responseItemNullable = responseItemNullable,
       serviceName = serviceName,
       serviceFunctionName = serviceFunctionName,
+      description = description,
     )
   }
 }

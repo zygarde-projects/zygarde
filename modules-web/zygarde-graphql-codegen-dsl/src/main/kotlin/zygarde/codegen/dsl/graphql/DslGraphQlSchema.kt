@@ -5,6 +5,7 @@ import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 import zygarde.codegen.model.graphql.requireUniqueGraphQlName
 
@@ -51,19 +52,21 @@ class DslGraphQlSchema(
     }
   }
 
-  fun scalar(name: String) {
+  fun scalar(name: String, description: String? = null) {
     requireGraphQlName(name, "GraphQL type definition name")
     requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
+    requireGraphQlDescription(description, "GraphQL scalar '$name'")
     typeDefinitions.add(
       GraphQlTypeDefinitionToGenerateVo(
         kind = GraphQlTypeDefinitionKind.SCALAR,
         name = name,
+        description = description,
       )
     )
   }
 
-  inline fun <reified T : Any> scalar() {
-    scalar(T::class.defaultGraphQlType())
+  inline fun <reified T : Any> scalar(description: String? = null) {
+    scalar(T::class.defaultGraphQlType(), description)
   }
 
   fun toGraphQlApiToGenerateVo(): GraphQlApiToGenerateVo {

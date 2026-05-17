@@ -25,6 +25,7 @@ import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlSchemaGenerateResult
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 
 class GraphQlApiGenerator(
@@ -61,6 +62,10 @@ class GraphQlApiGenerator(
     functions.forEach { function ->
       requireGraphQlName(function.functionName, "GraphQL ${function.operation.name.lowercase()} field")
       requireGraphQlName(function.responseGraphQlType, "GraphQL response type")
+      requireGraphQlDescription(
+        function.description,
+        "GraphQL ${function.operation.name.lowercase()} field '${function.functionName}'"
+      )
       function.arguments.forEach { argument ->
         requireGraphQlName(argument.name, "GraphQL argument name")
         requireGraphQlName(argument.graphQlType, "GraphQL argument type")
@@ -71,6 +76,7 @@ class GraphQlApiGenerator(
 
   private fun GraphQlTypeDefinitionToGenerateVo.validateGraphQlNames() {
     requireGraphQlName(name, "GraphQL type definition name")
+    requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '$name'")
     when (kind) {
       GraphQlTypeDefinitionKind.TYPE,
       GraphQlTypeDefinitionKind.INPUT -> {
@@ -276,6 +282,7 @@ class GraphQlApiGenerator(
         if (isNotEmpty()) {
           appendLine()
         }
+        append(typeDefinition.description.toSchemaDescription(""))
         if (typeDefinition.kind == GraphQlTypeDefinitionKind.SCALAR) {
           appendLine("scalar ${typeDefinition.name}")
           return@forEach
@@ -325,6 +332,7 @@ class GraphQlApiGenerator(
     }
     appendLine("$keyword $typeName {")
     functions.forEach { function ->
+      append(function.description.toSchemaDescription("  "))
       appendLine("  ${function.functionName}${function.arguments.toSchemaArguments()}: ${function.toSchemaResponseType()}")
     }
     appendLine("}")
@@ -367,6 +375,24 @@ class GraphQlApiGenerator(
 
   private fun String?.toSchemaDefaultValue(): String {
     return this?.let { " = $it" }.orEmpty()
+  }
+
+  private fun String?.toSchemaDescription(indent: String): String {
+    if (this == null) {
+      return ""
+    }
+    val escaped = replace("\"\"\"", "\\\"\"\"")
+    return if (!escaped.contains('\n') && !escaped.endsWith('"')) {
+      "$indent\"\"\"$escaped\"\"\"\n"
+    } else {
+      buildString {
+        appendLine("$indent\"\"\"")
+        escaped.split("\n").forEach { line ->
+          appendLine(if (line.isEmpty()) "" else "$indent$line")
+        }
+        appendLine("$indent\"\"\"")
+      }
+    }
   }
 
   private fun GraphQlTypeDefinitionKind.schemaKeyword(): String {

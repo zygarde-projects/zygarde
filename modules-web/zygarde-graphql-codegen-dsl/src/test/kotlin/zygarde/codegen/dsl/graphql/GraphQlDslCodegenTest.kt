@@ -157,6 +157,59 @@ class GraphQlDslCodegenTest {
   }
 
   @Test
+  fun `should carry GraphQL descriptions through the DSL`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("TodoGraphQl") {
+          query("todo") {
+            argument<Int>("id")
+            returns<TodoDto>("Todo")
+            description = "Find a single todo by id"
+          }
+          type("Todo") {
+            description = "A todo item"
+            field<Int>("id")
+          }
+          scalar<Long>(description = "A 64-bit integer scalar")
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    val api = dsl.apisToGenerate.single()
+    api.functions.single().description shouldBe "Find a single todo by id"
+    api.typeDefinitions[0].description shouldBe "A todo item"
+    api.typeDefinitions[1].description shouldBe "A 64-bit integer scalar"
+  }
+
+  @Test
+  fun `should reject blank GraphQL descriptions`() {
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            query("todo") {
+              returns<TodoDto>("Todo")
+              description = " "
+            }
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL query field 'todo' description must not be blank"
+
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            scalar("DateTime", description = "")
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL scalar 'DateTime' description must not be blank"
+  }
+
+  @Test
   fun `should reject default values on object type fields`() {
     shouldThrow<IllegalArgumentException> {
       DslGraphQlTypeDefinition.type("Todo")

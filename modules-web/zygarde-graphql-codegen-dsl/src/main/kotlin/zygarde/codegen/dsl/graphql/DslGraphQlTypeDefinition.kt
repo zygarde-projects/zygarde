@@ -3,6 +3,7 @@ package zygarde.codegen.dsl.graphql
 import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 import zygarde.codegen.model.graphql.requireUniqueGraphQlName
 import kotlin.reflect.KClass
@@ -11,6 +12,7 @@ class DslGraphQlTypeDefinition private constructor(
   private val kind: GraphQlTypeDefinitionKind,
   private val name: String,
 ) {
+  var description: String? = null
   private val fields: MutableList<GraphQlFieldToGenerateVo> = mutableListOf()
   private val enumValues: MutableList<String> = mutableListOf()
 
@@ -114,11 +116,13 @@ class DslGraphQlTypeDefinition private constructor(
       }
       GraphQlTypeDefinitionKind.SCALAR -> Unit
     }
+    requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '$name'")
     return GraphQlTypeDefinitionToGenerateVo(
       kind = kind,
       name = name,
       fields = fields,
       enumValues = enumValues,
+      description = description,
     )
   }
 

@@ -13,6 +13,7 @@ data class GraphQlFunctionToGenerateVo(
   var responseItemNullable: Boolean = false,
   var serviceName: String? = null,
   var serviceFunctionName: String? = null,
+  var description: String? = null,
 )
 
 data class GraphQlArgumentToGenerateVo(
@@ -30,6 +31,7 @@ data class GraphQlTypeDefinitionToGenerateVo(
   var name: String,
   var fields: MutableList<GraphQlFieldToGenerateVo> = mutableListOf(),
   var enumValues: MutableList<String> = mutableListOf(),
+  var description: String? = null,
 )
 
 data class GraphQlFieldToGenerateVo(
