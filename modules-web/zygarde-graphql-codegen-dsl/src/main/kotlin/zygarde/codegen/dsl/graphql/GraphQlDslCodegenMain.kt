@@ -2,7 +2,11 @@ package zygarde.codegen.dsl.graphql
 
 import com.squareup.kotlinpoet.FileSpec
 import io.github.classgraph.ClassGraph
+import io.github.classgraph.ScanResult
 import org.springframework.util.FileSystemUtils
+import zygarde.codegen.dsl.ModelMappingDslCodegen
+import zygarde.codegen.dsl.meta.DtoMetaResolver
+import zygarde.codegen.dsl.meta.ModelMappingMetadata
 import zygarde.codegen.generator.GraphQlApiGenerator
 import zygarde.codegen.model.graphql.GraphQlSchemaGenerateResult
 import java.io.File
@@ -41,24 +45,32 @@ private fun List<GraphQlSchemaGenerateResult>.writeSchemaToFileOrSysOut(property
   }
 }
 
+private fun scanConcreteSubclasses(scan: ScanResult, superClass: Class<*>) =
+  scan.allClasses
+    .filter { it.extendsSuperclass(superClass.canonicalName) }
+    .filter { !it.isAbstract }
+    .loadClasses()
+
 fun main() {
-  val classes = ClassGraph()
+  val scan = ClassGraph()
     .enableClassInfo()
     .enableAnnotationInfo()
     .scan()
-    .allClasses
-    .filter {
-      it.extendsSuperclass(GraphQlDslCodegen::class.java.canonicalName)
-    }
-    .filter {
-      !it.isAbstract
-    }
 
-  val codegenInstanceList = classes.loadClasses().map { clz ->
-    clz.getDeclaredConstructor().newInstance() as GraphQlDslCodegen
+  val modelMappingMetadata: ModelMappingMetadata = scanConcreteSubclasses(scan, ModelMappingDslCodegen::class.java)
+    .map { clz ->
+      (clz.getDeclaredConstructor().newInstance() as ModelMappingDslCodegen).also { it.execute() }
+    }
+    .flatMap { it.dtoFieldMappings }
+    .let { DtoMetaResolver.resolve(it) }
+
+  val codegenInstanceList = scanConcreteSubclasses(scan, GraphQlDslCodegen::class.java)
+    .map { clz -> clz.getDeclaredConstructor().newInstance() as GraphQlDslCodegen }
+
+  codegenInstanceList.forEach {
+    it.modelMappingMetadata = modelMappingMetadata
+    it.codegen()
   }
-
-  codegenInstanceList.forEach { it.codegen() }
 
   val apisToGenerate = codegenInstanceList.flatMap { it.apisToGenerate }
   val generateResults = GraphQlApiGenerator(apisToGenerate).generateApis()

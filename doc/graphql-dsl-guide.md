@@ -43,14 +43,20 @@ class TodoGraphQlCodegen : GraphQlDslCodegen() {
 |---|---|
 | `modules-web/zygarde-web-codegen` | `GraphQlApiGenerator` 與 codegen 中介模型(`GraphQlApiToGenerateVo` 等) |
 | `modules-web/zygarde-graphql-codegen-dsl` | DSL 入口 `GraphQlDslCodegen`、`GraphQlDslCodegenMain` |
+| `modules-model-mapping/zygarde-model-mapping-codegen-dsl` | 提供 `DtoMetaResolver` / `ModelMappingMetadata`,讓 `typeFrom` / `inputFrom` 從 model-mapping DTO 推導型別 |
 
 要使用 DSL,在 codegen 模組加入相依即可:
 
 ```kotlin
 dependencies {
   implementation(project(":zygarde-graphql-codegen-dsl"))
+  // 使用 typeFrom / inputFrom 推導時,額外加入:
+  implementation(project(":zygarde-model-mapping-codegen-dsl"))
+  implementation(project(":<你的 model-mapping codegen 模組>"))
 }
 ```
+
+只用手動 `type { }` / `input { }` 時,只需要 `zygarde-graphql-codegen-dsl` 一個相依。
 
 ## 核心概念
 
@@ -211,6 +217,54 @@ union("Listed", listOf("Book", "Author"))                      // 成員型別�
 `union` 在 SDL 寫出 `union Name = A | B` 宣告。成員型別應是已宣告(或在其他 schema 片段宣告)的 object `type`。union 至少要有一個成員型別、成員不可重複,否則分別以 `GraphQL union 'X' must declare at least one member type` 與 `GraphQL union 'X' member type 'Y' is already declared` 失敗。產生器只輸出 SDL,**不會產生 union 的型別解析器(`TypeResolver`)**;runtime 仍需自行透過 `RuntimeWiringConfigurer` 註冊,才能在查詢回傳時判斷實際型別。union 與 `scalar` 一樣不產生對應的 Kotlin 型別。
 
 `type` / `input` / `enum` 不可為空 — 沒有任何 field / value 會以 `must declare at least one field/value` 失敗。需要無欄位的型別請改用 `scalar(...)`;需要型別聯集請用 `union(...)`。
+
+## 從 model-mapping DTO 自動推導型別:`typeFrom` / `inputFrom`
+
+手動 `type` / `input` 的問題是:同一個 DTO 的欄位形狀已經在 model-mapping 的 `ModelMappingCodegenSpec` 宣告過一次,GraphQL schema 又得照抄一次,兩邊容易漂移。
+
+`typeFrom` / `inputFrom` 直接從 model-mapping metadata 推導 GraphQL 型別宣告:
+
+```kotlin
+schema("BookGraphQl") {
+  mapScalar<LocalDate>("Date")   // 非內建 scalar 要先告訴推導器怎麼對應
+  scalar("Date")
+
+  typeFrom(BookDtos.BookDto, name = "Book")
+  inputFrom(BookDtos.CreateBookReq, name = "CreateBookInput")
+}
+```
+
+`typeFrom` 接受的是 model-mapping 的 `CodegenDto`(就是 `ModelMappingCodegenSpec` 裡宣告 DTO 用的那個物件),不是產生出來的 DTO class。
+
+推導規則:
+
+- 欄位名稱、nullability、collection 與 description 全部來自 model-mapping metadata;`@Comment` / model field 的 comment 會變成 SDL description。
+- `fromAutoIntId` / `fromAutoLongId` 標記的 auto-id 欄位推導成 GraphQL 內建的 `ID`。
+- 純量欄位依「型別對應」表推導;`LocalDate` 等非內建型別需先用 `mapScalar` 註冊,否則 fail fast。
+- `fromRef` / `fromRefCollection` 的 DTO 參照欄位會 **遞迴推導** 被參照的 DTO 型別。
+- enum 欄位會自動推導出對應的 GraphQL `enum` 宣告。
+- 已經(手動或先前推導)宣告過的型別會被重用,不會重複輸出。
+
+參數:
+
+- `name` — GraphQL 型別名稱;省略時用 `CodegenDto` 的名稱。
+- `description` — 型別層級 description。
+- `exclude` — 要排除、不出現在推導型別裡的欄位名稱集合。
+
+`mapScalar`:
+
+- `mapScalar<LocalDate>("Date")` 或 `mapScalar(LocalDate::class, "Date")` 註冊「Kotlin 型別 → GraphQL scalar 名稱」對應,讓推導器知道怎麼處理非內建型別。它只負責對應,**不會** 自動寫出 `scalar` 宣告;SDL 上需要的 `scalar X` 仍請另外呼叫 `scalar(...)`。
+
+無法推導的情況會 fail fast:
+
+- 欄位型別既非內建純量、enum,也沒 `mapScalar` 註冊,且不是 DTO 參照 → `cannot map field ... to a GraphQL type`。
+- `typeFrom` / `inputFrom` 的 DTO 不在 model-mapping metadata 內 → `... is not part of model-mapping metadata`。
+
+需要更細的客製(改欄位名、加額外欄位)時,仍可改用手動 `type { }` / `input { }`。
+
+### 推導需要 model-mapping 在 classpath 上
+
+`GraphQlDslCodegenMain` 在執行 GraphQL codegen 前,會先用 ClassGraph 掃描 classpath 上的 `ModelMappingDslCodegen` 子類別、收集所有 DTO 欄位 metadata。因此使用 `typeFrom` / `inputFrom` 時,**model-mapping 的 codegen 模組必須在 GraphQL codegen 的 classpath 上**。單元測試裡也可以直接設定 `GraphQlDslCodegen.modelMappingMetadata`。
 
 ## 描述(GraphQL description)
 
@@ -440,7 +494,7 @@ DSL 目前涵蓋 query / mutation / subscription、參數、型別定義(`type` 
 - **巢狀 field resolver / `@SchemaMapping` / `@BatchMapping`** — 解決 N+1 的 DataLoader / batch resolver 仍須手寫(可參考 `samples/todo-multimodule-dsl` 內手寫的 `BookGraphQlController`)。
 - **subscription 回傳型別** — 產生器只輸出宣告的回傳型別。要串真正的 Spring GraphQL subscription,呼叫端需自行選用 reactive publisher 型別(例如以 `TypeName` 多載傳入 `Flux<T>`)。
 - **自訂 scalar coercing、錯誤處理、認證注入、分頁形狀** — 仍屬手寫 / 後續設計範圍,詳見 `doc/graphql-support-investigation.md`。
-- **由 model-mapping metadata 自動產生 SDL `type` / `input`** — 規劃中;目前型別定義需在 DSL 明確宣告。
+- **由 model-mapping metadata 自動產生 SDL `type` / `input`** — 已由 `typeFrom` / `inputFrom` 支援(見上節)。尚未支援的:`interface` 推導、operation 回傳型別自動推導、推導時的欄位改名 / 補欄位(這些情況請改用手動 `type { }` / `input { }`)。
 
 ## 相關檔案索引
 
@@ -448,7 +502,10 @@ DSL 目前涵蓋 query / mutation / subscription、參數、型別定義(`type` 
 - `modules-web/zygarde-graphql-codegen-dsl/.../DslGraphQlSchema.kt` — `schema { }` 內可用的宣告
 - `modules-web/zygarde-graphql-codegen-dsl/.../DslGraphQlFunction.kt` — `argument` / `returns` 等
 - `modules-web/zygarde-graphql-codegen-dsl/.../DslGraphQlTypeDefinition.kt` — `type` / `input` / `enumType`
+- `modules-web/zygarde-graphql-codegen-dsl/.../GraphQlDtoDeriver.kt` — `typeFrom` / `inputFrom` 的 DTO 推導邏輯
+- `modules-web/zygarde-graphql-codegen-dsl/.../GraphQlTypeMapper.kt` — Kotlin 型別 → GraphQL scalar 對應(`mapScalar`)
 - `modules-web/zygarde-graphql-codegen-dsl/.../GraphQlDefaultValue.kt` — 預設值 helper
 - `modules-web/zygarde-graphql-codegen-dsl/.../GraphQlDslCodegenMain.kt` — codegen 進入點
+- `modules-model-mapping/zygarde-model-mapping-codegen-dsl/.../meta/DtoMetaResolver.kt` — DTO 欄位 metadata 解析(`typeFrom` 推導來源)
 - `modules-web/zygarde-web-codegen/.../generator/GraphQlApiGenerator.kt` — 實際產碼器
 - `samples/todo-multimodule-dsl/todo-codegen-dsl-graphql/.../TodoGraphQlCodegen.kt` — 可參考的 DSL 範例

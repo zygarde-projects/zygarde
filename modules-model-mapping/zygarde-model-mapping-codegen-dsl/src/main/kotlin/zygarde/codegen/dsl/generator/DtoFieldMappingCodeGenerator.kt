@@ -15,11 +15,9 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import zygarde.codegen.dsl.meta.DtoMetaResolver
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
-import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
-import zygarde.codegen.extension.kotlinpoet.generic
-import zygarde.codegen.extension.kotlinpoet.kotlin
 import zygarde.codegen.generator.shared.addSchemaRequiredMode
 import zygarde.codegen.meta.CodegenSealedInterface
 import zygarde.core.annotation.Comment
@@ -486,18 +484,6 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
       }
   }
 
-  private fun DtoFieldMapping.fieldType(): TypeName {
-    val mapping = this
-    val fieldTypeNullable = when (mapping.forceNull) {
-      ForceNull.NONE -> mapping.modelField.fieldNullable
-      ForceNull.NULL -> true
-      ForceNull.NOT_NULL -> false
-    }
-    return (
-      mapping.dtoRefClass
-        ?: mapping.dtoRef?.let { ClassName(dtoPackageName, it.name) }
-        ?: mapping.modelField.fieldClass
-    ).kotlin(!mapping.refCollection && fieldTypeNullable)
-      .let { if (mapping.refCollection) Collection::class.generic(it).kotlin(fieldTypeNullable) else it }
-  }
+  private fun DtoFieldMapping.fieldType(): TypeName =
+    DtoMetaResolver.resolveFieldType(this, dtoPackageName)
 }

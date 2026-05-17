@@ -46,14 +46,10 @@ class TodoGraphQlCodegen : GraphQlDslCodegen() {
         serviceName = "TodoGraphQlService"
       }
 
-      type("Todo") {
-        field<Int>("id")
-        field<String>("description")
-      }
-
-      input("TodoInput") {
-        field<String>("description")
-      }
+      // `Todo` and `TodoInput` are derived from model-mapping DTOs instead of
+      // being re-declared by hand. `TodoFilter` has no DTO and stays manual.
+      typeFrom(TodoModelDslCodegen.TodoDtos.TodoDto, name = "Todo")
+      inputFrom(TodoModelDslCodegen.TodoDtos.CreateTodoReq, name = "TodoInput")
 
       input("TodoFilter") {
         field<Int>("idEq", nullable = true)

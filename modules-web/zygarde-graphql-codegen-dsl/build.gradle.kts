@@ -5,6 +5,7 @@ dependencies {
   implementation(platform(project(":zygarde-bom-codegen")))
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-web-codegen"))
+  implementation(project(":zygarde-model-mapping-codegen-dsl"))
   implementation("org.springframework.boot:spring-boot-starter-graphql")
   implementation("io.github.classgraph:classgraph")
   implementation("com.squareup:kotlinpoet")
