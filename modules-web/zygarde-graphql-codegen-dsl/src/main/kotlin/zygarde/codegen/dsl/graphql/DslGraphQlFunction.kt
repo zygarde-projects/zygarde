@@ -34,10 +34,12 @@ class DslGraphQlFunction(
     graphQlType: String = type.defaultGraphQlType(),
     nullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
+    requireArgumentDescription(name, description)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -45,14 +47,23 @@ class DslGraphQlFunction(
         graphQlType = graphQlType,
         nullable = nullable,
         defaultValue = defaultValue,
+        description = description,
       )
     )
   }
 
-  fun argument(name: String, type: TypeName, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null) {
+  fun argument(
+    name: String,
+    type: TypeName,
+    graphQlType: String,
+    nullable: Boolean = false,
+    defaultValue: String? = null,
+    description: String? = null,
+  ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
+    requireArgumentDescription(name, description)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -60,6 +71,7 @@ class DslGraphQlFunction(
         graphQlType = graphQlType,
         nullable = nullable,
         defaultValue = defaultValue,
+        description = description,
       )
     )
   }
@@ -69,8 +81,9 @@ class DslGraphQlFunction(
     graphQlType: String = T::class.defaultGraphQlType(),
     nullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
-    argument(name, T::class, graphQlType, nullable, defaultValue)
+    argument(name, T::class, graphQlType, nullable, defaultValue, description)
   }
 
   fun collectionArgument(
@@ -80,10 +93,12 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
+    requireArgumentDescription(name, description)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -93,6 +108,7 @@ class DslGraphQlFunction(
         collection = true,
         itemNullable = itemNullable,
         defaultValue = defaultValue,
+        description = description,
       )
     )
   }
@@ -104,10 +120,12 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
     requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
+    requireArgumentDescription(name, description)
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -117,6 +135,7 @@ class DslGraphQlFunction(
         collection = true,
         itemNullable = itemNullable,
         defaultValue = defaultValue,
+        description = description,
       )
     )
   }
@@ -127,8 +146,9 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
-    collectionArgument(name, T::class, graphQlType, nullable, itemNullable, defaultValue)
+    collectionArgument(name, T::class, graphQlType, nullable, itemNullable, defaultValue, description)
   }
 
   fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
@@ -182,6 +202,10 @@ class DslGraphQlFunction(
     itemNullable: Boolean = false,
   ) {
     returnsCollection(T::class, graphQlType, nullable, itemNullable)
+  }
+
+  private fun requireArgumentDescription(name: String, description: String?) {
+    requireGraphQlDescription(description, "GraphQL ${operation.name.lowercase()} field '$functionName' argument '$name'")
   }
 
   fun toGraphQlFunctionToGenerateVo(): GraphQlFunctionToGenerateVo {

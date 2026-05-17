@@ -162,7 +162,8 @@ class GraphQlDslCodegenTest {
       override fun codegen() {
         schema("TodoGraphQl") {
           query("todo") {
-            argument<Int>("id")
+            argument<Int>("id", description = "The todo id")
+            collectionArgument<Int>("tags", nullable = true, description = "Optional tag filter")
             returns<TodoDto>("Todo")
             description = "Find a single todo by id"
           }
@@ -180,6 +181,8 @@ class GraphQlDslCodegenTest {
 
     val api = dsl.apisToGenerate.single()
     api.functions.single().description shouldBe "Find a single todo by id"
+    api.functions.single().arguments[0].description shouldBe "The todo id"
+    api.functions.single().arguments[1].description shouldBe "Optional tag filter"
     api.typeDefinitions[0].description shouldBe "A todo item"
     api.typeDefinitions[0].fields[0].description shouldBe "Unique identifier"
     api.typeDefinitions[0].fields[1].description shouldBe "Free-form labels"
@@ -214,6 +217,10 @@ class GraphQlDslCodegenTest {
     shouldThrow<IllegalArgumentException> {
       DslGraphQlTypeDefinition.type("Todo").field<Int>("id", description = " ")
     }.message shouldBe "GraphQL type 'Todo' field 'id' description must not be blank"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlFunction("todo", GraphQlOperation.QUERY).argument<Int>("id", description = " ")
+    }.message shouldBe "GraphQL query field 'todo' argument 'id' description must not be blank"
   }
 
   @Test

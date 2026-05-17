@@ -811,6 +811,63 @@ class GraphQlApiGeneratorTest {
     }.message shouldBe "GraphQL type 'Todo' field 'id' description must not be blank"
   }
 
+  @Test
+  fun `should render GraphQL argument descriptions in generated schema`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        graphQlApi(
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.QUERY,
+              functionName = "todo",
+              arguments = mutableListOf(
+                GraphQlArgumentToGenerateVo("id", Int::class.asTypeName(), "Int", description = "The todo id"),
+                GraphQlArgumentToGenerateVo(
+                  name = "filter",
+                  type = GraphQlGeneratorTestTodoFilter::class.asTypeName(),
+                  graphQlType = "TodoFilter",
+                  nullable = true,
+                  description = "Optional filter\nspanning lines",
+                ),
+                GraphQlArgumentToGenerateVo("limit", Int::class.asTypeName(), "Int", nullable = true),
+              ),
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+            )
+          )
+        )
+      )
+    ).generateApis()
+
+    val schema = result.schemas.single().content
+    schema shouldContain "  todo(\n" +
+      "    \"\"\"The todo id\"\"\"\n" +
+      "    id: Int!\n" +
+      "    \"\"\"\n    Optional filter\n    spanning lines\n    \"\"\"\n" +
+      "    filter: TodoFilter\n" +
+      "    limit: Int\n" +
+      "  ): Todo!"
+  }
+
+  @Test
+  fun `should reject blank GraphQL argument descriptions before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            functions = mutableListOf(
+              todoQuery(
+                arguments = mutableListOf(
+                  GraphQlArgumentToGenerateVo("id", Int::class.asTypeName(), "Int", description = " "),
+                )
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL query field 'todo' argument 'id' description must not be blank"
+  }
+
   private fun graphQlApi(
     apiName: String = "TodoGraphQl",
     functions: MutableList<GraphQlFunctionToGenerateVo> = mutableListOf(),

@@ -202,12 +202,12 @@ scalar<Long>()                     // SDL 名稱由型別推導,此例為 "Long"
 
 ## 描述(GraphQL description)
 
-operation 函式、型別定義與 `type` / `input` 的個別 field 都可以加上 SDL description,會在 schema 產出物寫成 GraphQL 的 block string(`"""..."""`),於 introspection / GraphiQL 顯示。
+operation 函式、operation 參數、型別定義與 `type` / `input` 的個別 field 都可以加上 SDL description,會在 schema 產出物寫成 GraphQL 的 block string(`"""..."""`),於 introspection / GraphiQL 顯示。
 
 ```kotlin
 schema("TodoGraphQl") {
   query("todo") {
-    argument<Int>("id")
+    argument<Int>("id", description = "The todo id")
     returns<TodoDto>("Todo", nullable = true)
     description = "Find a single todo by id"
   }
@@ -223,11 +223,12 @@ schema("TodoGraphQl") {
 - `query` / `mutation` / `subscription` 區塊用 `description = "..."` 屬性設定;會寫在對應 operation field 之前。
 - `type` / `input` / `enumType` 區塊同樣用 `description = "..."` 屬性;會寫在型別宣告之前。
 - `type` / `input` 的 `field` / `collectionField` 用具名參數 `description = "..."` 設定;會寫在該 field 之前(縮排兩格)。
+- operation 的 `argument` / `collectionArgument` 用具名參數 `description = "..."` 設定。只要有任一參數帶 description,該 operation field 的參數會改用多行排版,每個參數各自一行並寫上 block string。
 - `scalar(name)` / `scalar<T>()` 用具名參數 `description = "..."` 設定。
 - description 預設為 `null`(不輸出)。設定後不可為空白字串,否則會以 `... description must not be blank` 失敗。
 - 單行 description 產出 `"""text"""`;含換行(或以 `"` 結尾)時改用多行 block string,內容會逐行縮排。description 內的 `"""` 會自動跳脫成 `\"""`。
 
-目前 description 支援 operation 函式、型別定義與 `type` / `input` field 層級;個別 argument 與 enum value 的 description 尚未支援。
+目前 description 支援 operation 函式、operation 參數、型別定義與 `type` / `input` field 層級;個別 enum value 的 description 尚未支援。
 
 ## 型別對應(`defaultGraphQlType`)
 
@@ -342,7 +343,7 @@ DSL 與產生器都會把錯誤擋在「產出檔案之前」,讓問題 fail fas
 - **名稱合法性** — 所有 GraphQL 名稱必須符合 `[_A-Za-z][_0-9A-Za-z]*`,且不可用 `__` 開頭(GraphQL 保留給 introspection)。
 - **唯一性** — `apiName`、operation field 名稱(同一 operation,跨所有 schema)、型別定義名稱(跨所有 schema)、函式參數名稱、型別欄位名稱、enum value 都必須唯一。
 - **非空** — `type` / `input` 至少要有一個 field,`enum` 至少要有一個 value。
-- **description** — operation 函式、型別定義與 `type` / `input` field 的 `description` 可省略;一旦設定就不可為空白字串。
+- **description** — operation 函式、operation 參數、型別定義與 `type` / `input` field 的 `description` 可省略;一旦設定就不可為空白字串。
 - **預設值** — 只允許出現在 `input` 的欄位。
 - **回傳型別** — 每個 operation 函式都必須宣告。
 - **schema-only** — 一份 schema 只有型別定義、沒有任何 operation 時,只產生 SDL,不產生空的 Controller / Service interface,適合放共用的 scalar / 共用 type 片段。
@@ -364,9 +365,9 @@ mutation todo → fun mutationTodo(...)
 
 ## 目前限制與後續
 
-DSL 目前涵蓋 query / mutation / subscription、參數、型別定義、預設值與 operation / 型別 / field 層級的 description。以下尚未由 DSL 支援,需要時請手寫 resolver:
+DSL 目前涵蓋 query / mutation / subscription、參數、型別定義、預設值與 operation / argument / 型別 / field 層級的 description。以下尚未由 DSL 支援,需要時請手寫 resolver:
 
-- **argument / enum value 的 description** — 目前 description 支援 operation 函式、型別定義與 `type` / `input` field;個別 argument 與 enum value 尚未支援。
+- **enum value 的 description** — 目前 description 支援 operation 函式、operation 參數、型別定義與 `type` / `input` field;個別 enum value 尚未支援。
 
 - **巢狀 field resolver / `@SchemaMapping` / `@BatchMapping`** — 解決 N+1 的 DataLoader / batch resolver 仍須手寫(可參考 `samples/todo-multimodule-dsl` 內手寫的 `BookGraphQlController`)。
 - **subscription 回傳型別** — 產生器只輸出宣告的回傳型別。要串真正的 Spring GraphQL subscription,呼叫端需自行選用 reactive publisher 型別(例如以 `TypeName` 多載傳入 `Flux<T>`)。

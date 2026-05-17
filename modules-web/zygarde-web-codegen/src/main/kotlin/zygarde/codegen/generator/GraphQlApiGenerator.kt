@@ -69,6 +69,10 @@ class GraphQlApiGenerator(
       function.arguments.forEach { argument ->
         requireGraphQlName(argument.name, "GraphQL argument name")
         requireGraphQlName(argument.graphQlType, "GraphQL argument type")
+        requireGraphQlDescription(
+          argument.description,
+          "GraphQL ${function.operation.name.lowercase()} field '${function.functionName}' argument '${argument.name}'"
+        )
       }
     }
     typeDefinitions.forEach { it.validateGraphQlNames() }
@@ -335,17 +339,28 @@ class GraphQlApiGenerator(
     appendLine("$keyword $typeName {")
     functions.forEach { function ->
       append(function.description.toSchemaDescription("  "))
-      appendLine("  ${function.functionName}${function.arguments.toSchemaArguments()}: ${function.toSchemaResponseType()}")
+      appendLine("  ${function.functionName}${function.arguments.toSchemaArguments("  ")}: ${function.toSchemaResponseType()}")
     }
     appendLine("}")
   }
 
-  private fun List<GraphQlArgumentToGenerateVo>.toSchemaArguments(): String {
+  private fun List<GraphQlArgumentToGenerateVo>.toSchemaArguments(fieldIndent: String): String {
     if (isEmpty()) {
       return ""
     }
-    return joinToString(prefix = "(", postfix = ")") { argument ->
-      "${argument.name}: ${argument.toSchemaType()}${argument.defaultValue.toSchemaDefaultValue()}"
+    if (none { it.description != null }) {
+      return joinToString(prefix = "(", postfix = ")") { argument ->
+        "${argument.name}: ${argument.toSchemaType()}${argument.defaultValue.toSchemaDefaultValue()}"
+      }
+    }
+    val argumentIndent = "$fieldIndent  "
+    return buildString {
+      appendLine("(")
+      this@toSchemaArguments.forEach { argument ->
+        append(argument.description.toSchemaDescription(argumentIndent))
+        appendLine("$argumentIndent${argument.name}: ${argument.toSchemaType()}${argument.defaultValue.toSchemaDefaultValue()}")
+      }
+      append("$fieldIndent)")
     }
   }
 

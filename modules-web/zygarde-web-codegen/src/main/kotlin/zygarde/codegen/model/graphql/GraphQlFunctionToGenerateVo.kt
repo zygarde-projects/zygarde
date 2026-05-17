@@ -24,6 +24,7 @@ data class GraphQlArgumentToGenerateVo(
   var collection: Boolean = false,
   var itemNullable: Boolean = false,
   var defaultValue: String? = null,
+  var description: String? = null,
 )
 
 data class GraphQlTypeDefinitionToGenerateVo(
