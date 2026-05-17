@@ -576,6 +576,18 @@ class GraphQlApiGeneratorTest {
   }
 
   @Test
+  fun `should reject duplicate GraphQL APIs before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(apiName = "TodoGraphQl"),
+          graphQlApi(apiName = "TodoGraphQl")
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL API 'TodoGraphQl' is already declared"
+  }
+
+  @Test
   fun `should reject empty GraphQL type definitions before rendering generated output`() {
     shouldThrow<IllegalArgumentException> {
       GraphQlApiGenerator(

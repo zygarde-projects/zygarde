@@ -98,6 +98,12 @@ class GraphQlApiGenerator(
   }
 
   private fun validateUniqueGraphQlDeclarations() {
+    apis.map { it.apiName }
+      .firstDuplicateOrNull()
+      ?.let { duplicateName ->
+        throw IllegalArgumentException("GraphQL API '$duplicateName' is already declared")
+      }
+
     GraphQlOperation.entries.forEach { operation ->
       apis.flatMap { api -> api.functions.filter { it.operation == operation } }
         .map { it.functionName }

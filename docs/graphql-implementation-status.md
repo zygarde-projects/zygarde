@@ -11,8 +11,8 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- GraphQL generator now rejects default values on generated object type fields instead of silently dropping them from SDL.
-- Added focused generator test coverage for the direct VO path, matching the existing DSL behavior that only input fields may declare default values.
+- GraphQL generator now rejects duplicate `GraphQlApiToGenerateVo.apiName` values before rendering generated output.
+- Added focused generator test coverage for duplicate API names so controller/service/schema file-name collisions fail fast instead of merging or overwriting generated artifacts.
 
 ## Validation
 
@@ -35,6 +35,7 @@ Last updated: 2026-05-17
 - No active blockers.
 - Gradle validation required sandbox escalation in this round because the wrapper needed lock-file access under `~/.gradle`.
 - Schema-only GraphQL DSL declarations are useful for shared SDL fragments such as scalars and common object/input types; they now avoid stale empty generated Kotlin files.
+- GraphQL API/schema names must be unique across one generator invocation; duplicate names now fail before output rendering to avoid colliding controller/service/schema artifacts.
 - Empty `type`, `input`, and `enum` declarations are now rejected in both the DSL and generator; use `scalar(...)` for fieldless scalar declarations.
 - Default values are supported only for GraphQL input fields; both DSL and direct generator VO usage now fail fast for object type field defaults.
 - GraphQL fields with the same name are valid across different operation roots; generated Spring mapping annotations keep the GraphQL name stable even when Kotlin method names need operation prefixes.
