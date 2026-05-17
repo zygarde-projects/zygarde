@@ -6,26 +6,26 @@ Last updated: 2026-05-17
 
 - GraphQL feasibility and design notes live in `doc/graphql-support-investigation.md`.
 - `modules-web/zygarde-web-codegen` contains the initial `GraphQlApiGenerator` and GraphQL generation value objects, including query, mutation, subscription, object type, input, enum, scalar, nullable collection, and raw SDL default-value support.
-- `modules-web/zygarde-graphql-codegen-dsl` contains the first DSL entry point for query, mutation, subscription, type, input, enum, and scalar declarations, including Kotlin enum value derivation helpers.
+- `modules-web/zygarde-graphql-codegen-dsl` contains the first DSL entry point for query, mutation, subscription, type, input, enum, and scalar declarations, including Kotlin enum value derivation helpers and `GraphQlDefaultValue` helpers for safer SDL default-value literals.
 - `samples/todo-multimodule-dsl` has a generated Todo GraphQL sample plus handwritten Book/Author GraphQL coverage for relation filtering and `@BatchMapping`.
 
 ## Changed In This Round
 
-- Added scalar SDL support to the GraphQL generator with a new `GraphQlTypeDefinitionKind.SCALAR` that emits declarations such as `scalar Long`.
-- Added GraphQL DSL scalar declarations through `scalar("Name")` and `scalar<T>()`, allowing generated schemas to declare custom scalars used by fields, arguments, or responses.
-- Updated generator and DSL tests to cover scalar type definitions.
+- Added `GraphQlDefaultValue` in the GraphQL DSL module to build SDL default-value literals for strings, ints, longs, floats, booleans, enums, lists, objects, and null values.
+- Added escaping for GraphQL string default values and validation for enum/object field names used in helper-built literals.
+- Updated the GraphQL DSL tests to use helper-built defaults for object, enum, string, and list defaults, and added focused helper coverage.
 
 ## Validation
 
-- `rtk ./gradlew :zygarde-web-codegen:ktlintFormat :zygarde-graphql-codegen-dsl:ktlintFormat :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
-- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-graphql-codegen-dsl:ktlintFormat` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
 
 ## Next Work
 
-- Add nullable response documentation to user-facing GraphQL DSL docs once those docs are introduced or expanded.
+- Add user-facing GraphQL DSL docs for `GraphQlDefaultValue`, nullable responses, and collection nullability once those docs are introduced or expanded.
 - Add user-facing docs for `subscription(...)` and clarify that callers must choose an appropriate Kotlin return type, such as a reactive publisher type, when wiring real Spring GraphQL subscriptions.
 - Add user-facing docs for `scalar(...)` declarations and clarify that SDL declaration does not register GraphQL Java runtime coercing by itself.
-- Consider adding safer typed helpers for GraphQL default values so callers do not need to pass raw SDL literals.
 - Consider generating enum SDL automatically from model-mapping metadata so users do not need to declare enum GraphQL types manually.
 - Consider adding a generated sample subscription once the sample app has an event source worth exposing.
 - Consider using collection fields in sample SDL if a future sample model needs list-valued GraphQL fields.

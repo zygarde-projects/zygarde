@@ -31,8 +31,13 @@ class GraphQlDslCodegenTest {
           }
           query("todos") {
             collectionArgument<Int>("ids")
-            argument<TodoFilter>("filter", "TodoFilter", nullable = true, defaultValue = "{ descriptionContains: \"open\" }")
-            argument<TodoStatus>("status", nullable = true)
+            argument<TodoFilter>(
+              "filter",
+              "TodoFilter",
+              nullable = true,
+              defaultValue = GraphQlDefaultValue.objectValue("descriptionContains" to GraphQlDefaultValue.string("open"))
+            )
+            argument<TodoStatus>("status", nullable = true, defaultValue = GraphQlDefaultValue.enum(TodoStatus.OPEN))
             returnsCollection<TodoDto>("Todo", nullable = true, itemNullable = true)
             serviceName = "TodoGraphQlService"
           }
@@ -53,8 +58,8 @@ class GraphQlDslCodegenTest {
             collectionField<String>("previousDescriptions", nullable = true, itemNullable = true)
           }
           input("TodoFilter") {
-            field<String>("descriptionContains", nullable = true, defaultValue = "\"open\"")
-            collectionField<Int>("ids", defaultValue = "[]")
+            field<String>("descriptionContains", nullable = true, defaultValue = GraphQlDefaultValue.string("open"))
+            collectionField<Int>("ids", defaultValue = GraphQlDefaultValue.list())
           }
           enumType<TodoStatus>()
           scalar<Long>()
@@ -93,6 +98,7 @@ class GraphQlDslCodegenTest {
       arguments[2].apply {
         graphQlType shouldBe "TodoStatus"
         nullable shouldBe true
+        defaultValue shouldBe "OPEN"
       }
       responseCollection shouldBe true
       responseNullable shouldBe true
@@ -156,5 +162,32 @@ class GraphQlDslCodegenTest {
       DslGraphQlTypeDefinition.type("Todo")
         .field<String>("description", defaultValue = "\"open\"")
     }.message shouldBe "GraphQL field default values are only supported on input fields"
+  }
+
+  @Test
+  fun `should build GraphQL default value literals`() {
+    GraphQlDefaultValue.string("open \"todo\"\\\nnext") shouldBe "\"open \\\"todo\\\"\\\\\\nnext\""
+    GraphQlDefaultValue.int(1) shouldBe "1"
+    GraphQlDefaultValue.long(2L) shouldBe "2"
+    GraphQlDefaultValue.float(3.5f) shouldBe "3.5"
+    GraphQlDefaultValue.double(4.25) shouldBe "4.25"
+    GraphQlDefaultValue.boolean(true) shouldBe "true"
+    GraphQlDefaultValue.enum(TodoStatus.DONE) shouldBe "DONE"
+    GraphQlDefaultValue.list(GraphQlDefaultValue.int(1), GraphQlDefaultValue.nullValue()) shouldBe "[1, null]"
+    GraphQlDefaultValue.objectValue(
+      "descriptionContains" to GraphQlDefaultValue.string("open"),
+      "status" to GraphQlDefaultValue.enum(TodoStatus.OPEN),
+    ) shouldBe "{ descriptionContains: \"open\", status: OPEN }"
+  }
+
+  @Test
+  fun `should reject invalid GraphQL default value names`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlDefaultValue.enum("not-valid")
+    }.message shouldBe "GraphQL enum default value must be a valid GraphQL name"
+
+    shouldThrow<IllegalArgumentException> {
+      GraphQlDefaultValue.objectValue("not-valid" to GraphQlDefaultValue.string("open"))
+    }.message shouldBe "GraphQL object default field must be a valid GraphQL name"
   }
 }
