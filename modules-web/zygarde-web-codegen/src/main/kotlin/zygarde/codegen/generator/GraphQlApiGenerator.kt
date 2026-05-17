@@ -190,7 +190,7 @@ class GraphQlApiGenerator(
             .addAnnotation(argument.toArgumentAnnotationSpec())
             .build()
         )
-        paramsToCallServiceInterface.add(argument.name)
+        paramsToCallServiceInterface.add(argument.name.toKotlinReferenceName())
       }
 
       controllerFuncBuilder.addStatement(
@@ -199,7 +199,7 @@ class GraphQlApiGenerator(
         ClassName(serviceInterfacePackage, serviceInterfaceName)
       )
       controllerFuncBuilder.addStatement(
-        "return service.$serviceFunctionName(${paramsToCallServiceInterface.joinToString(", ")})"
+        "return service.${serviceFunctionName.toKotlinReferenceName()}(${paramsToCallServiceInterface.joinToString(", ")})"
       )
 
       controllerBuilder.addFunction(controllerFuncBuilder.build())
@@ -373,4 +373,89 @@ class GraphQlApiGenerator(
     val seen = mutableSetOf<String>()
     return firstOrNull { !seen.add(it) }
   }
+
+  private fun String.toKotlinReferenceName(): String {
+    return if (this == "_" || this in kotlinReservedIdentifiers) {
+      "`$this`"
+    } else {
+      this
+    }
+  }
 }
+
+private val kotlinReservedIdentifiers = setOf(
+  "as",
+  "break",
+  "class",
+  "continue",
+  "do",
+  "else",
+  "false",
+  "for",
+  "fun",
+  "if",
+  "in",
+  "interface",
+  "is",
+  "null",
+  "object",
+  "package",
+  "return",
+  "super",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "typealias",
+  "typeof",
+  "val",
+  "var",
+  "when",
+  "while",
+  "by",
+  "catch",
+  "constructor",
+  "delegate",
+  "dynamic",
+  "field",
+  "file",
+  "finally",
+  "get",
+  "import",
+  "init",
+  "param",
+  "property",
+  "receiver",
+  "set",
+  "setparam",
+  "where",
+  "actual",
+  "abstract",
+  "annotation",
+  "companion",
+  "const",
+  "crossinline",
+  "data",
+  "enum",
+  "expect",
+  "external",
+  "final",
+  "infix",
+  "inline",
+  "inner",
+  "internal",
+  "lateinit",
+  "noinline",
+  "open",
+  "operator",
+  "out",
+  "override",
+  "private",
+  "protected",
+  "public",
+  "reified",
+  "sealed",
+  "suspend",
+  "tailrec",
+  "vararg",
+)

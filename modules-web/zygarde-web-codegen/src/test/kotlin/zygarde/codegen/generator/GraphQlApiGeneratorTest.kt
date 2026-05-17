@@ -339,6 +339,47 @@ class GraphQlApiGeneratorTest {
   }
 
   @Test
+  fun `should escape Kotlin keywords when calling generated GraphQL service methods`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "TodoGraphQl",
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.QUERY,
+              functionName = "class",
+              arguments = mutableListOf(
+                GraphQlArgumentToGenerateVo(
+                  name = "in",
+                  type = Int::class.asTypeName(),
+                  graphQlType = "Int",
+                )
+              ),
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+              serviceName = "TodoGraphQlService",
+            )
+          ),
+        )
+      )
+    ).generateApis()
+
+    val controller = result.controllers.single().toString()
+    controller shouldContain "@QueryMapping(name = \"class\")"
+    controller shouldContain "public fun `class`(@Argument(name = \"in\") `in`: Int): GraphQlGeneratorTestTodoDto"
+    controller shouldContain "return service.`class`(`in`)"
+
+    val serviceInterface = result.serviceInterfaces.single().toString()
+    serviceInterface shouldContain "public fun `class`(`in`: Int): GraphQlGeneratorTestTodoDto"
+
+    val schema = result.schemas.single().content
+    schema shouldContain "type Query"
+    schema shouldContain "class(in: Int!): Todo!"
+  }
+
+  @Test
   fun `should generate nullable collection response and nullable collection items`() {
     val result = GraphQlApiGenerator(
       listOf(

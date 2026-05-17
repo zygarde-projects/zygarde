@@ -11,14 +11,13 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- GraphQL generator now handles GraphQL field names shared by different operation roots, such as `Query.todo` and `Mutation.todo`, by generating distinct Kotlin controller/service method names like `queryTodo` and `mutationTodo` while preserving the SDL field name and Spring GraphQL mapping annotation name.
-- GraphQL DSL functions now leave default service method naming to the generator, so the generator can apply operation-aware defaults only when they are needed to avoid Kotlin method-name collisions.
-- Added focused generator test coverage for shared operation-root field names.
+- GraphQL generator now escapes Kotlin reserved identifiers when emitting controller-to-service calls, so legal GraphQL names such as field `class` and argument `in` generate compilable Kotlin references with backticked method and argument names.
+- Added focused generator test coverage for GraphQL field and argument names that are legal SDL names but Kotlin keywords.
 
 ## Validation
 
-- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
-- `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest` - passed.
+- `./gradlew :zygarde-web-codegen:ktlintCheck` - passed.
 
 ## Next Work
 
@@ -34,10 +33,11 @@ Last updated: 2026-05-17
 ## Blockers And Context
 
 - No active blockers.
-- In this environment, Gradle validation needed sandbox escalation because the wrapper writes lock files under `~/.gradle`.
+- Gradle validation ran locally without sandbox escalation in this round; earlier rounds may need escalation if the wrapper writes lock files under `~/.gradle`.
 - Schema-only GraphQL DSL declarations are useful for shared SDL fragments such as scalars and common object/input types; they now avoid stale empty generated Kotlin files.
 - Empty `type`, `input`, and `enum` declarations are now rejected in both the DSL and generator; use `scalar(...)` for fieldless scalar declarations.
 - GraphQL fields with the same name are valid across different operation roots; generated Spring mapping annotations keep the GraphQL name stable even when Kotlin method names need operation prefixes.
+- GraphQL names that are Kotlin reserved identifiers are valid SDL names; generated Kotlin declarations are handled by KotlinPoet, and generated call sites now escape those references explicitly.
 - GraphQL name validation now follows the GraphQL lexical name grammar (`[_A-Za-z][_0-9A-Za-z]*`) and rejects the reserved `__` introspection-name prefix.
 - Generated Spring GraphQL bindings now carry explicit annotation names, so runtime field/argument binding is no longer dependent on reflected Kotlin method or parameter names.
 - Scalar SDL declarations are now generated, but runtime scalar registration remains separate; custom scalar coercing still needs Spring GraphQL/GraphQL Java configuration.
