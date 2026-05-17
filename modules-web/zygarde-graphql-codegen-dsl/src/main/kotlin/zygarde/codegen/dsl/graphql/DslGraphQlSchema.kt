@@ -3,6 +3,7 @@ package zygarde.codegen.dsl.graphql
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
+import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
 
 class DslGraphQlSchema(
@@ -43,6 +44,19 @@ class DslGraphQlSchema(
     enumType(name) {
       values<T>()
     }
+  }
+
+  fun scalar(name: String) {
+    typeDefinitions.add(
+      GraphQlTypeDefinitionToGenerateVo(
+        kind = GraphQlTypeDefinitionKind.SCALAR,
+        name = name,
+      )
+    )
+  }
+
+  inline fun <reified T : Any> scalar() {
+    scalar(T::class.defaultGraphQlType())
   }
 
   fun toGraphQlApiToGenerateVo(): GraphQlApiToGenerateVo {

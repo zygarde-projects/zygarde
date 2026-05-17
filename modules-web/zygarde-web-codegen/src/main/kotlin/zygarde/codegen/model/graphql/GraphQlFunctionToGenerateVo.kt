@@ -51,4 +51,5 @@ enum class GraphQlTypeDefinitionKind {
   TYPE,
   INPUT,
   ENUM,
+  SCALAR,
 }

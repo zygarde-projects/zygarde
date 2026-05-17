@@ -146,6 +146,10 @@ class GraphQlApiGenerator(
       appendOperationType(functions.filter { it.operation == GraphQlOperation.SUBSCRIPTION }, "Subscription", emittedOperationTypes)
       typeDefinitions.forEach { typeDefinition ->
         appendLine()
+        if (typeDefinition.kind == GraphQlTypeDefinitionKind.SCALAR) {
+          appendLine("scalar ${typeDefinition.name}")
+          return@forEach
+        }
         appendLine("${typeDefinition.kind.schemaKeyword()} ${typeDefinition.name} {")
         when (typeDefinition.kind) {
           GraphQlTypeDefinitionKind.TYPE,
@@ -160,6 +164,7 @@ class GraphQlApiGenerator(
               appendLine("  $enumValue")
             }
           }
+          GraphQlTypeDefinitionKind.SCALAR -> Unit
         }
         appendLine("}")
       }
@@ -239,6 +244,7 @@ class GraphQlApiGenerator(
       GraphQlTypeDefinitionKind.TYPE -> "type"
       GraphQlTypeDefinitionKind.INPUT -> "input"
       GraphQlTypeDefinitionKind.ENUM -> "enum"
+      GraphQlTypeDefinitionKind.SCALAR -> "scalar"
     }
   }
 }

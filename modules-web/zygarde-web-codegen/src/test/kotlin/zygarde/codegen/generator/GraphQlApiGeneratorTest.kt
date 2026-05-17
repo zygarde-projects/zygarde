@@ -123,6 +123,10 @@ class GraphQlApiGeneratorTest {
               kind = GraphQlTypeDefinitionKind.ENUM,
               name = "TodoStatus",
               enumValues = mutableListOf("OPEN", "DONE"),
+            ),
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.SCALAR,
+              name = "Long",
             )
           )
         )
@@ -177,6 +181,7 @@ class GraphQlApiGeneratorTest {
     schema shouldContain "enum TodoStatus"
     schema shouldContain "  OPEN"
     schema shouldContain "  DONE"
+    schema shouldContain "scalar Long"
   }
 
   @Test

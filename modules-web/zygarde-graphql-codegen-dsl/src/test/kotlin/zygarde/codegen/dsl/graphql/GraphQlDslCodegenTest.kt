@@ -57,6 +57,7 @@ class GraphQlDslCodegenTest {
             collectionField<Int>("ids", defaultValue = "[]")
           }
           enumType<TodoStatus>()
+          scalar<Long>()
         }
       }
     }
@@ -66,7 +67,7 @@ class GraphQlDslCodegenTest {
     val api = dsl.apisToGenerate.single()
     api.apiName shouldBe "TodoGraphQl"
     api.functions shouldHaveSize 4
-    api.typeDefinitions shouldHaveSize 3
+    api.typeDefinitions shouldHaveSize 4
 
     api.functions[0].apply {
       operation shouldBe GraphQlOperation.QUERY
@@ -145,6 +146,8 @@ class GraphQlDslCodegenTest {
     }
     api.typeDefinitions[2].kind shouldBe GraphQlTypeDefinitionKind.ENUM
     api.typeDefinitions[2].enumValues shouldBe mutableListOf("OPEN", "DONE")
+    api.typeDefinitions[3].kind shouldBe GraphQlTypeDefinitionKind.SCALAR
+    api.typeDefinitions[3].name shouldBe "Long"
   }
 
   @Test
