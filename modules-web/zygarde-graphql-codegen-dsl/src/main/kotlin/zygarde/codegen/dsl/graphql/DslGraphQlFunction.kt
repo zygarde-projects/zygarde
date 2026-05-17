@@ -193,7 +193,7 @@ class DslGraphQlFunction(
       responseNullable = responseNullable,
       responseItemNullable = responseItemNullable,
       serviceName = serviceName,
-      serviceFunctionName = serviceFunctionName ?: functionName,
+      serviceFunctionName = serviceFunctionName,
     )
   }
 }

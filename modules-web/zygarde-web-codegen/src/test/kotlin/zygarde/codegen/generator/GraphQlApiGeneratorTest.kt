@@ -278,6 +278,67 @@ class GraphQlApiGeneratorTest {
   }
 
   @Test
+  fun `should generate distinct Kotlin methods for GraphQL field names shared by operation roots`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "TodoGraphQl",
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.QUERY,
+              functionName = "todo",
+              arguments = mutableListOf(
+                GraphQlArgumentToGenerateVo(
+                  name = "id",
+                  type = Int::class.asTypeName(),
+                  graphQlType = "Int",
+                )
+              ),
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+              serviceName = "TodoGraphQlService",
+            ),
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.MUTATION,
+              functionName = "todo",
+              arguments = mutableListOf(
+                GraphQlArgumentToGenerateVo(
+                  name = "id",
+                  type = Int::class.asTypeName(),
+                  graphQlType = "Int",
+                )
+              ),
+              responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+              responseGraphQlType = "Todo",
+              serviceName = "TodoGraphQlService",
+            )
+          ),
+        )
+      )
+    ).generateApis()
+
+    val controller = result.controllers.single().toString()
+    controller shouldContain "@QueryMapping(name = \"todo\")"
+    controller shouldContain "public fun queryTodo(@Argument(name = \"id\") id: Int): GraphQlGeneratorTestTodoDto"
+    controller shouldContain "@MutationMapping(name = \"todo\")"
+    controller shouldContain "public fun mutationTodo(@Argument(name = \"id\") id: Int): GraphQlGeneratorTestTodoDto"
+    controller shouldContain "return service.queryTodo(id)"
+    controller shouldContain "return service.mutationTodo(id)"
+
+    val serviceInterface = result.serviceInterfaces.single().toString()
+    serviceInterface shouldContain "public fun queryTodo(id: Int): GraphQlGeneratorTestTodoDto"
+    serviceInterface shouldContain "public fun mutationTodo(id: Int): GraphQlGeneratorTestTodoDto"
+
+    val schema = result.schemas.single().content
+    schema shouldContain "type Query"
+    schema shouldContain "todo(id: Int!): Todo!"
+    schema shouldContain "type Mutation"
+    schema shouldContain "todo(id: Int!): Todo!"
+  }
+
+  @Test
   fun `should generate nullable collection response and nullable collection items`() {
     val result = GraphQlApiGenerator(
       listOf(

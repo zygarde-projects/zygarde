@@ -149,6 +149,10 @@ class GraphQlApiGenerator(
       return
     }
 
+    val duplicatedControllerFunctionNames = functions.groupingBy { it.functionName }
+      .eachCount()
+      .filterValues { it > 1 }
+      .keys
     val controllerName = "${apiName}Controller"
     controllerFileSpecBuilderMap.getOrPut(controllerName) {
       FileSpec.builder(controllerPackage, controllerName)
@@ -160,7 +164,8 @@ class GraphQlApiGenerator(
 
     functions.forEach { function ->
       val serviceInterfaceName = function.serviceName ?: "${apiName}Service"
-      val serviceFunctionName = function.serviceFunctionName ?: function.functionName
+      val controllerFunctionName = function.toControllerFunctionName(duplicatedControllerFunctionNames)
+      val serviceFunctionName = function.serviceFunctionName ?: controllerFunctionName
       serviceInterfaceFileSpecBuilderMap.getOrPut(serviceInterfaceName) {
         FileSpec.builder(serviceInterfacePackage, serviceInterfaceName)
       }
@@ -172,7 +177,7 @@ class GraphQlApiGenerator(
         .addModifiers(KModifier.ABSTRACT)
         .returns(function.kotlinResponseType())
 
-      val controllerFuncBuilder = FunSpec.builder(function.functionName)
+      val controllerFuncBuilder = FunSpec.builder(controllerFunctionName)
         .addAnnotation(function.toMappingAnnotationSpec())
         .returns(function.kotlinResponseType())
 
@@ -202,6 +207,13 @@ class GraphQlApiGenerator(
         .takeUnless(serviceInterfaceBuilder.funSpecs::contains)
         ?.let(serviceInterfaceBuilder::addFunction)
     }
+  }
+
+  private fun GraphQlFunctionToGenerateVo.toControllerFunctionName(duplicatedControllerFunctionNames: Set<String>): String {
+    if (functionName !in duplicatedControllerFunctionNames) {
+      return functionName
+    }
+    return "${operation.name.lowercase()}${functionName.replaceFirstChar { it.uppercase() }}"
   }
 
   private fun GraphQlArgumentToGenerateVo.toParameterSpec(): ParameterSpec {
