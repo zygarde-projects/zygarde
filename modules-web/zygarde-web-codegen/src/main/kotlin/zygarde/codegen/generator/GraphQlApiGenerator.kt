@@ -78,6 +78,9 @@ class GraphQlApiGenerator(
           "GraphQL ${kind.schemaKeyword()} '$name' must declare at least one field"
         }
         fields.forEach { field ->
+          require(field.defaultValue == null || kind == GraphQlTypeDefinitionKind.INPUT) {
+            "GraphQL field default values are only supported on input fields"
+          }
           requireGraphQlName(field.name, "GraphQL field name")
           requireGraphQlName(field.graphQlType, "GraphQL field type")
         }

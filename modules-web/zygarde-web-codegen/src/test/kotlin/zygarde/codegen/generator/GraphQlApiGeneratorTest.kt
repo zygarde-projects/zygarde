@@ -615,6 +615,27 @@ class GraphQlApiGeneratorTest {
   }
 
   @Test
+  fun `should reject default values on generated GraphQL object type fields`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.TYPE,
+                name = "Todo",
+                fields = mutableListOf(
+                  GraphQlFieldToGenerateVo("description", "String", defaultValue = "\"open\""),
+                )
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL field default values are only supported on input fields"
+  }
+
+  @Test
   fun `should reject duplicate GraphQL nested declarations before rendering generated output`() {
     shouldThrow<IllegalArgumentException> {
       GraphQlApiGenerator(
