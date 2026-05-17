@@ -48,6 +48,7 @@ data class GraphQlFieldToGenerateVo(
   var itemNullable: Boolean = false,
   var defaultValue: String? = null,
   var description: String? = null,
+  var deprecationReason: String? = null,
 )
 
 enum class GraphQlOperation {

@@ -924,6 +924,82 @@ class GraphQlApiGeneratorTest {
     }.message shouldBe "GraphQL enum 'TodoStatus' value 'OPEN' description must not be blank"
   }
 
+  @Test
+  fun `should render GraphQL field deprecation in generated schema`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        graphQlApi(
+          typeDefinitions = mutableListOf(
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.TYPE,
+              name = "Todo",
+              fields = mutableListOf(
+                GraphQlFieldToGenerateVo("id", "Int", deprecationReason = "Use uuid instead"),
+                GraphQlFieldToGenerateVo("uuid", "String"),
+              ),
+            ),
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.INPUT,
+              name = "TodoInput",
+              fields = mutableListOf(
+                GraphQlFieldToGenerateVo("legacyTag", "String", nullable = true, deprecationReason = "Replaced by \"tags\""),
+                GraphQlFieldToGenerateVo(
+                  "description",
+                  "String",
+                  defaultValue = "\"new todo\"",
+                  deprecationReason = "Will be removed",
+                ),
+              ),
+            )
+          )
+        )
+      )
+    ).generateApis()
+
+    val schema = result.schemas.single().content
+    schema shouldContain "type Todo {\n  id: Int! @deprecated(reason: \"Use uuid instead\")\n  uuid: String!\n}"
+    schema shouldContain "legacyTag: String @deprecated(reason: \"Replaced by \\\"tags\\\"\")"
+    schema shouldContain "description: String! = \"new todo\" @deprecated(reason: \"Will be removed\")"
+  }
+
+  @Test
+  fun `should reject blank GraphQL field deprecation reasons before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.TYPE,
+                name = "Todo",
+                fields = mutableListOf(GraphQlFieldToGenerateVo("id", "Int", deprecationReason = " ")),
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL type 'Todo' field 'id' deprecation reason must not be blank"
+  }
+
+  @Test
+  fun `should reject deprecation on required GraphQL input fields before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.INPUT,
+                name = "TodoInput",
+                fields = mutableListOf(GraphQlFieldToGenerateVo("description", "String", deprecationReason = "gone")),
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL input 'TodoInput' field 'description' cannot be deprecated because it is a required input field"
+  }
+
   private fun graphQlApi(
     apiName: String = "TodoGraphQl",
     functions: MutableList<GraphQlFunctionToGenerateVo> = mutableListOf(),

@@ -24,3 +24,11 @@ fun requireGraphQlDescription(description: String?, label: String) {
     }
   }
 }
+
+fun requireGraphQlDeprecationReason(reason: String?, label: String) {
+  if (reason != null) {
+    require(reason.isNotBlank()) {
+      "$label deprecation reason must not be blank"
+    }
+  }
+}

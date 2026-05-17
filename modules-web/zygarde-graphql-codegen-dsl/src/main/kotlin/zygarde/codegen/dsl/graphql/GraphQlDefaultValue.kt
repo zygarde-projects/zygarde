@@ -1,32 +1,10 @@
 package zygarde.codegen.dsl.graphql
 
+import zygarde.codegen.model.graphql.graphQlStringLiteral
 import zygarde.codegen.model.graphql.requireGraphQlName
 
 object GraphQlDefaultValue {
-  fun string(value: String): String {
-    return buildString {
-      append('"')
-      value.forEach { char ->
-        append(
-          when (char) {
-            '"' -> "\\\""
-            '\\' -> "\\\\"
-            '\b' -> "\\b"
-            '\u000c' -> "\\f"
-            '\n' -> "\\n"
-            '\r' -> "\\r"
-            '\t' -> "\\t"
-            else -> if (char.code < 0x20) {
-              "\\u${char.code.toString(16).uppercase().padStart(4, '0')}"
-            } else {
-              char.toString()
-            }
-          }
-        )
-      }
-      append('"')
-    }
-  }
+  fun string(value: String): String = graphQlStringLiteral(value)
 
   fun int(value: Int): String = value.toString()
 

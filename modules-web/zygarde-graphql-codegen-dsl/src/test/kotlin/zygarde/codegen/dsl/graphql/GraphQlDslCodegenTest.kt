@@ -256,6 +256,55 @@ class GraphQlDslCodegenTest {
   }
 
   @Test
+  fun `should carry GraphQL field deprecation reasons through the DSL`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("TodoGraphQl") {
+          type("Todo") {
+            field<Int>("id", deprecationReason = "Use uuid instead")
+            field<String>("uuid")
+          }
+          input("TodoInput") {
+            field<String>("legacyTag", nullable = true, deprecationReason = "Replaced by tags")
+            field<String>(
+              "source",
+              defaultValue = GraphQlDefaultValue.string("manual"),
+              deprecationReason = "No longer tracked",
+            )
+          }
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    val api = dsl.apisToGenerate.single()
+    api.typeDefinitions[0].fields[0].deprecationReason shouldBe "Use uuid instead"
+    api.typeDefinitions[0].fields[1].deprecationReason shouldBe null
+    api.typeDefinitions[1].fields[0].deprecationReason shouldBe "Replaced by tags"
+    api.typeDefinitions[1].fields[1].deprecationReason shouldBe "No longer tracked"
+  }
+
+  @Test
+  fun `should reject blank GraphQL field deprecation reasons`() {
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.type("Todo").field<Int>("id", deprecationReason = " ")
+    }.message shouldBe "GraphQL type 'Todo' field 'id' deprecation reason must not be blank"
+  }
+
+  @Test
+  fun `should reject deprecation on required GraphQL input fields`() {
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.input("TodoInput").field<String>("description", deprecationReason = "gone")
+    }.message shouldBe "GraphQL input 'TodoInput' field 'description' cannot be deprecated because it is a required input field"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.input("TodoInput")
+        .collectionField<String>("tags", deprecationReason = "gone")
+    }.message shouldBe "GraphQL input 'TodoInput' field 'tags' cannot be deprecated because it is a required input field"
+  }
+
+  @Test
   fun `should reject default values on object type fields`() {
     shouldThrow<IllegalArgumentException> {
       DslGraphQlTypeDefinition.type("Todo")

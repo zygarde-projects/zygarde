@@ -4,6 +4,7 @@ import zygarde.codegen.model.graphql.GraphQlEnumValueToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.requireGraphQlDeprecationReason
 import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 import zygarde.codegen.model.graphql.requireUniqueGraphQlName
@@ -27,12 +28,14 @@ class DslGraphQlTypeDefinition private constructor(
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
     requireDefaultValueSupported(defaultValue)
     requireGraphQlName(name, "GraphQL field name")
     requireGraphQlName(graphQlType, "GraphQL field type")
     requireUniqueGraphQlName(name, fields.map { it.name }, "GraphQL field")
     requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '${this.name}' field '$name'")
+    requireFieldDeprecation(name, nullable, defaultValue, deprecationReason)
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
@@ -40,6 +43,7 @@ class DslGraphQlTypeDefinition private constructor(
         nullable = nullable,
         defaultValue = defaultValue,
         description = description,
+        deprecationReason = deprecationReason,
       )
     )
   }
@@ -50,8 +54,9 @@ class DslGraphQlTypeDefinition private constructor(
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
-    field(name, type.defaultGraphQlType(), nullable, defaultValue, description)
+    field(name, type.defaultGraphQlType(), nullable, defaultValue, description, deprecationReason)
   }
 
   inline fun <reified T : Any> field(
@@ -59,8 +64,9 @@ class DslGraphQlTypeDefinition private constructor(
     nullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
-    field(name, T::class, nullable, defaultValue, description)
+    field(name, T::class, nullable, defaultValue, description, deprecationReason)
   }
 
   fun collectionField(
@@ -70,12 +76,14 @@ class DslGraphQlTypeDefinition private constructor(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
     requireDefaultValueSupported(defaultValue)
     requireGraphQlName(name, "GraphQL field name")
     requireGraphQlName(graphQlType, "GraphQL field type")
     requireUniqueGraphQlName(name, fields.map { it.name }, "GraphQL field")
     requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '${this.name}' field '$name'")
+    requireFieldDeprecation(name, nullable, defaultValue, deprecationReason)
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
@@ -85,6 +93,7 @@ class DslGraphQlTypeDefinition private constructor(
         itemNullable = itemNullable,
         defaultValue = defaultValue,
         description = description,
+        deprecationReason = deprecationReason,
       )
     )
   }
@@ -96,8 +105,9 @@ class DslGraphQlTypeDefinition private constructor(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
-    collectionField(name, type.defaultGraphQlType(), nullable, itemNullable, defaultValue, description)
+    collectionField(name, type.defaultGraphQlType(), nullable, itemNullable, defaultValue, description, deprecationReason)
   }
 
   inline fun <reified T : Any> collectionField(
@@ -106,8 +116,9 @@ class DslGraphQlTypeDefinition private constructor(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
     description: String? = null,
+    deprecationReason: String? = null,
   ) {
-    collectionField(name, T::class, nullable, itemNullable, defaultValue, description)
+    collectionField(name, T::class, nullable, itemNullable, defaultValue, description, deprecationReason)
   }
 
   fun value(name: String, description: String? = null) {
@@ -124,6 +135,23 @@ class DslGraphQlTypeDefinition private constructor(
   private fun requireDefaultValueSupported(defaultValue: String?) {
     require(defaultValue == null || kind == GraphQlTypeDefinitionKind.INPUT) {
       "GraphQL field default values are only supported on input fields"
+    }
+  }
+
+  private fun requireFieldDeprecation(
+    name: String,
+    nullable: Boolean,
+    defaultValue: String?,
+    deprecationReason: String?,
+  ) {
+    requireGraphQlDeprecationReason(deprecationReason, "GraphQL ${kind.schemaKeyword()} '${this.name}' field '$name'")
+    require(
+      deprecationReason == null ||
+        kind != GraphQlTypeDefinitionKind.INPUT ||
+        nullable ||
+        defaultValue != null
+    ) {
+      "GraphQL input '${this.name}' field '$name' cannot be deprecated because it is a required input field"
     }
   }
 

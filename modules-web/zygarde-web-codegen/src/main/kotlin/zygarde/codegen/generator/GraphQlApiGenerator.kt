@@ -25,6 +25,8 @@ import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlSchemaGenerateResult
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.graphQlStringLiteral
+import zygarde.codegen.model.graphql.requireGraphQlDeprecationReason
 import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
 
@@ -94,6 +96,15 @@ class GraphQlApiGenerator(
           requireGraphQlName(field.name, "GraphQL field name")
           requireGraphQlName(field.graphQlType, "GraphQL field type")
           requireGraphQlDescription(field.description, "GraphQL ${kind.schemaKeyword()} '$name' field '${field.name}'")
+          requireGraphQlDeprecationReason(field.deprecationReason, "GraphQL ${kind.schemaKeyword()} '$name' field '${field.name}'")
+          require(
+            field.deprecationReason == null ||
+              kind != GraphQlTypeDefinitionKind.INPUT ||
+              field.nullable ||
+              field.defaultValue != null
+          ) {
+            "GraphQL input '$name' field '${field.name}' cannot be deprecated because it is a required input field"
+          }
         }
       }
       GraphQlTypeDefinitionKind.ENUM -> {
@@ -301,7 +312,10 @@ class GraphQlApiGenerator(
             typeDefinition.fields.forEach { field ->
               val defaultValue = field.defaultValue.takeIf { typeDefinition.kind == GraphQlTypeDefinitionKind.INPUT }
               append(field.description.toSchemaDescription("  "))
-              appendLine("  ${field.name}: ${field.toSchemaType()}${defaultValue.toSchemaDefaultValue()}")
+              appendLine(
+                "  ${field.name}: ${field.toSchemaType()}" +
+                  "${defaultValue.toSchemaDefaultValue()}${field.deprecationReason.toSchemaDeprecation()}"
+              )
             }
           }
           GraphQlTypeDefinitionKind.ENUM -> {
@@ -395,6 +409,10 @@ class GraphQlApiGenerator(
 
   private fun String?.toSchemaDefaultValue(): String {
     return this?.let { " = $it" }.orEmpty()
+  }
+
+  private fun String?.toSchemaDeprecation(): String {
+    return this?.let { " @deprecated(reason: ${graphQlStringLiteral(it)})" }.orEmpty()
   }
 
   private fun String?.toSchemaDescription(indent: String): String {
