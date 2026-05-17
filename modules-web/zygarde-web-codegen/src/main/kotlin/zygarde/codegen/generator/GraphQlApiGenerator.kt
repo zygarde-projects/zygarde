@@ -89,6 +89,7 @@ class GraphQlApiGenerator(
           }
           requireGraphQlName(field.name, "GraphQL field name")
           requireGraphQlName(field.graphQlType, "GraphQL field type")
+          requireGraphQlDescription(field.description, "GraphQL ${kind.schemaKeyword()} '$name' field '${field.name}'")
         }
       }
       GraphQlTypeDefinitionKind.ENUM -> {
@@ -293,6 +294,7 @@ class GraphQlApiGenerator(
           GraphQlTypeDefinitionKind.INPUT -> {
             typeDefinition.fields.forEach { field ->
               val defaultValue = field.defaultValue.takeIf { typeDefinition.kind == GraphQlTypeDefinitionKind.INPUT }
+              append(field.description.toSchemaDescription("  "))
               appendLine("  ${field.name}: ${field.toSchemaType()}${defaultValue.toSchemaDefaultValue()}")
             }
           }

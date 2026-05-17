@@ -20,27 +20,46 @@ class DslGraphQlTypeDefinition private constructor(
     requireGraphQlName(name, "GraphQL type definition name")
   }
 
-  fun field(name: String, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null) {
+  fun field(
+    name: String,
+    graphQlType: String,
+    nullable: Boolean = false,
+    defaultValue: String? = null,
+    description: String? = null,
+  ) {
     requireDefaultValueSupported(defaultValue)
     requireGraphQlName(name, "GraphQL field name")
     requireGraphQlName(graphQlType, "GraphQL field type")
     requireUniqueGraphQlName(name, fields.map { it.name }, "GraphQL field")
+    requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '${this.name}' field '$name'")
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
         graphQlType = graphQlType,
         nullable = nullable,
         defaultValue = defaultValue,
+        description = description,
       )
     )
   }
 
-  fun field(name: String, type: KClass<*>, nullable: Boolean = false, defaultValue: String? = null) {
-    field(name, type.defaultGraphQlType(), nullable, defaultValue)
+  fun field(
+    name: String,
+    type: KClass<*>,
+    nullable: Boolean = false,
+    defaultValue: String? = null,
+    description: String? = null,
+  ) {
+    field(name, type.defaultGraphQlType(), nullable, defaultValue, description)
   }
 
-  inline fun <reified T : Any> field(name: String, nullable: Boolean = false, defaultValue: String? = null) {
-    field(name, T::class, nullable, defaultValue)
+  inline fun <reified T : Any> field(
+    name: String,
+    nullable: Boolean = false,
+    defaultValue: String? = null,
+    description: String? = null,
+  ) {
+    field(name, T::class, nullable, defaultValue, description)
   }
 
   fun collectionField(
@@ -49,11 +68,13 @@ class DslGraphQlTypeDefinition private constructor(
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
     requireDefaultValueSupported(defaultValue)
     requireGraphQlName(name, "GraphQL field name")
     requireGraphQlName(graphQlType, "GraphQL field type")
     requireUniqueGraphQlName(name, fields.map { it.name }, "GraphQL field")
+    requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '${this.name}' field '$name'")
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
@@ -62,6 +83,7 @@ class DslGraphQlTypeDefinition private constructor(
         collection = true,
         itemNullable = itemNullable,
         defaultValue = defaultValue,
+        description = description,
       )
     )
   }
@@ -72,8 +94,9 @@ class DslGraphQlTypeDefinition private constructor(
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
-    collectionField(name, type.defaultGraphQlType(), nullable, itemNullable, defaultValue)
+    collectionField(name, type.defaultGraphQlType(), nullable, itemNullable, defaultValue, description)
   }
 
   inline fun <reified T : Any> collectionField(
@@ -81,8 +104,9 @@ class DslGraphQlTypeDefinition private constructor(
     nullable: Boolean = false,
     itemNullable: Boolean = false,
     defaultValue: String? = null,
+    description: String? = null,
   ) {
-    collectionField(name, T::class, nullable, itemNullable, defaultValue)
+    collectionField(name, T::class, nullable, itemNullable, defaultValue, description)
   }
 
   fun value(name: String) {

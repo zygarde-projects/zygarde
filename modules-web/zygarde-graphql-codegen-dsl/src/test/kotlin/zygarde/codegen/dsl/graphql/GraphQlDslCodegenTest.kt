@@ -168,7 +168,8 @@ class GraphQlDslCodegenTest {
           }
           type("Todo") {
             description = "A todo item"
-            field<Int>("id")
+            field<Int>("id", description = "Unique identifier")
+            collectionField<String>("tags", description = "Free-form labels")
           }
           scalar<Long>(description = "A 64-bit integer scalar")
         }
@@ -180,6 +181,8 @@ class GraphQlDslCodegenTest {
     val api = dsl.apisToGenerate.single()
     api.functions.single().description shouldBe "Find a single todo by id"
     api.typeDefinitions[0].description shouldBe "A todo item"
+    api.typeDefinitions[0].fields[0].description shouldBe "Unique identifier"
+    api.typeDefinitions[0].fields[1].description shouldBe "Free-form labels"
     api.typeDefinitions[1].description shouldBe "A 64-bit integer scalar"
   }
 
@@ -207,6 +210,10 @@ class GraphQlDslCodegenTest {
         }
       }.codegen()
     }.message shouldBe "GraphQL scalar 'DateTime' description must not be blank"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.type("Todo").field<Int>("id", description = " ")
+    }.message shouldBe "GraphQL type 'Todo' field 'id' description must not be blank"
   }
 
   @Test
