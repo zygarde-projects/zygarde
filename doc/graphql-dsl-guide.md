@@ -150,7 +150,7 @@ returnsCollection<TodoDto>("Todo", nullable = true, itemNullable = true)  // [To
 
 `returns` / `returnsCollection` 同樣有 reified、`KClass`、`TypeName` 三種多載。Kotlin 端的回傳型別會與 nullability / collection 設定一致(例如 `Collection<TodoDto?>?`)。
 
-## 型別定義:`type` / `input` / `enumType` / `scalar`
+## 型別定義:`type` / `input` / `enumType` / `scalar` / `union`
 
 DSL 同時負責產生 SDL 的型別宣告,讓 schema 不必手寫。
 
@@ -200,7 +200,17 @@ scalar<Long>()                     // SDL 名稱由型別推導,此例為 "Long"
 
 `scalar` 只是在 SDL 寫出 `scalar X` 宣告。**它不會註冊 GraphQL Java 的 coercing**;`LocalDateTime`、`BigDecimal`、`UUID` 等真正的序列化邏輯仍需自行透過 `RuntimeWiringConfigurer` 或 `graphql-java-extended-scalars` 註冊。
 
-`type` / `input` / `enum` 不可為空 — 沒有任何 field / value 會以 `must declare at least one field/value` 失敗。需要無欄位的型別請改用 `scalar(...)`。
+### `union` — union type
+
+```kotlin
+union("SearchResult", "Book", "Author")                       // union SearchResult = Book | Author
+union("SearchResult", "Book", "Author", description = "搜尋結果是書或作者")
+union("Listed", listOf("Book", "Author"))                      // 成員型別也能用 Iterable 傳入
+```
+
+`union` 在 SDL 寫出 `union Name = A | B` 宣告。成員型別應是已宣告(或在其他 schema 片段宣告)的 object `type`。union 至少要有一個成員型別、成員不可重複,否則分別以 `GraphQL union 'X' must declare at least one member type` 與 `GraphQL union 'X' member type 'Y' is already declared` 失敗。產生器只輸出 SDL,**不會產生 union 的型別解析器(`TypeResolver`)**;runtime 仍需自行透過 `RuntimeWiringConfigurer` 註冊,才能在查詢回傳時判斷實際型別。union 與 `scalar` 一樣不產生對應的 Kotlin 型別。
+
+`type` / `input` / `enum` 不可為空 — 沒有任何 field / value 會以 `must declare at least one field/value` 失敗。需要無欄位的型別請改用 `scalar(...)`;需要型別聯集請用 `union(...)`。
 
 ## 描述(GraphQL description)
 
@@ -301,7 +311,7 @@ enum TodoStatus {
 | `Float` / `Double` | `Float` |
 | 其他 | 該類別的 `simpleName` |
 
-GraphQL 內建 scalar 只有 `Int` / `Float` / `String` / `Boolean` / `ID`。其他型別(含 `Long`)若被引用,務必在某個 schema 內以 `type` / `input` / `enumType` / `scalar` 宣告,否則 schema 在啟動期會解析失敗。
+GraphQL 內建 scalar 只有 `Int` / `Float` / `String` / `Boolean` / `ID`。其他型別(含 `Long`)若被引用,務必在某個 schema 內以 `type` / `input` / `enumType` / `scalar` / `union` 宣告,否則 schema 在啟動期會解析失敗。
 
 ## 預設值:`GraphQlDefaultValue`
 
@@ -399,8 +409,8 @@ class TodoGraphQlServiceImpl(
 DSL 與產生器都會把錯誤擋在「產出檔案之前」,讓問題 fail fast:
 
 - **名稱合法性** — 所有 GraphQL 名稱必須符合 `[_A-Za-z][_0-9A-Za-z]*`,且不可用 `__` 開頭(GraphQL 保留給 introspection)。
-- **唯一性** — `apiName`、operation field 名稱(同一 operation,跨所有 schema)、型別定義名稱(跨所有 schema)、函式參數名稱、型別欄位名稱、enum value 都必須唯一。
-- **非空** — `type` / `input` 至少要有一個 field,`enum` 至少要有一個 value。
+- **唯一性** — `apiName`、operation field 名稱(同一 operation,跨所有 schema)、型別定義名稱(跨所有 schema)、函式參數名稱、型別欄位名稱、enum value、union 成員型別都必須唯一。
+- **非空** — `type` / `input` 至少要有一個 field,`enum` 至少要有一個 value,`union` 至少要有一個成員型別。
 - **description** — operation 函式、operation 參數、型別定義與 `type` / `input` field 的 `description` 可省略;一旦設定就不可為空白字串。
 - **deprecation** — operation field、operation argument、`type` / `input` field 與 `enum` value 的 `deprecationReason` 可省略;一旦設定就不可為空白字串,且不可用在 `input` 的必填欄位或必填 argument(non-null 且無預設值)。
 - **預設值** — 只允許出現在 `input` 的欄位。
@@ -424,8 +434,9 @@ mutation todo → fun mutationTodo(...)
 
 ## 目前限制與後續
 
-DSL 目前涵蓋 query / mutation / subscription、參數、型別定義、預設值、operation / argument / 型別 / field / enum value 層級的 description,以及 operation field / argument / `type` / `input` field / `enum` value 的 `@deprecated` 標記。以下尚未由 DSL 支援,需要時請手寫 resolver:
+DSL 目前涵蓋 query / mutation / subscription、參數、型別定義(`type` / `input` / `enumType` / `scalar` / `union`)、預設值、operation / argument / 型別 / field / enum value 層級的 description,以及 operation field / argument / `type` / `input` field / `enum` value 的 `@deprecated` 標記。以下尚未由 DSL 支援,需要時請手寫 resolver:
 
+- **`interface` 型別與 union / interface 的 `TypeResolver`** — DSL 可宣告 `union`,但 GraphQL `interface` 尚未支援;且兩者實際的型別解析都需自行以 `RuntimeWiringConfigurer` 註冊。
 - **巢狀 field resolver / `@SchemaMapping` / `@BatchMapping`** — 解決 N+1 的 DataLoader / batch resolver 仍須手寫(可參考 `samples/todo-multimodule-dsl` 內手寫的 `BookGraphQlController`)。
 - **subscription 回傳型別** — 產生器只輸出宣告的回傳型別。要串真正的 Spring GraphQL subscription,呼叫端需自行選用 reactive publisher 型別(例如以 `TypeName` 多載傳入 `Flux<T>`)。
 - **自訂 scalar coercing、錯誤處理、認證注入、分頁形狀** — 仍屬手寫 / 後續設計範圍,詳見 `doc/graphql-support-investigation.md`。

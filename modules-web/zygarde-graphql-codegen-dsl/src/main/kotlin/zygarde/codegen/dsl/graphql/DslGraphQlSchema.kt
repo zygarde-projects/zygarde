@@ -69,6 +69,33 @@ class DslGraphQlSchema(
     scalar(T::class.defaultGraphQlType(), description)
   }
 
+  fun union(name: String, vararg memberTypes: String, description: String? = null) {
+    union(name, memberTypes.asIterable(), description)
+  }
+
+  fun union(name: String, memberTypes: Iterable<String>, description: String? = null) {
+    requireGraphQlName(name, "GraphQL type definition name")
+    requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
+    requireGraphQlDescription(description, "GraphQL union '$name'")
+    val memberList = memberTypes.toMutableList()
+    require(memberList.isNotEmpty()) {
+      "GraphQL union '$name' must declare at least one member type"
+    }
+    memberList.forEach { requireGraphQlName(it, "GraphQL union '$name' member type") }
+    val seen = mutableSetOf<String>()
+    memberList.firstOrNull { !seen.add(it) }?.let { duplicate ->
+      throw IllegalArgumentException("GraphQL union '$name' member type '$duplicate' is already declared")
+    }
+    typeDefinitions.add(
+      GraphQlTypeDefinitionToGenerateVo(
+        kind = GraphQlTypeDefinitionKind.UNION,
+        name = name,
+        unionMemberTypes = memberList,
+        description = description,
+      )
+    )
+  }
+
   fun toGraphQlApiToGenerateVo(): GraphQlApiToGenerateVo {
     return GraphQlApiToGenerateVo(
       controllerPackage = config.controllerPackage,

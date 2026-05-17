@@ -1133,6 +1133,91 @@ class GraphQlApiGeneratorTest {
     }.message shouldBe "GraphQL enum 'TodoStatus' value 'OPEN' deprecation reason must not be blank"
   }
 
+  @Test
+  fun `should render GraphQL union types in generated schema`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        graphQlApi(
+          typeDefinitions = mutableListOf(
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.TYPE,
+              name = "Book",
+              fields = mutableListOf(GraphQlFieldToGenerateVo("title", "String")),
+            ),
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.TYPE,
+              name = "Author",
+              fields = mutableListOf(GraphQlFieldToGenerateVo("name", "String")),
+            ),
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.UNION,
+              name = "SearchResult",
+              unionMemberTypes = mutableListOf("Book", "Author"),
+              description = "Either a book or an author",
+            ),
+          ),
+        )
+      )
+    ).generateApis()
+
+    result.controllers shouldHaveSize 0
+    val schema = result.schemas.single().content
+    schema shouldContain "\"\"\"Either a book or an author\"\"\"\nunion SearchResult = Book | Author\n"
+  }
+
+  @Test
+  fun `should reject GraphQL union types without member types before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.UNION, "SearchResult")
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL union 'SearchResult' must declare at least one member type"
+  }
+
+  @Test
+  fun `should reject invalid GraphQL union member type names before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.UNION,
+                name = "SearchResult",
+                unionMemberTypes = mutableListOf("not-valid"),
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL union 'SearchResult' member type must be a valid GraphQL name"
+  }
+
+  @Test
+  fun `should reject duplicate GraphQL union member types before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.UNION,
+                name = "SearchResult",
+                unionMemberTypes = mutableListOf("Book", "Book"),
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL union 'SearchResult' member type 'Book' is already declared"
+  }
+
   private fun graphQlApi(
     apiName: String = "TodoGraphQl",
     functions: MutableList<GraphQlFunctionToGenerateVo> = mutableListOf(),

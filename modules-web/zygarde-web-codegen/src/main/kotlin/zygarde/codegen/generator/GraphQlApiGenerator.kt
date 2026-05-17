@@ -118,6 +118,14 @@ class GraphQlApiGenerator(
           requireGraphQlDeprecationReason(enumValue.deprecationReason, "GraphQL enum '$name' value '${enumValue.name}'")
         }
       }
+      GraphQlTypeDefinitionKind.UNION -> {
+        require(unionMemberTypes.isNotEmpty()) {
+          "GraphQL union '$name' must declare at least one member type"
+        }
+        unionMemberTypes.forEach { memberType ->
+          requireGraphQlName(memberType, "GraphQL union '$name' member type")
+        }
+      }
       GraphQlTypeDefinitionKind.SCALAR -> Unit
     }
   }
@@ -172,6 +180,15 @@ class GraphQlApiGenerator(
             .firstDuplicateOrNull()
             ?.let { duplicateName ->
               throw IllegalArgumentException("GraphQL enum '${typeDefinition.name}' value '$duplicateName' is already declared")
+            }
+        }
+        GraphQlTypeDefinitionKind.UNION -> {
+          typeDefinition.unionMemberTypes
+            .firstDuplicateOrNull()
+            ?.let { duplicateName ->
+              throw IllegalArgumentException(
+                "GraphQL union '${typeDefinition.name}' member type '$duplicateName' is already declared"
+              )
             }
         }
         GraphQlTypeDefinitionKind.SCALAR -> Unit
@@ -307,6 +324,10 @@ class GraphQlApiGenerator(
           appendLine("scalar ${typeDefinition.name}")
           return@forEach
         }
+        if (typeDefinition.kind == GraphQlTypeDefinitionKind.UNION) {
+          appendLine("union ${typeDefinition.name} = ${typeDefinition.unionMemberTypes.joinToString(" | ")}")
+          return@forEach
+        }
         appendLine("${typeDefinition.kind.schemaKeyword()} ${typeDefinition.name} {")
         when (typeDefinition.kind) {
           GraphQlTypeDefinitionKind.TYPE,
@@ -326,7 +347,8 @@ class GraphQlApiGenerator(
               appendLine("  ${enumValue.name}${enumValue.deprecationReason.toSchemaDeprecation()}")
             }
           }
-          GraphQlTypeDefinitionKind.SCALAR -> Unit
+          GraphQlTypeDefinitionKind.SCALAR,
+          GraphQlTypeDefinitionKind.UNION -> Unit
         }
         appendLine("}")
       }
@@ -448,6 +470,7 @@ class GraphQlApiGenerator(
       GraphQlTypeDefinitionKind.INPUT -> "input"
       GraphQlTypeDefinitionKind.ENUM -> "enum"
       GraphQlTypeDefinitionKind.SCALAR -> "scalar"
+      GraphQlTypeDefinitionKind.UNION -> "union"
     }
   }
 

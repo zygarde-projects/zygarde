@@ -172,7 +172,8 @@ class DslGraphQlTypeDefinition private constructor(
           "GraphQL enum '$name' must declare at least one value"
         }
       }
-      GraphQlTypeDefinitionKind.SCALAR -> Unit
+      GraphQlTypeDefinitionKind.SCALAR,
+      GraphQlTypeDefinitionKind.UNION -> Unit
     }
     requireGraphQlDescription(description, "GraphQL ${kind.schemaKeyword()} '$name'")
     return GraphQlTypeDefinitionToGenerateVo(
@@ -205,5 +206,6 @@ private fun GraphQlTypeDefinitionKind.schemaKeyword(): String {
     GraphQlTypeDefinitionKind.INPUT -> "input"
     GraphQlTypeDefinitionKind.ENUM -> "enum"
     GraphQlTypeDefinitionKind.SCALAR -> "scalar"
+    GraphQlTypeDefinitionKind.UNION -> "union"
   }
 }

@@ -34,6 +34,7 @@ data class GraphQlTypeDefinitionToGenerateVo(
   var name: String,
   var fields: MutableList<GraphQlFieldToGenerateVo> = mutableListOf(),
   var enumValues: MutableList<GraphQlEnumValueToGenerateVo> = mutableListOf(),
+  var unionMemberTypes: MutableList<String> = mutableListOf(),
   var description: String? = null,
 )
 
@@ -65,4 +66,5 @@ enum class GraphQlTypeDefinitionKind {
   INPUT,
   ENUM,
   SCALAR,
+  UNION,
 }

@@ -518,4 +518,53 @@ class GraphQlDslCodegenTest {
       }
     }.message shouldBe "GraphQL enum value 'OPEN' is already declared"
   }
+
+  @Test
+  fun `should carry GraphQL union types through the DSL`() {
+    val dsl = object : GraphQlDslCodegen() {
+      override fun codegen() {
+        schema("TodoGraphQl") {
+          type("Book") { field<String>("title") }
+          type("Author") { field<String>("name") }
+          union("SearchResult", "Book", "Author", description = "Either a book or an author")
+          union("Listed", listOf("Book"))
+        }
+      }
+    }
+
+    dsl.codegen()
+
+    val typeDefinitions = dsl.apisToGenerate.single().typeDefinitions
+    val searchResult = typeDefinitions.single { it.name == "SearchResult" }
+    searchResult.kind shouldBe GraphQlTypeDefinitionKind.UNION
+    searchResult.unionMemberTypes shouldBe mutableListOf("Book", "Author")
+    searchResult.description shouldBe "Either a book or an author"
+    typeDefinitions.single { it.name == "Listed" }.unionMemberTypes shouldBe mutableListOf("Book")
+  }
+
+  @Test
+  fun `should reject GraphQL union types without member types`() {
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            union("SearchResult")
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL union 'SearchResult' must declare at least one member type"
+  }
+
+  @Test
+  fun `should reject duplicate GraphQL union member types`() {
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            union("SearchResult", "Book", "Book")
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL union 'SearchResult' member type 'Book' is already declared"
+  }
 }
