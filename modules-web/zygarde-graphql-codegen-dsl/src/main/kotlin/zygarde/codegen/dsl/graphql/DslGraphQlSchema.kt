@@ -39,6 +39,12 @@ class DslGraphQlSchema(
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
   }
 
+  inline fun <reified T : Enum<T>> enumType(name: String = T::class.defaultGraphQlType()) {
+    enumType(name) {
+      values<T>()
+    }
+  }
+
   fun toGraphQlApiToGenerateVo(): GraphQlApiToGenerateVo {
     return GraphQlApiToGenerateVo(
       controllerPackage = config.controllerPackage,

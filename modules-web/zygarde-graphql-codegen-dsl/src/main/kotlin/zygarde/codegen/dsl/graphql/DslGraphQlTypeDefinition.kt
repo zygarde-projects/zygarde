@@ -75,6 +75,10 @@ class DslGraphQlTypeDefinition private constructor(
     enumValues.add(name)
   }
 
+  inline fun <reified T : Enum<T>> values() {
+    enumValues<T>().forEach { value(it.name) }
+  }
+
   private fun requireDefaultValueSupported(defaultValue: String?) {
     require(defaultValue == null || kind == GraphQlTypeDefinitionKind.INPUT) {
       "GraphQL field default values are only supported on input fields"

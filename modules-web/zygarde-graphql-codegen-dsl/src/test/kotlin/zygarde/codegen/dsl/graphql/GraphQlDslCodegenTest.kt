@@ -56,10 +56,7 @@ class GraphQlDslCodegenTest {
             field<String>("descriptionContains", nullable = true, defaultValue = "\"open\"")
             collectionField<Int>("ids", defaultValue = "[]")
           }
-          enumType("TodoStatus") {
-            value("OPEN")
-            value("DONE")
-          }
+          enumType<TodoStatus>()
         }
       }
     }
