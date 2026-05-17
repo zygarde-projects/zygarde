@@ -11,19 +11,19 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- GraphQL generator now rejects duplicate `GraphQlApiToGenerateVo.apiName` values before rendering generated output.
-- Added focused generator test coverage for duplicate API names so controller/service/schema file-name collisions fail fast instead of merging or overwriting generated artifacts.
+- Added the first user-facing GraphQL DSL usage guide at `doc/graphql-dsl-guide.md`, following the existing `doc/*-guide.md` convention.
+- The guide documents the full DSL surface verified against the test suites: `GraphQlDslCodegen` entry point, `schema(...)` naming rules, query/mutation/subscription declarations, `argument`/`collectionArgument`, `returns`/`returnsCollection`, `type`/`input`/`enumType`/`scalar`, `defaultGraphQlType` Kotlin-to-SDL mapping, `GraphQlDefaultValue` literal helpers, `serviceName`/`serviceFunctionName` and the `DiServiceContext.bean<T>()` wiring, the `GraphQlDslCodegenMain` system properties, all fail-fast validation rules, and current limitations (nested resolvers, subscription publisher types, scalar coercing).
+- No production code changed this round; this was a focused documentation round consolidating the seven prior validation/codegen rounds into usage docs.
 
 ## Validation
 
-- `./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest` - passed.
-- `./gradlew :zygarde-web-codegen:ktlintCheck` - passed.
+- `./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed (both suites green; documented behavior cross-checked against these tests).
+- ktlint/detekt not run: the change is Markdown-only and not covered by those tasks.
 
 ## Next Work
 
-- Add user-facing GraphQL DSL docs for `GraphQlDefaultValue`, nullable responses, and collection nullability once those docs are introduced or expanded.
-- Add user-facing docs for `subscription(...)` and clarify that callers must choose an appropriate Kotlin return type, such as a reactive publisher type, when wiring real Spring GraphQL subscriptions.
-- Add user-facing docs for `scalar(...)` declarations and clarify that SDL declaration does not register GraphQL Java runtime coercing by itself.
+- Link `doc/graphql-dsl-guide.md` from a top-level docs index or README if/when a docs index exists.
+- Consider adding GraphQL SDL description (`"""..."""`) support across type definitions, fields, operation fields, and enum values; this is genuine missing schema behavior but touches many DSL overloads, so scope it deliberately.
 - Consider generating enum SDL automatically from model-mapping metadata so users do not need to declare enum GraphQL types manually.
 - Consider adding a generated sample subscription once the sample app has an event source worth exposing.
 - Consider using collection fields in sample SDL if a future sample model needs list-valued GraphQL fields.
@@ -33,6 +33,7 @@ Last updated: 2026-05-17
 ## Blockers And Context
 
 - No active blockers.
+- `doc/graphql-dsl-guide.md` is the user-facing usage guide; `doc/graphql-support-investigation.md` remains the design/feasibility report and this file remains the round-to-round handoff.
 - Gradle validation required sandbox escalation in this round because the wrapper needed lock-file access under `~/.gradle`.
 - Schema-only GraphQL DSL declarations are useful for shared SDL fragments such as scalars and common object/input types; they now avoid stale empty generated Kotlin files.
 - GraphQL API/schema names must be unique across one generator invocation; duplicate names now fail before output rendering to avoid colliding controller/service/schema artifacts.
