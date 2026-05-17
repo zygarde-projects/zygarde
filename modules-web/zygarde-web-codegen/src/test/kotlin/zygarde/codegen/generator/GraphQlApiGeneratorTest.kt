@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Test
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
@@ -343,6 +344,39 @@ class GraphQlApiGeneratorTest {
     serviceInterface shouldContain "public fun todosByOptionalIds(ids: Collection<Int?>?):"
     serviceInterface shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
     result.schemas.single().content shouldContain "todosByOptionalIds(ids: [Int]): [Todo!]!"
+  }
+
+  @Test
+  fun `should generate schema-only SDL without empty controller or service interface`() {
+    val result = GraphQlApiGenerator(
+      listOf(
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "TodoGraphQl",
+          typeDefinitions = mutableListOf(
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.SCALAR,
+              name = "DateTime",
+            ),
+            GraphQlTypeDefinitionToGenerateVo(
+              kind = GraphQlTypeDefinitionKind.TYPE,
+              name = "Todo",
+              fields = mutableListOf(
+                GraphQlFieldToGenerateVo("id", "Int"),
+                GraphQlFieldToGenerateVo("description", "String"),
+              )
+            )
+          ),
+        )
+      )
+    ).generateApis()
+
+    result.controllers shouldHaveSize 0
+    result.serviceInterfaces shouldHaveSize 0
+    result.schemas shouldHaveSize 1
+    result.schemas.single().content shouldStartWith "scalar DateTime\n\n"
+    result.schemas.single().content shouldContain "type Todo"
   }
 
   @Test

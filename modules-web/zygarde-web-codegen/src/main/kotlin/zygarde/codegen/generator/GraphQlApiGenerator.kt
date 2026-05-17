@@ -131,6 +131,10 @@ class GraphQlApiGenerator(
   }
 
   private fun GraphQlApiToGenerateVo.generate() {
+    if (functions.isEmpty()) {
+      return
+    }
+
     val controllerName = "${apiName}Controller"
     controllerFileSpecBuilderMap.getOrPut(controllerName) {
       FileSpec.builder(controllerPackage, controllerName)
@@ -234,7 +238,9 @@ class GraphQlApiGenerator(
       appendOperationType(functions.filter { it.operation == GraphQlOperation.MUTATION }, "Mutation", emittedOperationTypes)
       appendOperationType(functions.filter { it.operation == GraphQlOperation.SUBSCRIPTION }, "Subscription", emittedOperationTypes)
       typeDefinitions.forEach { typeDefinition ->
-        appendLine()
+        if (isNotEmpty()) {
+          appendLine()
+        }
         if (typeDefinition.kind == GraphQlTypeDefinitionKind.SCALAR) {
           appendLine("scalar ${typeDefinition.name}")
           return@forEach
