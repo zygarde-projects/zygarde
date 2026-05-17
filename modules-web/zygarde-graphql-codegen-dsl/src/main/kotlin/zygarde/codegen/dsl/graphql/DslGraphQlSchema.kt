@@ -6,6 +6,7 @@ import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
 import zygarde.codegen.model.graphql.requireGraphQlName
+import zygarde.codegen.model.graphql.requireUniqueGraphQlName
 
 class DslGraphQlSchema(
   private val config: GraphQlDslCodegenConfig,
@@ -27,16 +28,19 @@ class DslGraphQlSchema(
   }
 
   fun type(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
+    requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
     val typeDefinition = DslGraphQlTypeDefinition.type(name).also(dsl)
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
   }
 
   fun input(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
+    requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
     val typeDefinition = DslGraphQlTypeDefinition.input(name).also(dsl)
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
   }
 
   fun enumType(name: String, dsl: DslGraphQlTypeDefinition.() -> Unit) {
+    requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
     val typeDefinition = DslGraphQlTypeDefinition.enumType(name).also(dsl)
     typeDefinitions.add(typeDefinition.toGraphQlTypeDefinitionToGenerateVo())
   }
@@ -49,6 +53,7 @@ class DslGraphQlSchema(
 
   fun scalar(name: String) {
     requireGraphQlName(name, "GraphQL type definition name")
+    requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
     typeDefinitions.add(
       GraphQlTypeDefinitionToGenerateVo(
         kind = GraphQlTypeDefinitionKind.SCALAR,
@@ -76,6 +81,11 @@ class DslGraphQlSchema(
     operation: GraphQlOperation,
     dsl: DslGraphQlFunction.() -> Unit
   ) {
+    requireUniqueGraphQlName(
+      functionName,
+      functions.filter { it.operation == operation }.map { it.functionName },
+      "GraphQL ${operation.name.lowercase()} field"
+    )
     val dslFunction = DslGraphQlFunction(functionName, operation).also(dsl)
     functions.add(dslFunction.toGraphQlFunctionToGenerateVo())
   }

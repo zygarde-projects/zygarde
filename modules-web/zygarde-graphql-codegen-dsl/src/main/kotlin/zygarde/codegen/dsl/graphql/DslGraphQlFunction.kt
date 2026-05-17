@@ -6,6 +6,7 @@ import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.requireGraphQlName
+import zygarde.codegen.model.graphql.requireUniqueGraphQlName
 import kotlin.reflect.KClass
 
 class DslGraphQlFunction(
@@ -34,6 +35,7 @@ class DslGraphQlFunction(
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
+    requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -48,6 +50,7 @@ class DslGraphQlFunction(
   fun argument(name: String, type: TypeName, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
+    requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -78,6 +81,7 @@ class DslGraphQlFunction(
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
+    requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -101,6 +105,7 @@ class DslGraphQlFunction(
   ) {
     requireGraphQlName(name, "GraphQL argument name")
     requireGraphQlName(graphQlType, "GraphQL argument type")
+    requireUniqueGraphQlName(name, arguments.map { it.name }, "GraphQL argument")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,

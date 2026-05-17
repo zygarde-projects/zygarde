@@ -366,4 +366,122 @@ class GraphQlApiGeneratorTest {
       ).generateApis()
     }.message shouldBe "GraphQL query field must be a valid GraphQL name"
   }
+
+  @Test
+  fun `should reject duplicate GraphQL operation fields before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            apiName = "TodoGraphQl",
+            functions = mutableListOf(todoQuery("todos"))
+          ),
+          graphQlApi(
+            apiName = "ArchiveGraphQl",
+            functions = mutableListOf(todoQuery("todos"))
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL query field 'todos' is already declared"
+  }
+
+  @Test
+  fun `should reject duplicate GraphQL type definitions before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            apiName = "TodoGraphQl",
+            typeDefinitions = mutableListOf(GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.TYPE, "Todo"))
+          ),
+          graphQlApi(
+            apiName = "ArchiveGraphQl",
+            typeDefinitions = mutableListOf(GraphQlTypeDefinitionToGenerateVo(GraphQlTypeDefinitionKind.INPUT, "Todo"))
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL type definition 'Todo' is already declared"
+  }
+
+  @Test
+  fun `should reject duplicate GraphQL nested declarations before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            functions = mutableListOf(
+              todoQuery(
+                arguments = mutableListOf(
+                  GraphQlArgumentToGenerateVo("id", Int::class.asTypeName(), "Int"),
+                  GraphQlArgumentToGenerateVo("id", Int::class.asTypeName(), "Int"),
+                )
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL query field 'todo' argument 'id' is already declared"
+
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.TYPE,
+                name = "Todo",
+                fields = mutableListOf(
+                  GraphQlFieldToGenerateVo("id", "Int"),
+                  GraphQlFieldToGenerateVo("id", "Int"),
+                )
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL type 'Todo' field 'id' is already declared"
+
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          graphQlApi(
+            typeDefinitions = mutableListOf(
+              GraphQlTypeDefinitionToGenerateVo(
+                kind = GraphQlTypeDefinitionKind.ENUM,
+                name = "TodoStatus",
+                enumValues = mutableListOf("OPEN", "OPEN"),
+              )
+            )
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL enum 'TodoStatus' value 'OPEN' is already declared"
+  }
+
+  private fun graphQlApi(
+    apiName: String = "TodoGraphQl",
+    functions: MutableList<GraphQlFunctionToGenerateVo> = mutableListOf(),
+    typeDefinitions: MutableList<GraphQlTypeDefinitionToGenerateVo> = mutableListOf(),
+  ): GraphQlApiToGenerateVo {
+    return GraphQlApiToGenerateVo(
+      controllerPackage = "com.example.graphql",
+      serviceInterfacePackage = "com.example.graphql.service",
+      apiName = apiName,
+      functions = functions,
+      typeDefinitions = typeDefinitions,
+    )
+  }
+
+  private fun todoQuery(
+    functionName: String = "todo",
+    arguments: MutableList<GraphQlArgumentToGenerateVo> = mutableListOf(),
+  ): GraphQlFunctionToGenerateVo {
+    return GraphQlFunctionToGenerateVo(
+      operation = GraphQlOperation.QUERY,
+      functionName = functionName,
+      arguments = arguments,
+      responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+      responseGraphQlType = "Todo",
+    )
+  }
 }

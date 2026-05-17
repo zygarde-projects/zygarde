@@ -7,3 +7,9 @@ fun requireGraphQlName(name: String, label: String) {
     "$label must be a valid GraphQL name"
   }
 }
+
+fun requireUniqueGraphQlName(name: String, existingNames: Iterable<String>, label: String) {
+  require(name !in existingNames) {
+    "$label '$name' is already declared"
+  }
+}

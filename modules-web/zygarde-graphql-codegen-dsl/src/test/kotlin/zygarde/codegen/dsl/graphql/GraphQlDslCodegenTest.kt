@@ -210,4 +210,58 @@ class GraphQlDslCodegenTest {
         .field<String>("not-valid")
     }.message shouldBe "GraphQL field name must be a valid GraphQL name"
   }
+
+  @Test
+  fun `should reject duplicate GraphQL declarations`() {
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            query("todos") {
+              returnsCollection<TodoDto>("Todo")
+            }
+            query("todos") {
+              returnsCollection<TodoDto>("Todo")
+            }
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL query field 'todos' is already declared"
+
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            type("Todo") {
+              field<Int>("id")
+            }
+            input("Todo") {
+              field<Int>("id")
+            }
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL type definition 'Todo' is already declared"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlFunction("todo", GraphQlOperation.QUERY).apply {
+        argument<Int>("id")
+        argument<Int>("id")
+      }
+    }.message shouldBe "GraphQL argument 'id' is already declared"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.type("Todo").apply {
+        field<Int>("id")
+        field<Int>("id")
+      }
+    }.message shouldBe "GraphQL field 'id' is already declared"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.enumType("TodoStatus").apply {
+        value("OPEN")
+        value("OPEN")
+      }
+    }.message shouldBe "GraphQL enum value 'OPEN' is already declared"
+  }
 }

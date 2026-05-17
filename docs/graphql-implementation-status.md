@@ -11,20 +11,19 @@ Last updated: 2026-05-17
 
 ## Changed In This Round
 
-- Added shared GraphQL SDL name validation in `modules-web/zygarde-web-codegen`.
-- `GraphQlApiGenerator` now rejects invalid GraphQL operation field, argument, type, field, and enum value names before rendering Kotlin or SDL output.
-- `modules-web/zygarde-graphql-codegen-dsl` now reuses the same name validation so invalid DSL declarations fail early.
-- Added focused generator and DSL tests for invalid GraphQL declaration names.
+- Added duplicate GraphQL declaration validation before generated Kotlin/SDL output is rendered.
+- `GraphQlApiGenerator` now rejects duplicate operation fields across generated schemas, duplicate type definitions, duplicate function arguments, duplicate object/input fields, and duplicate enum values.
+- `modules-web/zygarde-graphql-codegen-dsl` now fails early when a DSL schema repeats an operation field or type definition, when a function repeats an argument, when a type/input repeats a field, or when an enum repeats a value.
+- Added focused generator and DSL tests for duplicate GraphQL declarations.
 
 ## Validation
 
 - `rtk ./gradlew :zygarde-web-codegen:ktlintFormat :zygarde-graphql-codegen-dsl:ktlintFormat` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
-- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
 - `rtk ./gradlew :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
+- `rtk ./gradlew :zygarde-web-codegen:test --tests zygarde.codegen.generator.GraphQlApiGeneratorTest :zygarde-graphql-codegen-dsl:test --tests zygarde.codegen.dsl.graphql.GraphQlDslCodegenTest` - passed after sandbox escalation for Gradle wrapper access to `~/.gradle`.
 
 ## Next Work
 
-- Consider adding duplicate operation/type/field detection so generated schemas fail before Spring GraphQL schema parsing.
 - Decide whether GraphQL names beginning with `__` should be rejected in Zygarde helpers as reserved introspection names.
 - Add user-facing GraphQL DSL docs for `GraphQlDefaultValue`, nullable responses, and collection nullability once those docs are introduced or expanded.
 - Add user-facing docs for `subscription(...)` and clarify that callers must choose an appropriate Kotlin return type, such as a reactive publisher type, when wiring real Spring GraphQL subscriptions.

@@ -37,10 +37,9 @@ class GraphQlApiGenerator(
   private val beanFunc = MemberName("zygarde.core.di.DiServiceContext", "bean")
 
   fun generateApis(): GraphQlGenerateResult {
-    apis.forEach {
-      it.validateGraphQlNames()
-      it.generate()
-    }
+    apis.forEach { it.validateGraphQlNames() }
+    validateUniqueGraphQlDeclarations()
+    apis.forEach { it.generate() }
     val emittedOperationTypes = mutableSetOf<String>()
 
     controllerFileSpecBuilderMap.forEach { (controllerName, fileSpecBuilder) ->
@@ -77,6 +76,56 @@ class GraphQlApiGenerator(
     }
     enumValues.forEach { enumValue ->
       requireGraphQlName(enumValue, "GraphQL enum value")
+    }
+  }
+
+  private fun validateUniqueGraphQlDeclarations() {
+    GraphQlOperation.entries.forEach { operation ->
+      apis.flatMap { api -> api.functions.filter { it.operation == operation } }
+        .map { it.functionName }
+        .firstDuplicateOrNull()
+        ?.let { duplicateName ->
+          throw IllegalArgumentException("GraphQL ${operation.name.lowercase()} field '$duplicateName' is already declared")
+        }
+    }
+
+    apis.flatMap { it.typeDefinitions }
+      .map { it.name }
+      .firstDuplicateOrNull()
+      ?.let { duplicateName ->
+        throw IllegalArgumentException("GraphQL type definition '$duplicateName' is already declared")
+      }
+
+    apis.flatMap { it.functions }.forEach { function ->
+      function.arguments.map { it.name }
+        .firstDuplicateOrNull()
+        ?.let { duplicateName ->
+          throw IllegalArgumentException(
+            "GraphQL ${function.operation.name.lowercase()} field '${function.functionName}' argument '$duplicateName' is already declared"
+          )
+        }
+    }
+
+    apis.flatMap { it.typeDefinitions }.forEach { typeDefinition ->
+      when (typeDefinition.kind) {
+        GraphQlTypeDefinitionKind.TYPE,
+        GraphQlTypeDefinitionKind.INPUT -> {
+          typeDefinition.fields.map { it.name }
+            .firstDuplicateOrNull()
+            ?.let { duplicateName ->
+              throw IllegalArgumentException(
+                "GraphQL ${typeDefinition.kind.schemaKeyword()} '${typeDefinition.name}' field '$duplicateName' is already declared"
+              )
+            }
+        }
+        GraphQlTypeDefinitionKind.ENUM -> {
+          typeDefinition.enumValues.firstDuplicateOrNull()
+            ?.let { duplicateName ->
+              throw IllegalArgumentException("GraphQL enum '${typeDefinition.name}' value '$duplicateName' is already declared")
+            }
+        }
+        GraphQlTypeDefinitionKind.SCALAR -> Unit
+      }
     }
   }
 
@@ -274,5 +323,10 @@ class GraphQlApiGenerator(
       GraphQlTypeDefinitionKind.ENUM -> "enum"
       GraphQlTypeDefinitionKind.SCALAR -> "scalar"
     }
+  }
+
+  private fun Iterable<String>.firstDuplicateOrNull(): String? {
+    val seen = mutableSetOf<String>()
+    return firstOrNull { !seen.add(it) }
   }
 }

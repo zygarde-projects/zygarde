@@ -4,6 +4,7 @@ import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
 import zygarde.codegen.model.graphql.requireGraphQlName
+import zygarde.codegen.model.graphql.requireUniqueGraphQlName
 import kotlin.reflect.KClass
 
 class DslGraphQlTypeDefinition private constructor(
@@ -21,6 +22,7 @@ class DslGraphQlTypeDefinition private constructor(
     requireDefaultValueSupported(defaultValue)
     requireGraphQlName(name, "GraphQL field name")
     requireGraphQlName(graphQlType, "GraphQL field type")
+    requireUniqueGraphQlName(name, fields.map { it.name }, "GraphQL field")
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
@@ -49,6 +51,7 @@ class DslGraphQlTypeDefinition private constructor(
     requireDefaultValueSupported(defaultValue)
     requireGraphQlName(name, "GraphQL field name")
     requireGraphQlName(graphQlType, "GraphQL field type")
+    requireUniqueGraphQlName(name, fields.map { it.name }, "GraphQL field")
     fields.add(
       GraphQlFieldToGenerateVo(
         name = name,
@@ -82,6 +85,7 @@ class DslGraphQlTypeDefinition private constructor(
 
   fun value(name: String) {
     requireGraphQlName(name, "GraphQL enum value")
+    requireUniqueGraphQlName(name, enumValues, "GraphQL enum value")
     enumValues.add(name)
   }
 
