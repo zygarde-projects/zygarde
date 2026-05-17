@@ -1,8 +1,8 @@
 package zygarde.codegen.dsl.graphql
 
-object GraphQlDefaultValue {
-  private val graphQlNameRegex = Regex("[_A-Za-z][_0-9A-Za-z]*")
+import zygarde.codegen.model.graphql.requireGraphQlName
 
+object GraphQlDefaultValue {
   fun string(value: String): String {
     return buildString {
       append('"')
@@ -76,10 +76,4 @@ object GraphQlDefaultValue {
   }
 
   fun nullValue(): String = "null"
-
-  private fun requireGraphQlName(name: String, label: String) {
-    require(graphQlNameRegex.matches(name)) {
-      "$label must be a valid GraphQL name"
-    }
-  }
 }

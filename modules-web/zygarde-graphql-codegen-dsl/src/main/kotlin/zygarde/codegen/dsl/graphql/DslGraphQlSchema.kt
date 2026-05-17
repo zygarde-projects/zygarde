@@ -5,6 +5,7 @@ import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.requireGraphQlName
 
 class DslGraphQlSchema(
   private val config: GraphQlDslCodegenConfig,
@@ -47,6 +48,7 @@ class DslGraphQlSchema(
   }
 
   fun scalar(name: String) {
+    requireGraphQlName(name, "GraphQL type definition name")
     typeDefinitions.add(
       GraphQlTypeDefinitionToGenerateVo(
         kind = GraphQlTypeDefinitionKind.SCALAR,

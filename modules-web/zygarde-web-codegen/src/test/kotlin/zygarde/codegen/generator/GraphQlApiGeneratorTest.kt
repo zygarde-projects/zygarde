@@ -1,7 +1,9 @@
 package zygarde.codegen.generator
 
 import com.squareup.kotlinpoet.asTypeName
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
@@ -340,5 +342,28 @@ class GraphQlApiGeneratorTest {
     serviceInterface shouldContain "public fun todosByOptionalIds(ids: Collection<Int?>?):"
     serviceInterface shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
     result.schemas.single().content shouldContain "todosByOptionalIds(ids: [Int]): [Todo!]!"
+  }
+
+  @Test
+  fun `should reject invalid GraphQL names before rendering generated output`() {
+    shouldThrow<IllegalArgumentException> {
+      GraphQlApiGenerator(
+        listOf(
+          GraphQlApiToGenerateVo(
+            controllerPackage = "com.example.graphql",
+            serviceInterfacePackage = "com.example.graphql.service",
+            apiName = "TodoGraphQl",
+            functions = mutableListOf(
+              GraphQlFunctionToGenerateVo(
+                operation = GraphQlOperation.QUERY,
+                functionName = "todo-list",
+                responseType = GraphQlGeneratorTestTodoDto::class.asTypeName(),
+                responseGraphQlType = "Todo",
+              )
+            ),
+          )
+        )
+      ).generateApis()
+    }.message shouldBe "GraphQL query field must be a valid GraphQL name"
   }
 }

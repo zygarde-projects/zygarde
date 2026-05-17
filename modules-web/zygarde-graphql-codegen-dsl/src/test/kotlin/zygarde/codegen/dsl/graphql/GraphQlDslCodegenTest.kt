@@ -190,4 +190,24 @@ class GraphQlDslCodegenTest {
       GraphQlDefaultValue.objectValue("not-valid" to GraphQlDefaultValue.string("open"))
     }.message shouldBe "GraphQL object default field must be a valid GraphQL name"
   }
+
+  @Test
+  fun `should reject invalid GraphQL declaration names`() {
+    shouldThrow<IllegalArgumentException> {
+      object : GraphQlDslCodegen() {
+        override fun codegen() {
+          schema("TodoGraphQl") {
+            query("todo-list") {
+              returns<TodoDto>("Todo")
+            }
+          }
+        }
+      }.codegen()
+    }.message shouldBe "GraphQL query field must be a valid GraphQL name"
+
+    shouldThrow<IllegalArgumentException> {
+      DslGraphQlTypeDefinition.input("TodoInput")
+        .field<String>("not-valid")
+    }.message shouldBe "GraphQL field name must be a valid GraphQL name"
+  }
 }

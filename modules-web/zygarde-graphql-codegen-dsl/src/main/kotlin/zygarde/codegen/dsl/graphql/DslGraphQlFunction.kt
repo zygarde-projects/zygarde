@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
+import zygarde.codegen.model.graphql.requireGraphQlName
 import kotlin.reflect.KClass
 
 class DslGraphQlFunction(
@@ -20,6 +21,10 @@ class DslGraphQlFunction(
   private var responseNullable: Boolean = false
   private var responseItemNullable: Boolean = false
 
+  init {
+    requireGraphQlName(functionName, "GraphQL ${operation.name.lowercase()} field")
+  }
+
   fun argument(
     name: String,
     type: KClass<*>,
@@ -27,6 +32,8 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     defaultValue: String? = null,
   ) {
+    requireGraphQlName(name, "GraphQL argument name")
+    requireGraphQlName(graphQlType, "GraphQL argument type")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -39,6 +46,8 @@ class DslGraphQlFunction(
   }
 
   fun argument(name: String, type: TypeName, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null) {
+    requireGraphQlName(name, "GraphQL argument name")
+    requireGraphQlName(graphQlType, "GraphQL argument type")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -67,6 +76,8 @@ class DslGraphQlFunction(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
   ) {
+    requireGraphQlName(name, "GraphQL argument name")
+    requireGraphQlName(graphQlType, "GraphQL argument type")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -88,6 +99,8 @@ class DslGraphQlFunction(
     itemNullable: Boolean = false,
     defaultValue: String? = null,
   ) {
+    requireGraphQlName(name, "GraphQL argument name")
+    requireGraphQlName(graphQlType, "GraphQL argument type")
     arguments.add(
       GraphQlArgumentToGenerateVo(
         name = name,
@@ -112,6 +125,7 @@ class DslGraphQlFunction(
   }
 
   fun returns(type: KClass<*>, graphQlType: String = type.defaultGraphQlType(), nullable: Boolean = false) {
+    requireGraphQlName(graphQlType, "GraphQL response type")
     responseType = type.asTypeName()
     responseGraphQlType = graphQlType
     responseCollection = false
@@ -120,6 +134,7 @@ class DslGraphQlFunction(
   }
 
   fun returns(type: TypeName, graphQlType: String, nullable: Boolean = false) {
+    requireGraphQlName(graphQlType, "GraphQL response type")
     responseType = type
     responseGraphQlType = graphQlType
     responseCollection = false
@@ -137,6 +152,7 @@ class DslGraphQlFunction(
     nullable: Boolean = false,
     itemNullable: Boolean = false,
   ) {
+    requireGraphQlName(graphQlType, "GraphQL response type")
     responseType = type.asTypeName()
     responseGraphQlType = graphQlType
     responseCollection = true
@@ -145,6 +161,7 @@ class DslGraphQlFunction(
   }
 
   fun returnsCollection(type: TypeName, graphQlType: String, nullable: Boolean = false, itemNullable: Boolean = false) {
+    requireGraphQlName(graphQlType, "GraphQL response type")
     responseType = type
     responseGraphQlType = graphQlType
     responseCollection = true

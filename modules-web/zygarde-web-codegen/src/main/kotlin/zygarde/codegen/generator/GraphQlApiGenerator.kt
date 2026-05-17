@@ -23,6 +23,8 @@ import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlSchemaGenerateResult
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
+import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.requireGraphQlName
 
 class GraphQlApiGenerator(
   private val apis: Collection<GraphQlApiToGenerateVo>
@@ -35,7 +37,10 @@ class GraphQlApiGenerator(
   private val beanFunc = MemberName("zygarde.core.di.DiServiceContext", "bean")
 
   fun generateApis(): GraphQlGenerateResult {
-    apis.forEach { it.generate() }
+    apis.forEach {
+      it.validateGraphQlNames()
+      it.generate()
+    }
     val emittedOperationTypes = mutableSetOf<String>()
 
     controllerFileSpecBuilderMap.forEach { (controllerName, fileSpecBuilder) ->
@@ -50,6 +55,29 @@ class GraphQlApiGenerator(
       serviceInterfaces = serviceInterfaceFileSpecBuilderMap.values.map { it.build() },
       schemas = apis.map { it.toSchemaGenerateResult(emittedOperationTypes) },
     )
+  }
+
+  private fun GraphQlApiToGenerateVo.validateGraphQlNames() {
+    functions.forEach { function ->
+      requireGraphQlName(function.functionName, "GraphQL ${function.operation.name.lowercase()} field")
+      requireGraphQlName(function.responseGraphQlType, "GraphQL response type")
+      function.arguments.forEach { argument ->
+        requireGraphQlName(argument.name, "GraphQL argument name")
+        requireGraphQlName(argument.graphQlType, "GraphQL argument type")
+      }
+    }
+    typeDefinitions.forEach { it.validateGraphQlNames() }
+  }
+
+  private fun GraphQlTypeDefinitionToGenerateVo.validateGraphQlNames() {
+    requireGraphQlName(name, "GraphQL type definition name")
+    fields.forEach { field ->
+      requireGraphQlName(field.name, "GraphQL field name")
+      requireGraphQlName(field.graphQlType, "GraphQL field type")
+    }
+    enumValues.forEach { enumValue ->
+      requireGraphQlName(enumValue, "GraphQL enum value")
+    }
   }
 
   private fun GraphQlApiToGenerateVo.generate() {
