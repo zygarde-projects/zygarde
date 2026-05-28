@@ -5,7 +5,9 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
   implementation(project(":zygarde-core"))
+  implementation(project(":zygarde-di"))
   implementation(project(":zygarde-sql-api"))
+  implementation(project(":todo-src-core"))
   implementation(project(":todo-dsl-generated-sql-api-dto"))
   implementation(project(":todo-dsl-generated-sql-api-service-interface"))
   implementation("org.springframework.boot:spring-boot-starter")

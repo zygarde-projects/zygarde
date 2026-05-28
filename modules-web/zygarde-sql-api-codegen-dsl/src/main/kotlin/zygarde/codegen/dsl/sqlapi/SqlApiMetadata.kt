@@ -36,6 +36,7 @@ data class SqlApiField(
   val type: TypeName,
   val description: String = "",
   val source: SqlApiParamSource = SqlApiParamSource.AUTO,
+  val contextValueSource: SqlApiContextValueSource? = null,
 )
 
 enum class SqlApiParamSource {
@@ -43,6 +44,17 @@ enum class SqlApiParamSource {
   PATH,
   QUERY,
   BODY,
+  CONTEXT,
+}
+
+sealed class SqlApiContextValueSource {
+  data class ResolverByType(
+    val resolverType: TypeName,
+  ) : SqlApiContextValueSource()
+
+  data class ResolverByName(
+    val beanName: String,
+  ) : SqlApiContextValueSource()
 }
 
 enum class SqlQueryResultShape {

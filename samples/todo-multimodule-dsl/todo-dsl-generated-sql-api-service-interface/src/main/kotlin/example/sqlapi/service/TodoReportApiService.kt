@@ -18,4 +18,6 @@ public interface TodoReportApiService {
     pageSize: Int,
     atPage: Int,
   ): PageDto<TodoReportDto>
+
+  public fun findCurrentTodo(): TodoReportDto?
 }

@@ -2,6 +2,8 @@ package zygarde.codegen.dsl.sqlapi
 
 import com.squareup.kotlinpoet.asTypeName
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.sql.api.SqlApiContextParamResolver
+import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
 
 class DslSqlCommand(
@@ -38,6 +40,44 @@ class DslSqlCommand(
 
   inline fun <reified T> bodyParam(name: String, description: String = "") {
     declaredParams[name] = SqlApiField(name, typeOf<T>().asTypeName(), description, SqlApiParamSource.BODY)
+  }
+
+  inline fun <reified T, reified R : SqlApiContextParamResolver<T>> contextParam(name: String, description: String = "") {
+    declaredParams[name] = SqlApiField(
+      name = name,
+      type = typeOf<T>().asTypeName(),
+      description = description,
+      source = SqlApiParamSource.CONTEXT,
+      contextValueSource = SqlApiContextValueSource.ResolverByType(typeOf<R>().asTypeName()),
+    )
+  }
+
+  inline fun <reified T> contextParam(
+    name: String,
+    resolver: KClass<*>,
+    description: String = "",
+  ) {
+    require(SqlApiContextParamResolver::class.java.isAssignableFrom(resolver.java)) {
+      "Context parameter '$name' resolver must implement SqlApiContextParamResolver"
+    }
+    declaredParams[name] = SqlApiField(
+      name = name,
+      type = typeOf<T>().asTypeName(),
+      description = description,
+      source = SqlApiParamSource.CONTEXT,
+      contextValueSource = SqlApiContextValueSource.ResolverByType(resolver.asTypeName()),
+    )
+  }
+
+  inline fun <reified T> contextParam(name: String, resolverBeanName: String, description: String = "") {
+    require(resolverBeanName.isNotBlank()) { "Context parameter '$name' must declare a resolver bean name" }
+    declaredParams[name] = SqlApiField(
+      name = name,
+      type = typeOf<T>().asTypeName(),
+      description = description,
+      source = SqlApiParamSource.CONTEXT,
+      contextValueSource = SqlApiContextValueSource.ResolverByName(resolverBeanName),
+    )
   }
 
   fun request(name: String) {

@@ -1,5 +1,6 @@
 package example.sqlapi.service.`impl`
 
+import example.CurrentTodoIdResolver
 import example.sqlapi.dto.TodoReportDto
 import example.sqlapi.service.TodoReportApiService
 import javax.sql.DataSource
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.`annotation`.Autowired
 import org.springframework.beans.factory.`annotation`.Qualifier
 import org.springframework.stereotype.Service
 import zygarde.`data`.api.PageDto
+import zygarde.core.di.DiServiceContext.bean
 import zygarde.sql.api.ZygardeSqlExecutor
 
 @Service
@@ -80,6 +82,18 @@ public class TodoReportApiServiceImpl(
     return PageDto(atPage, totalPages, items, totalCount)
   }
 
+  override fun findCurrentTodo(): TodoReportDto? {
+    val params = mapOf(
+      "currentTodoId" to bean<CurrentTodoIdResolver>().resolve("currentTodoId"),
+    )
+    return executor.queryOneOrNull(FIND_CURRENT_TODO_SQL, params) { row ->
+      TodoReportDto(
+        id = row.getRequired<Int>("id"),
+        description = row.getRequired<String>("description")
+      )
+    }
+  }
+
   public companion object {
     private const val SEARCH_TODOS_SQL: String =
         "select t.id as id, t.description as description\nfrom todo t\nwhere (:keyword is null or t.description like concat('%', :keyword, '%'))\norder by t.id"
@@ -95,5 +109,8 @@ public class TodoReportApiServiceImpl(
 
     private const val PAGE_TODOS_COUNT_SQL: String =
         "select count(*) as totalCount\nfrom todo t\nwhere (:keyword is null or t.description like concat('%', :keyword, '%'))"
+
+    private const val FIND_CURRENT_TODO_SQL: String =
+        "select t.id as id, t.description as description\nfrom todo t\nwhere t.id = :currentTodoId"
   }
 }

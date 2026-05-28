@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl.sqlapi
 
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldNotContain
@@ -284,6 +285,107 @@ class SqlApiGeneratorTest {
       it shouldContain "\"keyword\" to keyword"
       it shouldContain "override fun updateTodo(id: Int, req: UpdateTodoBySqlReq): Int"
       it shouldContain "\"description\" to req.description"
+    }
+  }
+
+  @Test
+  fun `should generate clean API contract and service context params`() {
+    val userIdResolverClass = ClassName("example.context", "UserIdResolver")
+    val tenantIdResolverClass = ClassName("example.context", "TenantIdResolver")
+    val api = SqlApiToGenerateVo(
+      config = SqlApiDslCodegenConfig(
+        dtoPackage = "example.dto",
+        apiInterfacePackage = "example.api",
+        controllerPackage = "example.controller",
+        serviceInterfacePackage = "example.service",
+        serviceImplPackage = "example.service.impl",
+      ),
+      apiName = "TodoReportApi",
+      basePath = "/api/todo-report",
+      queries = listOf(
+        SqlQueryToGenerateVo(
+          functionName = "findMyTodos",
+          path = "/my-todos",
+          sql = "select id as id from todo where tenant_id = :tenantId and created_by = :userId and (:keyword is null or description like :keyword)",
+          requestName = "FindMyTodosReq",
+          responseName = "TodoReportDto",
+          params = listOf(
+            SqlApiField(
+              "tenantId",
+              String::class.asTypeName(),
+              source = SqlApiParamSource.CONTEXT,
+              contextValueSource = SqlApiContextValueSource.ResolverByType(tenantIdResolverClass),
+            ),
+            SqlApiField(
+              "userId",
+              Long::class.asTypeName(),
+              source = SqlApiParamSource.CONTEXT,
+              contextValueSource = SqlApiContextValueSource.ResolverByType(userIdResolverClass),
+            ),
+            SqlApiField("keyword", String::class.asTypeName().copy(nullable = true), source = SqlApiParamSource.QUERY),
+          ),
+          columns = listOf(SqlApiField("id", Int::class.asTypeName())),
+        )
+      ),
+      commands = listOf(
+        SqlCommandToGenerateVo(
+          functionName = "updateMyTodo",
+          path = "/my-todos/{id}",
+          sql = "update todo set description = :description where id = :id and tenant_id = :tenantId",
+          method = RequestMethod.PUT,
+          requestName = "UpdateMyTodoReq",
+          params = listOf(
+            SqlApiField("description", String::class.asTypeName(), source = SqlApiParamSource.BODY),
+            SqlApiField("id", Int::class.asTypeName(), source = SqlApiParamSource.PATH),
+            SqlApiField(
+              "tenantId",
+              String::class.asTypeName(),
+              source = SqlApiParamSource.CONTEXT,
+              contextValueSource = SqlApiContextValueSource.ResolverByName("tenantIdResolver"),
+            ),
+          ),
+        )
+      ),
+    )
+
+    val result = SqlApiGenerator(listOf(api)).generate()
+
+    result.dtoFileSpecs.first { it.name == "UpdateMyTodoReq" }.toString().also {
+      it shouldContain "public var description: String"
+      it shouldNotContain "tenantId"
+      it shouldNotContain "userId"
+    }
+    result.webApiGenerateResult.apiInterfaces.single().toString().also {
+      it shouldContain "public fun findMyTodos(keyword: String?): Collection<TodoReportDto>"
+      it shouldContain "public fun updateMyTodo(id: Int, req: UpdateMyTodoReq): Int"
+      it shouldNotContain "tenantId"
+      it shouldNotContain "userId"
+    }
+    result.webApiGenerateResult.feignApiInterfaces.single().toString().also {
+      it shouldContain "override fun findMyTodos("
+      it shouldNotContain "@RequestParam(value=\"tenantId\""
+      it shouldNotContain "@RequestParam(value=\"userId\""
+    }
+    result.webApiGenerateResult.controllers.single().toString().also {
+      it shouldContain "service.findMyTodos(keyword)"
+      it shouldContain "service.updateMyTodo(id,req)"
+      it shouldNotContain "tenantId"
+      it shouldNotContain "userId"
+    }
+    result.webApiGenerateResult.serviceInterfaces.single().toString().also {
+      it shouldContain "public fun findMyTodos(keyword: String?): Collection<TodoReportDto>"
+      it shouldContain "public fun updateMyTodo(id: Int, req: UpdateMyTodoReq): Int"
+      it shouldNotContain "tenantId"
+      it shouldNotContain "userId"
+    }
+    result.serviceImplFileSpecs.single().toString().also {
+      it shouldContain "import zygarde.core.di.DiServiceContext.bean"
+      it shouldContain "import zygarde.sql.api.SqlApiContextParamResolver"
+      it shouldContain "\"tenantId\" to bean<TenantIdResolver>().resolve(\"tenantId\")"
+      it shouldContain "\"userId\" to bean<UserIdResolver>().resolve(\"userId\")"
+      it shouldContain "\"keyword\" to keyword"
+      it shouldContain "\"tenantId\" to (DiServiceContext.ctx.getBean(\"tenantIdResolver\") as"
+      it shouldContain "SqlApiContextParamResolver<*>).resolve(\"tenantId\") as String"
     }
   }
 

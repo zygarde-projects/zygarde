@@ -79,6 +79,21 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         request("PageTodosReq")
         response("TodoReportDto")
       }
+      query("findCurrentTodo", "/current") {
+        sql(
+          """
+          select t.id as id, t.description as description
+          from todo t
+          where t.id = :currentTodoId
+          """.trimIndent()
+        )
+        contextParam<Int?>("currentTodoId", resolver = CurrentTodoIdResolver::class)
+        column<Int>("id")
+        column<String>("description")
+        request("FindCurrentTodoReq")
+        response("TodoReportDto")
+        returnsOneOrNull()
+      }
     }
     sqlApi("TodoCommandApi", "/api/todo-command") {
       database {

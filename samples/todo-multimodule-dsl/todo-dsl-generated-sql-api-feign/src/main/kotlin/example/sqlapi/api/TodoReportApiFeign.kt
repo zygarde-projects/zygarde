@@ -29,4 +29,7 @@ public interface TodoReportApiFeign : TodoReportApi {
     @RequestParam(value="pageSize") pageSize: Int,
     @RequestParam(value="atPage") atPage: Int,
   ): PageDto<TodoReportDto>
+
+  @GetMapping(value=["/api/todo-report/current"])
+  override fun findCurrentTodo(): TodoReportDto?
 }

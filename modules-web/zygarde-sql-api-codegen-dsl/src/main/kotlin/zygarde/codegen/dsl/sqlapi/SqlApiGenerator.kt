@@ -6,6 +6,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
@@ -23,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.generator.WebMvcApiGenerator
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
+import zygarde.core.di.DiServiceContext
 import zygarde.data.api.PageDto
+import zygarde.sql.api.SqlApiContextParamResolver
 import zygarde.sql.api.ZygardeSqlExecutor
 import java.io.Serializable
 import javax.sql.DataSource
@@ -403,16 +406,36 @@ class SqlApiGenerator(
     }
   }
 
-  private fun SqlApiField.valueExpression(): String {
+  private fun SqlApiField.valueExpression(): CodeBlock {
     return when (source) {
       SqlApiParamSource.PATH,
-      SqlApiParamSource.QUERY -> name
+      SqlApiParamSource.QUERY -> CodeBlock.of("%N", name)
       SqlApiParamSource.AUTO,
-      SqlApiParamSource.BODY -> "req.$name"
+      SqlApiParamSource.BODY -> CodeBlock.of("req.%N", name)
+      SqlApiParamSource.CONTEXT -> contextValueExpression()
     }
   }
 
-  private fun SqlQueryToGenerateVo.paramValueExpression(name: String): String {
+  private fun SqlApiField.contextValueExpression(): CodeBlock {
+    return when (val valueSource = requireNotNull(contextValueSource) { "Context parameter '$name' must declare a value source" }) {
+      is SqlApiContextValueSource.ResolverByType -> CodeBlock.of(
+        "%M<%T>().resolve(%S)",
+        BEAN,
+        valueSource.resolverType,
+        name,
+      )
+      is SqlApiContextValueSource.ResolverByName -> CodeBlock.of(
+        "(%T.ctx.getBean(%S) as %T<*>).resolve(%S) as %T",
+        DiServiceContext::class,
+        valueSource.beanName,
+        SqlApiContextParamResolver::class,
+        name,
+        type,
+      )
+    }
+  }
+
+  private fun SqlQueryToGenerateVo.paramValueExpression(name: String): CodeBlock {
     return params.first { it.name == name }.valueExpression()
   }
 
@@ -551,5 +574,9 @@ class SqlApiGenerator(
       }
       append("_SQL")
     }
+  }
+
+  private companion object {
+    private val BEAN = MemberName("zygarde.core.di.DiServiceContext", "bean")
   }
 }

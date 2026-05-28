@@ -6,6 +6,7 @@ dependencies {
   kapt(project(":zygarde-model-mapping-codegen"))
   kapt(project(":zygarde-jpa-codegen"))
   implementation(project(":zygarde-jpa"))
+  implementation(project(":zygarde-sql-api"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("jakarta.validation:jakarta.validation-api")
 }

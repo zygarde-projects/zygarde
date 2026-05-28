@@ -1,11 +1,13 @@
 package zygarde.codegen.dsl.sqlapi
 
+import com.squareup.kotlinpoet.asTypeName
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.sql.api.SqlApiContextParamResolver
 
 class SqlApiDslCodegenTest : SqlApiDslCodegen() {
   override fun codegen() {
@@ -166,6 +168,95 @@ class SqlApiDslCodegenTest : SqlApiDslCodegen() {
   }
 
   @Test
+  fun `should collect query context parameters without request sources`() {
+    val query = DslSqlQuery("findMyTodos", "/my-todos")
+    query.sql(
+      """
+      select id as id
+      from todo
+      where tenant_id = :tenantId
+        and created_by = :userId
+        and (:keyword is null or description like :keyword)
+      """.trimIndent()
+    )
+    query.queryParam<String?>("keyword")
+    query.contextParam<Long>("userId", resolver = TestUserIdResolver::class)
+    query.contextParam<String>("tenantId", resolver = TestTenantIdResolver::class)
+    query.column<Int>("id")
+
+    val metadata = query.toSqlQueryToGenerateVo()
+
+    metadata.params.map { it.name } shouldBe listOf("tenantId", "userId", "keyword")
+    metadata.params.first { it.name == "tenantId" }.also {
+      it.source shouldBe SqlApiParamSource.CONTEXT
+      it.contextValueSource shouldBe SqlApiContextValueSource.ResolverByType(TestTenantIdResolver::class.asTypeName())
+    }
+    metadata.params.first { it.name == "userId" }.also {
+      it.source shouldBe SqlApiParamSource.CONTEXT
+      it.contextValueSource shouldBe SqlApiContextValueSource.ResolverByType(TestUserIdResolver::class.asTypeName())
+    }
+  }
+
+  @Test
+  fun `should collect command context parameters`() {
+    val command = DslSqlCommand("createTodo", "/create")
+    command.sql("insert into todo(description, tenant_id) values (:description, :tenantId)")
+    command.bodyParam<String>("description")
+    command.contextParam<String>("tenantId", resolverBeanName = "tenantIdResolver")
+
+    val metadata = command.toSqlCommandToGenerateVo()
+
+    metadata.params.map { it.name } shouldBe listOf("description", "tenantId")
+    metadata.params.first { it.name == "tenantId" }.also {
+      it.source shouldBe SqlApiParamSource.CONTEXT
+      it.contextValueSource shouldBe SqlApiContextValueSource.ResolverByName("tenantIdResolver")
+    }
+  }
+
+  @Test
+  fun `should allow page count SQL to use context parameters`() {
+    val query = DslSqlQuery("pageMyTodos", "/my-todos")
+    query.sql(
+      """
+      select id as id
+      from todo
+      where tenant_id = :tenantId
+      order by id
+      limit :pageSize offset :offset
+      """.trimIndent()
+    )
+    query.returnsPage(
+      countSql = """
+        select count(*) as totalCount
+        from todo
+        where tenant_id = :tenantId
+      """.trimIndent()
+    )
+    query.contextParam<String>("tenantId", resolver = TestTenantIdResolver::class)
+    query.column<Int>("id")
+
+    val metadata = query.toSqlQueryToGenerateVo()
+
+    metadata.params.map { it.name } shouldBe listOf("tenantId", "pageSize", "atPage")
+    metadata.params.first { it.name == "tenantId" }.source shouldBe SqlApiParamSource.CONTEXT
+  }
+
+  @Test
+  fun `should reject declared context params that SQL does not use`() {
+    val query = DslSqlQuery("findMyTodos", "/my-todos")
+    query.sql("select id as id from todo where created_by = :userId")
+    query.contextParam<Long>("userId", resolver = TestUserIdResolver::class)
+    query.contextParam<String>("tenantId", resolver = TestTenantIdResolver::class)
+    query.column<Int>("id")
+
+    val error = shouldThrow<IllegalArgumentException> {
+      query.toSqlQueryToGenerateVo()
+    }
+
+    error.message shouldBe "SQL query 'findMyTodos' declares parameters that are not used by SQL: tenantId"
+  }
+
+  @Test
   fun `should reject query path parameter not present in path`() {
     val query = DslSqlQuery("findTodo", "/find")
     query.sql("select id as id from todo where id = :id")
@@ -267,5 +358,13 @@ class SqlApiDslCodegenTest : SqlApiDslCodegen() {
     }
 
     error.message shouldBe "SQL command 'deleteTodo' declares parameters that are not used by SQL: unused"
+  }
+
+  private class TestUserIdResolver : SqlApiContextParamResolver<Long> {
+    override fun resolve(paramName: String): Long = 1L
+  }
+
+  private class TestTenantIdResolver : SqlApiContextParamResolver<String> {
+    override fun resolve(paramName: String): String = "tenant-1"
   }
 }

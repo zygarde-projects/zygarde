@@ -55,4 +55,12 @@ public class TodoReportApiController : TodoReportApi {
     val result = service.pageTodos(keyword,pageSize,atPage)
     return result
   }
+
+  @GetMapping(value=["/api/todo-report/current"])
+  @Operation(summary="findCurrentTodo")
+  override fun findCurrentTodo(): TodoReportDto? {
+    val service = bean<TodoReportApiService>()
+    val result = service.findCurrentTodo()
+    return result
+  }
 }

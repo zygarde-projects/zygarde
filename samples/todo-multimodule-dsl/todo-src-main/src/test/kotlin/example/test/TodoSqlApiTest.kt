@@ -1,11 +1,13 @@
 package example.test
 
 import example.ApiHelper
+import example.TodoSqlApiContext
 import example.api.TodoApi
 import example.sqlapi.api.TodoCommandApi
 import example.sqlapi.api.TodoReportApi
 import example.sqlapi.dto.CreateTodoBySqlReq
 import example.sqlapi.dto.CreatedTodoKeyDto
+import example.sqlapi.dto.TodoReportDto
 import example.sqlapi.dto.UpdateTodoBySqlReq
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -85,6 +87,36 @@ class TodoSqlApiTest {
       it.totalCount shouldBe 3
       it.items.shouldHaveSize(1)
       it.items.single().description shouldBe "page SQL API 3"
+    }
+  }
+
+  @Test
+  fun `should resolve generated SQL API context parameters on server side`() {
+    val todoApi = feign<TodoApi>()
+    val todoReportApi = feign<TodoReportApi>()
+    val context = DiServiceContext.ctx.getBean(TodoSqlApiContext::class.java)
+
+    val first = todoApi.createTodo(CreateTodoReq("context SQL API 1"))
+    val second = todoApi.createTodo(CreateTodoReq("context SQL API 2"))
+
+    try {
+      context.currentTodoId = first.id
+
+      todoReportApi.findCurrentTodo().also {
+        it?.id shouldBe first.id
+        it?.description shouldBe "context SQL API 1"
+      }
+
+      val spoofedResponse = restTemplate.getForEntity(
+        "/api/todo-report/current?currentTodoId=${second.id}",
+        TodoReportDto::class.java,
+      )
+
+      spoofedResponse.statusCode shouldBe HttpStatus.OK
+      spoofedResponse.body?.id shouldBe first.id
+      spoofedResponse.body?.description shouldBe "context SQL API 1"
+    } finally {
+      context.currentTodoId = null
     }
   }
 
