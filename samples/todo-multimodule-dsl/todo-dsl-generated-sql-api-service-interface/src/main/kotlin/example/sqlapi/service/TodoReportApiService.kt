@@ -1,16 +1,19 @@
 package example.sqlapi.service
 
-import example.sqlapi.dto.FindTodoReq
-import example.sqlapi.dto.PageTodosReq
-import example.sqlapi.dto.SearchTodosReq
 import example.sqlapi.dto.TodoReportDto
+import kotlin.Int
+import kotlin.String
 import kotlin.collections.Collection
 import zygarde.`data`.api.PageDto
 
 public interface TodoReportApiService {
-  public fun searchTodos(req: SearchTodosReq): Collection<TodoReportDto>
+  public fun searchTodos(keyword: String?): Collection<TodoReportDto>
 
-  public fun findTodo(req: FindTodoReq): TodoReportDto?
+  public fun findTodo(id: Int): TodoReportDto?
 
-  public fun pageTodos(req: PageTodosReq): PageDto<TodoReportDto>
+  public fun pageTodos(
+    keyword: String?,
+    pageSize: Int,
+    atPage: Int,
+  ): PageDto<TodoReportDto>
 }

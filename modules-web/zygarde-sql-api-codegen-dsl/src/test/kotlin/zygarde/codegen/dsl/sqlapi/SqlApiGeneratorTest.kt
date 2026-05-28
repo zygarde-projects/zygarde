@@ -212,6 +212,71 @@ class SqlApiGeneratorTest {
   }
 
   @Test
+  fun `should generate path query and body parameter contracts`() {
+    val api = SqlApiToGenerateVo(
+      config = SqlApiDslCodegenConfig(
+        dtoPackage = "example.dto",
+        apiInterfacePackage = "example.api",
+        controllerPackage = "example.controller",
+        serviceInterfacePackage = "example.service",
+        serviceImplPackage = "example.service.impl",
+      ),
+      apiName = "TodoCommandApi",
+      basePath = "/api/todo-command",
+      queries = listOf(
+        SqlQueryToGenerateVo(
+          functionName = "findTodo",
+          path = "/find/{id}",
+          sql = "select id as id from todo where id = :id and (:keyword is null or description like :keyword)",
+          requestName = "FindTodoReq",
+          responseName = "TodoReportDto",
+          params = listOf(
+            SqlApiField("id", Int::class.asTypeName(), source = SqlApiParamSource.PATH),
+            SqlApiField("keyword", String::class.asTypeName().copy(nullable = true), source = SqlApiParamSource.QUERY),
+          ),
+          columns = listOf(SqlApiField("id", Int::class.asTypeName())),
+          resultShape = SqlQueryResultShape.ONE_NULLABLE,
+        )
+      ),
+      commands = listOf(
+        SqlCommandToGenerateVo(
+          functionName = "updateTodo",
+          path = "/update/{id}",
+          sql = "update todo set description = :description where id = :id",
+          method = RequestMethod.PUT,
+          requestName = "UpdateTodoBySqlReq",
+          params = listOf(
+            SqlApiField("description", String::class.asTypeName(), source = SqlApiParamSource.BODY),
+            SqlApiField("id", Int::class.asTypeName(), source = SqlApiParamSource.PATH),
+          ),
+        )
+      ),
+    )
+
+    val result = SqlApiGenerator(listOf(api)).generate()
+
+    result.dtoFileSpecs.map { it.name } shouldBe listOf("TodoReportDto", "UpdateTodoBySqlReq")
+    result.webApiGenerateResult.apiInterfaces.single().toString().also {
+      it shouldContain "public fun findTodo(id: Int, keyword: String?): TodoReportDto?"
+      it shouldContain "public fun updateTodo(id: Int, req: UpdateTodoBySqlReq): Int"
+      it shouldNotContain "FindTodoReq"
+    }
+    result.webApiGenerateResult.feignApiInterfaces.single().toString().also {
+      it shouldContain "@PathVariable(value=\"id\")"
+      it shouldContain "@RequestParam(value=\"keyword\""
+      it shouldContain "required=false"
+      it shouldContain "@RequestBody"
+    }
+    result.serviceImplFileSpecs.single().toString().also {
+      it shouldContain "override fun findTodo(id: Int, keyword: String?): TodoReportDto?"
+      it shouldContain "\"id\" to id"
+      it shouldContain "\"keyword\" to keyword"
+      it shouldContain "override fun updateTodo(id: Int, req: UpdateTodoBySqlReq): Int"
+      it shouldContain "\"description\" to req.description"
+    }
+  }
+
+  @Test
   fun `should generate no request DTO or req parameter for query without params`() {
     val api = SqlApiToGenerateVo(
       config = SqlApiDslCodegenConfig(

@@ -22,6 +22,7 @@ class ApiFunctionToGenerateVoTest {
     vo.path shouldBe "/users/{id}"
     vo.description shouldBe ""
     vo.pathVariables shouldBe emptyMap()
+    vo.requestParams shouldBe emptyMap()
     vo.requestName shouldBe "req"
     vo.requestType shouldBe null
     vo.requestTypeGenericArguments shouldBe emptyList()
@@ -41,6 +42,7 @@ class ApiFunctionToGenerateVoTest {
   fun `should create ApiFunctionToGenerateVo with all fields`() {
     // given
     val pathVars = mapOf("id" to STRING)
+    val requestParams = mapOf("keyword" to STRING)
     val requestType = STRING
     val responseType = STRING
     val deprecation = Deprecated("Use newMethod instead")
@@ -52,6 +54,7 @@ class ApiFunctionToGenerateVoTest {
       description = "Create a new user",
       path = "/users",
       pathVariables = pathVars,
+      requestParams = requestParams,
       requestName = "createReq",
       requestType = requestType,
       requestTypeGenericArguments = listOf(STRING),
@@ -73,6 +76,7 @@ class ApiFunctionToGenerateVoTest {
     vo.description shouldBe "Create a new user"
     vo.path shouldBe "/users"
     vo.pathVariables shouldBe pathVars
+    vo.requestParams shouldBe requestParams
     vo.requestName shouldBe "createReq"
     vo.requestType shouldBe requestType
     vo.requestTypeGenericArguments shouldBe listOf(STRING)

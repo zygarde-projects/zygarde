@@ -14,13 +14,13 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
           order by t.id
           """.trimIndent()
         )
-        param<String?>("keyword", description = "Search keyword")
+        queryParam<String?>("keyword", description = "Search keyword")
         column<Int>("id")
         column<String>("description")
         request("SearchTodosReq")
         response("TodoReportDto")
       }
-      query("findTodo", "/find") {
+      query("findTodo", "/find/{id}") {
         sql(
           """
           select t.id as id, t.description as description
@@ -28,7 +28,7 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
           where t.id = :id
           """.trimIndent()
         )
-        param<Int>("id", description = "Todo id")
+        pathParam<Int>("id", description = "Todo id")
         column<Int>("id")
         column<String>("description")
         request("FindTodoReq")
@@ -52,9 +52,9 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
             where (:keyword is null or t.description like concat('%', :keyword, '%'))
           """.trimIndent()
         )
-        param<String?>("keyword", description = "Search keyword")
-        param<Int>("atPage", description = "Page index")
-        param<Int>("pageSize", description = "Page size")
+        queryParam<String?>("keyword", description = "Search keyword")
+        queryParam<Int>("atPage", description = "Page index")
+        queryParam<Int>("pageSize", description = "Page size")
         column<Int>("id")
         column<String>("description")
         request("PageTodosReq")
@@ -69,11 +69,11 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
           values (:description, 0)
           """.trimIndent()
         )
-        param<String>("description", description = "Todo description")
+        bodyParam<String>("description", description = "Todo description")
         request("CreateTodoBySqlReq")
         returnsGeneratedKey<Int>("id", responseName = "CreatedTodoKeyDto")
       }
-      command("updateTodo", "/update") {
+      command("updateTodo", "/update/{id}") {
         put()
         sql(
           """
@@ -82,12 +82,12 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
           where id = :id
           """.trimIndent()
         )
-        param<Int>("id", description = "Todo id")
-        param<String>("description", description = "Todo description")
+        pathParam<Int>("id", description = "Todo id")
+        bodyParam<String>("description", description = "Todo description")
         request("UpdateTodoBySqlReq")
         returnsAffectedRows()
       }
-      command("deleteTodo", "/delete") {
+      command("deleteTodo", "/delete/{id}") {
         delete()
         sql(
           """
@@ -95,7 +95,7 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
           where id = :id
           """.trimIndent()
         )
-        param<Int>("id", description = "Todo id")
+        pathParam<Int>("id", description = "Todo id")
         request("DeleteTodoBySqlReq")
         returnsNoContent()
       }

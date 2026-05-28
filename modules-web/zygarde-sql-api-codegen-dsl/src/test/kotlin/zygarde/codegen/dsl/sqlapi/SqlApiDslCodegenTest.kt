@@ -106,6 +106,34 @@ class SqlApiDslCodegenTest : SqlApiDslCodegen() {
   }
 
   @Test
+  fun `should collect query path and query parameter sources`() {
+    val query = DslSqlQuery("findTodo", "/find/{id}")
+    query.sql("select id as id from todo where id = :id and (:keyword is null or description like :keyword)")
+    query.pathParam<Int>("id")
+    query.queryParam<String?>("keyword")
+    query.column<Int>("id")
+
+    val metadata = query.toSqlQueryToGenerateVo()
+
+    metadata.params.first { it.name == "id" }.source shouldBe SqlApiParamSource.PATH
+    metadata.params.first { it.name == "keyword" }.source shouldBe SqlApiParamSource.QUERY
+  }
+
+  @Test
+  fun `should reject query path parameter not present in path`() {
+    val query = DslSqlQuery("findTodo", "/find")
+    query.sql("select id as id from todo where id = :id")
+    query.pathParam<Int>("id")
+    query.column<Int>("id")
+
+    val error = shouldThrow<IllegalArgumentException> {
+      query.toSqlQueryToGenerateVo()
+    }
+
+    error.message shouldBe "SQL query 'findTodo' declares path parameters that are not present in path '/find': id"
+  }
+
+  @Test
   fun `should reject page SQL without offset parameter`() {
     val query = DslSqlQuery("searchTodos", "/search")
     query.sql("select id as id from todo limit :pageSize")
@@ -133,6 +161,37 @@ class SqlApiDslCodegenTest : SqlApiDslCodegen() {
     metadata.params.map { it.name } shouldBe listOf("description", "checkTimes")
     metadata.generatedKey?.responseName shouldBe "CreatedTodoKeyDto"
     metadata.generatedKey?.field?.name shouldBe "id"
+  }
+
+  @Test
+  fun `should collect command path query and body parameter sources`() {
+    val command = DslSqlCommand("updateTodo", "/update/{id}")
+    command.put()
+    command.sql("update todo set description = :description where id = :id and owner_id = :ownerId")
+    command.pathParam<Int>("id")
+    command.queryParam<Int>("ownerId")
+    command.bodyParam<String>("description")
+
+    val metadata = command.toSqlCommandToGenerateVo()
+
+    metadata.params.first { it.name == "description" }.source shouldBe SqlApiParamSource.BODY
+    metadata.params.first { it.name == "id" }.source shouldBe SqlApiParamSource.PATH
+    metadata.params.first { it.name == "ownerId" }.source shouldBe SqlApiParamSource.QUERY
+  }
+
+  @Test
+  fun `should reject command body parameter for delete`() {
+    val command = DslSqlCommand("deleteTodo", "/delete/{id}")
+    command.delete()
+    command.sql("delete from todo where id = :id and reason = :reason")
+    command.pathParam<Int>("id")
+    command.bodyParam<String>("reason")
+
+    val error = shouldThrow<IllegalArgumentException> {
+      command.toSqlCommandToGenerateVo()
+    }
+
+    error.message shouldBe "SQL command 'deleteTodo' supports bodyParam only for POST, PUT, and PATCH"
   }
 
   @Test

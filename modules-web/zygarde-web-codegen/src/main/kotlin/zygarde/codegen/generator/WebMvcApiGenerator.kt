@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.model.ApiToGenerateVo
@@ -214,6 +215,43 @@ class WebMvcApiGenerator(
           ParameterSpec.builder(pathVariableName, pathVariableType).build()
         )
         paramsToCallServiceInterface.add(pathVariableName)
+      }
+
+      func.requestParams.forEach { (requestParamName, requestParamType) ->
+        val requestParamAnnotation = AnnotationSpec.builder(RequestParam::class)
+          .addMember("value=%S", requestParamName)
+          .also { annotation ->
+            if (requestParamType.isNullable) {
+              annotation.addMember("required=false")
+            }
+          }
+          .build()
+
+        val apiInterfaceRequestParamBuilder = ParameterSpec.builder(requestParamName, requestParamType)
+        if (separateFeign) {
+          feignApiFuncBuilder.addParameter(
+            ParameterSpec.builder(requestParamName, requestParamType)
+              .addAnnotation(requestParamAnnotation)
+              .build()
+          )
+        } else {
+          apiInterfaceRequestParamBuilder.addAnnotation(requestParamAnnotation)
+        }
+
+        apiFuncBuilder.addParameter(apiInterfaceRequestParamBuilder.build())
+
+        webMvcFuncBuilder.addParameter(
+          ParameterSpec.builder(requestParamName, requestParamType)
+            .addAnnotation(requestParamAnnotation)
+            .build()
+        )
+        serviceFuncBuilder.addParameter(
+          ParameterSpec.builder(requestParamName, requestParamType).build()
+        )
+        servicePostProcessingFuncBuilder?.addParameter(
+          ParameterSpec.builder(requestParamName, requestParamType).build()
+        )
+        paramsToCallServiceInterface.add(requestParamName)
       }
 
       func.requestType

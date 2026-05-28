@@ -27,6 +27,18 @@ class DslSqlQuery(
     declaredParams[name] = SqlApiField(name, typeOf<T>().asTypeName(), description)
   }
 
+  inline fun <reified T> pathParam(name: String, description: String = "") {
+    declaredParams[name] = SqlApiField(name, typeOf<T>().asTypeName(), description, SqlApiParamSource.PATH)
+  }
+
+  inline fun <reified T> queryParam(name: String, description: String = "") {
+    declaredParams[name] = SqlApiField(name, typeOf<T>().asTypeName(), description, SqlApiParamSource.QUERY)
+  }
+
+  inline fun <reified T> bodyParam(name: String, description: String = "") {
+    declaredParams[name] = SqlApiField(name, typeOf<T>().asTypeName(), description, SqlApiParamSource.BODY)
+  }
+
   inline fun <reified T> column(name: String, description: String = "") {
     declaredColumns[name] = SqlApiField(name, typeOf<T>().asTypeName(), description)
   }
@@ -114,6 +126,11 @@ class DslSqlQuery(
           SqlApiField(paramName, defaultType)
         }
     }
+    val bodyParams = params.filter { it.source == SqlApiParamSource.BODY }
+    require(bodyParams.isEmpty()) {
+      "SQL query '$functionName' does not support bodyParam; use param, queryParam, or pathParam"
+    }
+    validatePathParams(functionName, path, params)
     val unusedDeclaredColumnNames = declaredColumns.keys - metadata.columnAliases.toSet()
     require(unusedDeclaredColumnNames.isEmpty()) {
       "SQL query '$functionName' declares columns that are not selected by SQL: ${unusedDeclaredColumnNames.joinToString()}"
@@ -146,5 +163,19 @@ class DslSqlQuery(
     if (!contains(value)) {
       add(value)
     }
+  }
+
+  private fun validatePathParams(functionName: String, path: String, params: List<SqlApiField>) {
+    val missingPathParamNames = params
+      .filter { it.source == SqlApiParamSource.PATH }
+      .map { it.name }
+      .filterNot { path.containsPathVariable(it) }
+    require(missingPathParamNames.isEmpty()) {
+      "SQL query '$functionName' declares path parameters that are not present in path '$path': ${missingPathParamNames.joinToString()}"
+    }
+  }
+
+  private fun String.containsPathVariable(name: String): Boolean {
+    return Regex("""\{\s*${Regex.escape(name)}(?:\s*:[^}]*)?\s*}""").containsMatchIn(this)
   }
 }

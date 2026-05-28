@@ -2,7 +2,6 @@ package example.sqlapi.service.`impl`
 
 import example.sqlapi.dto.CreateTodoBySqlReq
 import example.sqlapi.dto.CreatedTodoKeyDto
-import example.sqlapi.dto.DeleteTodoBySqlReq
 import example.sqlapi.dto.UpdateTodoBySqlReq
 import example.sqlapi.service.TodoCommandApiService
 import javax.sql.DataSource
@@ -27,17 +26,17 @@ public class TodoCommandApiServiceImpl(
     return CreatedTodoKeyDto(id = key)
   }
 
-  override fun updateTodo(req: UpdateTodoBySqlReq): Int {
+  override fun updateTodo(id: Int, req: UpdateTodoBySqlReq): Int {
     val params = mapOf(
       "description" to req.description,
-      "id" to req.id,
+      "id" to id,
     )
     return executor.execute(UPDATE_TODO_SQL, params)
   }
 
-  override fun deleteTodo(req: DeleteTodoBySqlReq) {
+  override fun deleteTodo(id: Int) {
     val params = mapOf(
-      "id" to req.id,
+      "id" to id,
     )
     executor.execute(DELETE_TODO_SQL, params)
   }

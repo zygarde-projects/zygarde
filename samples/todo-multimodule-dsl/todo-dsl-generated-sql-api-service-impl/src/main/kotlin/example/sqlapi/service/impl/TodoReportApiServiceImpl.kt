@@ -1,8 +1,5 @@
 package example.sqlapi.service.`impl`
 
-import example.sqlapi.dto.FindTodoReq
-import example.sqlapi.dto.PageTodosReq
-import example.sqlapi.dto.SearchTodosReq
 import example.sqlapi.dto.TodoReportDto
 import example.sqlapi.service.TodoReportApiService
 import javax.sql.DataSource
@@ -21,9 +18,9 @@ public class TodoReportApiServiceImpl(
 ) : TodoReportApiService {
   private val executor: ZygardeSqlExecutor = ZygardeSqlExecutor(dataSource)
 
-  override fun searchTodos(req: SearchTodosReq): Collection<TodoReportDto> {
+  override fun searchTodos(keyword: String?): Collection<TodoReportDto> {
     val params = mapOf(
-      "keyword" to req.keyword,
+      "keyword" to keyword,
     )
     return executor.query(SEARCH_TODOS_SQL, params) { row ->
       TodoReportDto(
@@ -33,9 +30,9 @@ public class TodoReportApiServiceImpl(
     }
   }
 
-  override fun findTodo(req: FindTodoReq): TodoReportDto? {
+  override fun findTodo(id: Int): TodoReportDto? {
     val params = mapOf(
-      "id" to req.id,
+      "id" to id,
     )
     return executor.queryOneOrNull(FIND_TODO_SQL, params) { row ->
       TodoReportDto(
@@ -45,12 +42,16 @@ public class TodoReportApiServiceImpl(
     }
   }
 
-  override fun pageTodos(req: PageTodosReq): PageDto<TodoReportDto> {
+  override fun pageTodos(
+    keyword: String?,
+    pageSize: Int,
+    atPage: Int,
+  ): PageDto<TodoReportDto> {
     val params = mapOf(
-      "keyword" to req.keyword,
-      "pageSize" to req.pageSize,
-      "atPage" to req.atPage,
-      "offset" to (req.atPage * req.pageSize),
+      "keyword" to keyword,
+      "pageSize" to pageSize,
+      "atPage" to atPage,
+      "offset" to (atPage * pageSize),
     )
     val items = executor.query(PAGE_TODOS_SQL, params) { row ->
       TodoReportDto(
@@ -61,9 +62,8 @@ public class TodoReportApiServiceImpl(
     val totalCount = executor.queryOne(PAGE_TODOS_COUNT_SQL, params) { row ->
       row.getRequired<Long>("totalCount")
     }
-    val totalPages = if (req.pageSize <= 0) 0 else ((totalCount + req.pageSize - 1) /
-        req.pageSize).toInt()
-    return PageDto(req.atPage, totalPages, items, totalCount)
+    val totalPages = if (pageSize <= 0) 0 else ((totalCount + pageSize - 1) / pageSize).toInt()
+    return PageDto(atPage, totalPages, items, totalCount)
   }
 
   public companion object {

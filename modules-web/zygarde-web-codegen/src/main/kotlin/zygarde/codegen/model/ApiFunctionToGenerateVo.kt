@@ -10,6 +10,7 @@ data class ApiFunctionToGenerateVo(
   var description: String = "",
   var path: String,
   var pathVariables: Map<String, TypeName> = emptyMap(),
+  var requestParams: Map<String, TypeName> = emptyMap(),
   var requestName: String = "req",
   var requestType: TypeName? = null,
   var requestTypeGenericArguments: List<TypeName> = emptyList(),

@@ -39,13 +39,13 @@ class SqlApiGenerator(
   private fun SqlApiToGenerateVo.generateDtoFileSpecs(): List<FileSpec> {
     val queryDtoTypes = queries.flatMap { query ->
       listOfNotNull(
-        (query.requestName to query.params).takeIf { query.params.isNotEmpty() },
+        (query.requestName to query.requestDtoParams()).takeIf { it.second.isNotEmpty() },
         query.responseName to query.columns,
       )
     }
     val commandDtoTypes = commands.flatMap { command ->
       listOfNotNull(
-        (command.requestName to command.params).takeIf { command.params.isNotEmpty() },
+        (command.requestName to command.requestDtoParams()).takeIf { it.second.isNotEmpty() },
         command.generatedKey?.let { it.responseName to listOf(it.field) },
       )
     }
@@ -53,7 +53,7 @@ class SqlApiGenerator(
     val dtoTypesByName = dtoTypes.groupBy { it.first }
     dtoTypesByName.forEach { (dtoName, definitions) ->
       val firstFields = definitions.first().second
-      val hasConflict = definitions.any { (_, fields) -> fields != firstFields }
+      val hasConflict = definitions.any { (_, fields) -> fields.map { it.toDtoField() } != firstFields.map { it.toDtoField() } }
       require(!hasConflict) {
         "SQL API DTO '$dtoName' is declared with conflicting fields"
       }
@@ -62,7 +62,7 @@ class SqlApiGenerator(
     return dtoTypesByName.map { (dtoName, definitions) ->
       val fields = definitions.first().second
       FileSpec.builder(config.dtoPackage, dtoName)
-        .addType(generateDtoType(dtoName, fields))
+        .addType(generateDtoType(dtoName, fields.map { it.toDtoField() }))
         .build()
     }
   }
@@ -120,8 +120,10 @@ class SqlApiGenerator(
             method = RequestMethod.GET,
             functionName = query.functionName,
             path = query.path,
+            pathVariables = query.pathVariables(),
+            requestParams = query.requestParams(),
             requestName = "req",
-            requestType = ClassName(config.dtoPackage, query.requestName).takeIf { query.params.isNotEmpty() },
+            requestType = ClassName(config.dtoPackage, query.requestName).takeIf { query.requestDtoParams().isNotEmpty() },
             responseType = query.responseType(config),
             responseTypeGenericArguments = query.responseTypeGenericArguments(config),
           )
@@ -130,8 +132,10 @@ class SqlApiGenerator(
             method = command.method,
             functionName = command.functionName,
             path = command.path,
+            pathVariables = command.pathVariables(),
+            requestParams = command.requestParams(),
             requestName = "req",
-            requestType = ClassName(config.dtoPackage, command.requestName).takeIf { command.params.isNotEmpty() },
+            requestType = ClassName(config.dtoPackage, command.requestName).takeIf { command.requestDtoParams().isNotEmpty() },
             responseType = command.responseType(config),
           )
         }
@@ -217,7 +221,13 @@ class SqlApiGenerator(
     return FunSpec.builder(query.functionName)
       .addModifiers(KModifier.OVERRIDE)
       .also { function ->
-        if (query.params.isNotEmpty()) {
+        query.pathVariables().forEach { (name, type) ->
+          function.addParameter(name, type)
+        }
+        query.requestParams().forEach { (name, type) ->
+          function.addParameter(name, type)
+        }
+        if (query.requestDtoParams().isNotEmpty()) {
           function.addParameter("req", requestClass)
         }
       }
@@ -238,10 +248,15 @@ class SqlApiGenerator(
       body.add("val params = mapOf(\n")
       body.indent()
       params.forEach { param ->
-        body.addStatement("%S to req.%N,", param.name, param.name)
+        body.addStatement("%S to %L,", param.name, param.valueExpression())
       }
       page?.let {
-        body.addStatement("%S to (req.%N * req.%N),", it.offsetParamName, it.pageParamName, it.pageSizeParamName)
+        body.addStatement(
+          "%S to (%L * %L),",
+          it.offsetParamName,
+          paramValueExpression(it.pageParamName),
+          paramValueExpression(it.pageSizeParamName),
+        )
       }
       body.unindent()
       body.add(")\n")
@@ -274,12 +289,12 @@ class SqlApiGenerator(
       body.unindent()
       body.add("}\n")
       body.addStatement(
-        "val totalPages = if (req.%N <= 0) 0 else ((totalCount + req.%N - 1) / req.%N).toInt()",
-        page.pageSizeParamName,
-        page.pageSizeParamName,
-        page.pageSizeParamName,
+        "val totalPages = if (%L <= 0) 0 else ((totalCount + %L - 1) / %L).toInt()",
+        paramValueExpression(page.pageSizeParamName),
+        paramValueExpression(page.pageSizeParamName),
+        paramValueExpression(page.pageSizeParamName),
       )
-      body.addStatement("return %T(req.%N, totalPages, items, totalCount)", PageDto::class, page.pageParamName)
+      body.addStatement("return %T(%L, totalPages, items, totalCount)", PageDto::class, paramValueExpression(page.pageParamName))
     }
     return body.build()
   }
@@ -293,7 +308,13 @@ class SqlApiGenerator(
     return FunSpec.builder(command.functionName)
       .addModifiers(KModifier.OVERRIDE)
       .also { function ->
-        if (command.params.isNotEmpty()) {
+        command.pathVariables().forEach { (name, type) ->
+          function.addParameter(name, type)
+        }
+        command.requestParams().forEach { (name, type) ->
+          function.addParameter(name, type)
+        }
+        if (command.requestDtoParams().isNotEmpty()) {
           function.addParameter("req", requestClass)
         }
         command.serviceReturnType(config)?.let {
@@ -339,11 +360,60 @@ class SqlApiGenerator(
       add("val params = mapOf(\n")
       indent()
       params.forEach { param ->
-        addStatement("%S to req.%N,", param.name, param.name)
+        addStatement("%S to %L,", param.name, param.valueExpression())
       }
       unindent()
       add(")\n")
     }
+  }
+
+  private fun SqlApiField.valueExpression(): String {
+    return when (source) {
+      SqlApiParamSource.PATH,
+      SqlApiParamSource.QUERY -> name
+      SqlApiParamSource.AUTO,
+      SqlApiParamSource.BODY -> "req.$name"
+    }
+  }
+
+  private fun SqlQueryToGenerateVo.paramValueExpression(name: String): String {
+    return params.first { it.name == name }.valueExpression()
+  }
+
+  private fun SqlApiField.toDtoField(): SqlApiField {
+    return copy(source = SqlApiParamSource.AUTO)
+  }
+
+  private fun SqlQueryToGenerateVo.requestDtoParams(): List<SqlApiField> {
+    return params.filter { it.source == SqlApiParamSource.AUTO || it.source == SqlApiParamSource.BODY }
+  }
+
+  private fun SqlQueryToGenerateVo.pathVariables(): Map<String, TypeName> {
+    return params
+      .filter { it.source == SqlApiParamSource.PATH }
+      .associate { it.name to it.type }
+  }
+
+  private fun SqlQueryToGenerateVo.requestParams(): Map<String, TypeName> {
+    return params
+      .filter { it.source == SqlApiParamSource.QUERY }
+      .associate { it.name to it.type }
+  }
+
+  private fun SqlCommandToGenerateVo.requestDtoParams(): List<SqlApiField> {
+    return params.filter { it.source == SqlApiParamSource.AUTO || it.source == SqlApiParamSource.BODY }
+  }
+
+  private fun SqlCommandToGenerateVo.pathVariables(): Map<String, TypeName> {
+    return params
+      .filter { it.source == SqlApiParamSource.PATH }
+      .associate { it.name to it.type }
+  }
+
+  private fun SqlCommandToGenerateVo.requestParams(): Map<String, TypeName> {
+    return params
+      .filter { it.source == SqlApiParamSource.QUERY }
+      .associate { it.name to it.type }
   }
 
   private fun SqlQueryToGenerateVo.responseType(config: SqlApiDslCodegenConfig): TypeName {

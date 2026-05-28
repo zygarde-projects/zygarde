@@ -27,7 +27,15 @@ data class SqlApiField(
   val name: String,
   val type: TypeName,
   val description: String = "",
+  val source: SqlApiParamSource = SqlApiParamSource.AUTO,
 )
+
+enum class SqlApiParamSource {
+  AUTO,
+  PATH,
+  QUERY,
+  BODY,
+}
 
 enum class SqlQueryResultShape {
   LIST,

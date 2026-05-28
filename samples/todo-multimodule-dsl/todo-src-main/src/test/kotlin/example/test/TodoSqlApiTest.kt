@@ -5,10 +5,6 @@ import example.api.TodoApi
 import example.sqlapi.api.TodoCommandApi
 import example.sqlapi.api.TodoReportApi
 import example.sqlapi.dto.CreateTodoBySqlReq
-import example.sqlapi.dto.DeleteTodoBySqlReq
-import example.sqlapi.dto.FindTodoReq
-import example.sqlapi.dto.PageTodosReq
-import example.sqlapi.dto.SearchTodosReq
 import example.sqlapi.dto.UpdateTodoBySqlReq
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -29,7 +25,7 @@ class TodoSqlApiTest {
     val first = todoApi.createTodo(CreateTodoReq("write SQL API"))
     todoApi.createTodo(CreateTodoReq("write GraphQL API"))
 
-    todoReportApi.searchTodos(SearchTodosReq("SQL")).also {
+    todoReportApi.searchTodos("SQL").also {
       it.shouldHaveSize(1)
       it.single().id shouldBe first.id
       it.single().description shouldBe "write SQL API"
@@ -43,11 +39,11 @@ class TodoSqlApiTest {
 
     val todo = todoApi.createTodo(CreateTodoReq("find SQL API"))
 
-    todoReportApi.findTodo(FindTodoReq(todo.id)).also {
+    todoReportApi.findTodo(todo.id).also {
       it?.id shouldBe todo.id
       it?.description shouldBe "find SQL API"
     }
-    todoReportApi.findTodo(FindTodoReq(-1)) shouldBe null
+    todoReportApi.findTodo(-1) shouldBe null
   }
 
   @Test
@@ -59,7 +55,7 @@ class TodoSqlApiTest {
     todoApi.createTodo(CreateTodoReq("page SQL API 2"))
     todoApi.createTodo(CreateTodoReq("page SQL API 3"))
 
-    todoReportApi.pageTodos(PageTodosReq(keyword = "page SQL", atPage = 1, pageSize = 2)).also {
+    todoReportApi.pageTodos(keyword = "page SQL", atPage = 1, pageSize = 2).also {
       it.atPage shouldBe 1
       it.totalPages shouldBe 2
       it.totalCount shouldBe 3
@@ -75,11 +71,11 @@ class TodoSqlApiTest {
 
     val created = todoCommandApi.createTodo(CreateTodoBySqlReq("command SQL API"))
 
-    todoReportApi.findTodo(FindTodoReq(created.id))?.description shouldBe "command SQL API"
-    todoCommandApi.updateTodo(UpdateTodoBySqlReq(id = created.id, description = "updated command SQL API")) shouldBe 1
-    todoReportApi.findTodo(FindTodoReq(created.id))?.description shouldBe "updated command SQL API"
-    todoCommandApi.deleteTodo(DeleteTodoBySqlReq(created.id))
-    todoReportApi.findTodo(FindTodoReq(created.id)) shouldBe null
+    todoReportApi.findTodo(created.id)?.description shouldBe "command SQL API"
+    todoCommandApi.updateTodo(created.id, UpdateTodoBySqlReq(description = "updated command SQL API")) shouldBe 1
+    todoReportApi.findTodo(created.id)?.description shouldBe "updated command SQL API"
+    todoCommandApi.deleteTodo(created.id)
+    todoReportApi.findTodo(created.id) shouldBe null
   }
 
   private inline fun <reified T : Any> feign(): T {

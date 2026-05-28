@@ -123,6 +123,46 @@ class WebMvcApiGeneratorTest {
   }
 
   @Test
+  fun `should generate request parameters`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(
+        ApiToGenerateVo(
+          apiInterfacePackage = "com.example.api",
+          controllerPackage = "com.example.controller",
+          serviceInterfacePackage = "com.example.service",
+          apiName = "Todo",
+          basePath = "/api",
+          functions = mutableListOf(
+            ApiFunctionToGenerateVo(
+              method = RequestMethod.GET,
+              functionName = "searchTodos",
+              path = "/todo/search",
+              requestParams = mapOf(
+                "keyword" to String::class.asTypeName().copy(nullable = true),
+                "pageSize" to Int::class.asTypeName(),
+              ),
+              responseType = Collection::class.asTypeName(),
+              responseTypeGenericArguments = listOf(TodoDto::class.asTypeName()),
+              serviceName = "TodoService",
+              serviceFunctionName = "searchTodos",
+            )
+          )
+        )
+      )
+    ).generateApis()
+
+    val feignApiInterface = generateApis.feignApiInterfaces.single().toString()
+    val controller = generateApis.controllers.single().toString()
+    val serviceInterface = generateApis.serviceInterfaces.single().toString()
+
+    feignApiInterface shouldContain "@RequestParam(value=\"keyword\", required=false)"
+    feignApiInterface shouldContain "@RequestParam(value=\"pageSize\")"
+    controller shouldContain "keyword: String?"
+    controller shouldContain "pageSize: Int"
+    serviceInterface shouldContain "public fun searchTodos(keyword: String?, pageSize: Int):"
+  }
+
+  @Test
   fun `should generate JSON merge patch mapping`() {
     val generateApis = WebMvcApiGenerator(
       listOf(
