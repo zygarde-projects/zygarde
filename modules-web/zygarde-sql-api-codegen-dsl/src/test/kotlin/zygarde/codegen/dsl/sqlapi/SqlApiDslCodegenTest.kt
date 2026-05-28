@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
+import org.springframework.web.bind.annotation.RequestMethod
 
 class SqlApiDslCodegenTest : SqlApiDslCodegen() {
   override fun codegen() {
@@ -115,5 +116,51 @@ class SqlApiDslCodegenTest : SqlApiDslCodegen() {
     }
 
     error.message.shouldContain("must use offset parameter")
+  }
+
+  @Test
+  fun `should collect command metadata with generated key`() {
+    val command = DslSqlCommand("createTodo", "/create")
+    command.sql("insert into todo(description, check_times) values (:description, :checkTimes)")
+    command.param<String>("description")
+    command.param<Int>("checkTimes")
+    command.returnsGeneratedKey<Int>("id", responseName = "CreatedTodoKeyDto")
+
+    val metadata = command.toSqlCommandToGenerateVo()
+
+    metadata.method shouldBe RequestMethod.POST
+    metadata.resultShape shouldBe SqlCommandResultShape.GENERATED_KEY
+    metadata.params.map { it.name } shouldBe listOf("description", "checkTimes")
+    metadata.generatedKey?.responseName shouldBe "CreatedTodoKeyDto"
+    metadata.generatedKey?.field?.name shouldBe "id"
+  }
+
+  @Test
+  fun `should reject generated key for non insert command`() {
+    val command = DslSqlCommand("updateTodo", "/update")
+    command.sql("update todo set description = :description where id = :id")
+    command.param<Int>("id")
+    command.param<String>("description")
+    command.returnsGeneratedKey<Int>("id")
+
+    val error = shouldThrow<IllegalArgumentException> {
+      command.toSqlCommandToGenerateVo()
+    }
+
+    error.message shouldBe "SQL command 'updateTodo' can return generated keys only for INSERT statements"
+  }
+
+  @Test
+  fun `should reject command declared params that SQL does not use`() {
+    val command = DslSqlCommand("deleteTodo", "/delete")
+    command.sql("delete from todo where id = :id")
+    command.param<Int>("id")
+    command.param<String>("unused")
+
+    val error = shouldThrow<IllegalArgumentException> {
+      command.toSqlCommandToGenerateVo()
+    }
+
+    error.message shouldBe "SQL command 'deleteTodo' declares parameters that are not used by SQL: unused"
   }
 }

@@ -71,4 +71,31 @@ class ZygardeSqlExecutorTest {
       row.getRequired<String>("description")
     } shouldBe null
   }
+
+  @Test
+  fun `should execute command and return generated key`() {
+    val dataSource = dataSource()
+    dataSource.connection.use { connection ->
+      connection.createStatement().use { statement ->
+        statement.execute("create table todo(id int auto_increment primary key, description varchar(255), done boolean)")
+      }
+    }
+
+    val executor = ZygardeSqlExecutor(dataSource)
+    val id = executor.insertAndReturnKey<Int>(
+      "insert into todo(description, done) values (:description, :done)",
+      mapOf("description" to "first", "done" to false),
+      "id",
+    )
+    val updated = executor.execute(
+      "update todo set done = :done where id = :id",
+      mapOf("id" to id, "done" to true),
+    )
+
+    id shouldBe 1
+    updated shouldBe 1
+    executor.queryOne("select done as done from todo where id = :id", mapOf("id" to id)) { row ->
+      row.getRequired<Boolean>("done")
+    } shouldBe true
+  }
 }

@@ -2,10 +2,14 @@ package example.test
 
 import example.ApiHelper
 import example.api.TodoApi
+import example.sqlapi.api.TodoCommandApi
 import example.sqlapi.api.TodoReportApi
+import example.sqlapi.dto.CreateTodoBySqlReq
+import example.sqlapi.dto.DeleteTodoBySqlReq
 import example.sqlapi.dto.FindTodoReq
 import example.sqlapi.dto.PageTodosReq
 import example.sqlapi.dto.SearchTodosReq
+import example.sqlapi.dto.UpdateTodoBySqlReq
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -62,6 +66,20 @@ class TodoSqlApiTest {
       it.items.shouldHaveSize(1)
       it.items.single().description shouldBe "page SQL API 3"
     }
+  }
+
+  @Test
+  fun `should execute generated SQL command API`() {
+    val todoCommandApi = feign<TodoCommandApi>()
+    val todoReportApi = feign<TodoReportApi>()
+
+    val created = todoCommandApi.createTodo(CreateTodoBySqlReq("command SQL API"))
+
+    todoReportApi.findTodo(FindTodoReq(created.id))?.description shouldBe "command SQL API"
+    todoCommandApi.updateTodo(UpdateTodoBySqlReq(id = created.id, description = "updated command SQL API")) shouldBe 1
+    todoReportApi.findTodo(FindTodoReq(created.id))?.description shouldBe "updated command SQL API"
+    todoCommandApi.deleteTodo(DeleteTodoBySqlReq(created.id))
+    todoReportApi.findTodo(FindTodoReq(created.id)) shouldBe null
   }
 
   private inline fun <reified T : Any> feign(): T {

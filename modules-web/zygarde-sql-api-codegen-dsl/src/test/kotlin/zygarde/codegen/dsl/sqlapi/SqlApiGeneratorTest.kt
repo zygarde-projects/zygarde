@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Test
+import org.springframework.web.bind.annotation.RequestMethod
 
 class SqlApiGeneratorTest {
   private fun api(): SqlApiToGenerateVo {
@@ -134,6 +135,79 @@ class SqlApiGeneratorTest {
       it shouldContain "val items = executor.query(PAGE_TODOS_SQL, params)"
       it shouldContain "val totalCount = executor.queryOne(PAGE_TODOS_COUNT_SQL, params)"
       it shouldContain "return PageDto(req.atPage, totalPages, items, totalCount)"
+    }
+  }
+
+  @Test
+  fun `should generate command contracts and service implementations`() {
+    val api = SqlApiToGenerateVo(
+      config = SqlApiDslCodegenConfig(
+        dtoPackage = "example.dto",
+        apiInterfacePackage = "example.api",
+        controllerPackage = "example.controller",
+        serviceInterfacePackage = "example.service",
+        serviceImplPackage = "example.service.impl",
+      ),
+      apiName = "TodoCommandApi",
+      basePath = "/api/todo-command",
+      queries = emptyList(),
+      commands = listOf(
+        SqlCommandToGenerateVo(
+          functionName = "createTodo",
+          path = "/create",
+          sql = "insert into todo(description, check_times) values (:description, 0)",
+          method = RequestMethod.POST,
+          requestName = "CreateTodoBySqlReq",
+          params = listOf(SqlApiField("description", String::class.asTypeName())),
+          resultShape = SqlCommandResultShape.GENERATED_KEY,
+          generatedKey = SqlGeneratedKeyToGenerateVo(
+            responseName = "CreatedTodoKeyDto",
+            field = SqlApiField("id", Int::class.asTypeName()),
+            keyColumnName = "id",
+          ),
+        ),
+        SqlCommandToGenerateVo(
+          functionName = "updateTodo",
+          path = "/update",
+          sql = "update todo set description = :description where id = :id",
+          method = RequestMethod.PUT,
+          requestName = "UpdateTodoBySqlReq",
+          params = listOf(
+            SqlApiField("description", String::class.asTypeName()),
+            SqlApiField("id", Int::class.asTypeName()),
+          ),
+        ),
+        SqlCommandToGenerateVo(
+          functionName = "deleteTodo",
+          path = "/delete",
+          sql = "delete from todo where id = :id",
+          method = RequestMethod.DELETE,
+          requestName = "DeleteTodoBySqlReq",
+          params = listOf(SqlApiField("id", Int::class.asTypeName())),
+          resultShape = SqlCommandResultShape.NO_CONTENT,
+        )
+      ),
+    )
+
+    val result = SqlApiGenerator(listOf(api)).generate()
+
+    result.dtoFileSpecs.map { it.name } shouldBe listOf(
+      "CreateTodoBySqlReq",
+      "CreatedTodoKeyDto",
+      "UpdateTodoBySqlReq",
+      "DeleteTodoBySqlReq",
+    )
+    result.webApiGenerateResult.apiInterfaces.single().toString().also {
+      it shouldContain "public fun createTodo(req: CreateTodoBySqlReq): CreatedTodoKeyDto"
+      it shouldContain "public fun updateTodo(req: UpdateTodoBySqlReq): Int"
+      it shouldContain "public fun deleteTodo(req: DeleteTodoBySqlReq)"
+    }
+    result.serviceImplFileSpecs.single().toString().also {
+      it shouldContain "private const val CREATE_TODO_SQL"
+      it shouldContain "val key = executor.insertAndReturnKey<Int>(CREATE_TODO_SQL, params, \"id\")"
+      it shouldContain "return CreatedTodoKeyDto(id = key)"
+      it shouldContain "return executor.execute(UPDATE_TODO_SQL, params)"
+      it shouldContain "executor.execute(DELETE_TODO_SQL, params)"
     }
   }
 

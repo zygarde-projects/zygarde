@@ -25,11 +25,8 @@ class ZygardeSqlExecutor(
     val connection = DataSourceUtils.getConnection(dataSource)
     try {
       connection.prepareStatement(parsedSql.sql).use { statement ->
-        parsedSql.parameterNames.forEachIndexed { index, parameterName ->
-          if (!params.containsKey(parameterName)) {
-            throw IllegalArgumentException("Missing SQL parameter '$parameterName'")
-          }
-          statement.setObject(index + 1, params[parameterName])
+        parsedSql.bindParams(params) { index, value ->
+          statement.setObject(index, value)
         }
         statement.executeQuery().use { resultSet ->
           val result = mutableListOf<T>()
@@ -58,6 +55,74 @@ class ZygardeSqlExecutor(
     mapper: (ZygardeSqlRow) -> T
   ): T? {
     return query(sql, params, mapper).singleOrNull()
+  }
+
+  fun execute(
+    sql: String,
+    params: Map<String, Any?> = emptyMap(),
+  ): Int {
+    val parsedSql = NamedParameterSql.parse(sql)
+    val connection = DataSourceUtils.getConnection(dataSource)
+    try {
+      connection.prepareStatement(parsedSql.sql).use { statement ->
+        parsedSql.bindParams(params) { index, value ->
+          statement.setObject(index, value)
+        }
+        return statement.executeUpdate()
+      }
+    } finally {
+      DataSourceUtils.releaseConnection(connection, dataSource)
+    }
+  }
+
+  inline fun <reified T> insertAndReturnKey(
+    sql: String,
+    params: Map<String, Any?> = emptyMap(),
+    keyColumnName: String,
+  ): T {
+    return insertAndReturnKey(sql, params, keyColumnName) { value ->
+      convertValue<T>(value)
+    }
+  }
+
+  @PublishedApi
+  internal fun <T> insertAndReturnKey(
+    sql: String,
+    params: Map<String, Any?> = emptyMap(),
+    keyColumnName: String,
+    converter: (Any) -> T,
+  ): T {
+    val parsedSql = NamedParameterSql.parse(sql)
+    val connection = DataSourceUtils.getConnection(dataSource)
+    try {
+      connection.prepareStatement(parsedSql.sql, arrayOf(keyColumnName)).use { statement ->
+        parsedSql.bindParams(params) { index, value ->
+          statement.setObject(index, value)
+        }
+        statement.executeUpdate()
+        statement.generatedKeys.use { generatedKeys ->
+          if (!generatedKeys.next()) {
+            throw IllegalStateException("SQL insert did not return generated key '$keyColumnName'")
+          }
+          return converter(generatedKeys.getObject(1))
+        }
+      }
+    } finally {
+      DataSourceUtils.releaseConnection(connection, dataSource)
+    }
+  }
+}
+
+@PublishedApi
+internal inline fun ParsedSql.bindParams(
+  params: Map<String, Any?>,
+  bind: (index: Int, value: Any?) -> Unit,
+) {
+  parameterNames.forEachIndexed { index, parameterName ->
+    if (!params.containsKey(parameterName)) {
+      throw IllegalArgumentException("Missing SQL parameter '$parameterName'")
+    }
+    bind(index + 1, params[parameterName])
   }
 }
 

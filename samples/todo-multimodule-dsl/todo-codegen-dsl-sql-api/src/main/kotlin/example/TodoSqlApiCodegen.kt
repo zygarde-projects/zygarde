@@ -61,5 +61,44 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         response("TodoReportDto")
       }
     }
+    sqlApi("TodoCommandApi", "/api/todo-command") {
+      command("createTodo", "/create") {
+        sql(
+          """
+          insert into todo(description, check_times)
+          values (:description, 0)
+          """.trimIndent()
+        )
+        param<String>("description", description = "Todo description")
+        request("CreateTodoBySqlReq")
+        returnsGeneratedKey<Int>("id", responseName = "CreatedTodoKeyDto")
+      }
+      command("updateTodo", "/update") {
+        put()
+        sql(
+          """
+          update todo
+          set description = :description
+          where id = :id
+          """.trimIndent()
+        )
+        param<Int>("id", description = "Todo id")
+        param<String>("description", description = "Todo description")
+        request("UpdateTodoBySqlReq")
+        returnsAffectedRows()
+      }
+      command("deleteTodo", "/delete") {
+        delete()
+        sql(
+          """
+          delete from todo
+          where id = :id
+          """.trimIndent()
+        )
+        param<Int>("id", description = "Todo id")
+        request("DeleteTodoBySqlReq")
+        returnsNoContent()
+      }
+    }
   }
 }

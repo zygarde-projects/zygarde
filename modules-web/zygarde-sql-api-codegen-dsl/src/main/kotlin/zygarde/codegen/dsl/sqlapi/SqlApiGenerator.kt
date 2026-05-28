@@ -12,6 +12,7 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -36,12 +37,19 @@ class SqlApiGenerator(
   }
 
   private fun SqlApiToGenerateVo.generateDtoFileSpecs(): List<FileSpec> {
-    val dtoTypes = queries.flatMap { query ->
+    val queryDtoTypes = queries.flatMap { query ->
       listOfNotNull(
         (query.requestName to query.params).takeIf { query.params.isNotEmpty() },
         query.responseName to query.columns,
       )
     }
+    val commandDtoTypes = commands.flatMap { command ->
+      listOfNotNull(
+        (command.requestName to command.params).takeIf { command.params.isNotEmpty() },
+        command.generatedKey?.let { it.responseName to listOf(it.field) },
+      )
+    }
+    val dtoTypes = queryDtoTypes + commandDtoTypes
     val dtoTypesByName = dtoTypes.groupBy { it.first }
     dtoTypesByName.forEach { (dtoName, definitions) ->
       val firstFields = definitions.first().second
@@ -106,17 +114,28 @@ class SqlApiGenerator(
       serviceInterfacePackage = config.serviceInterfacePackage,
       apiName = apiName,
       basePath = basePath,
-      functions = queries.map { query ->
-        ApiFunctionToGenerateVo(
-          method = RequestMethod.GET,
-          functionName = query.functionName,
-          path = query.path,
-          requestName = "req",
-          requestType = ClassName(config.dtoPackage, query.requestName).takeIf { query.params.isNotEmpty() },
-          responseType = query.responseType(config),
-          responseTypeGenericArguments = query.responseTypeGenericArguments(config),
-        )
-      }.toMutableList(),
+      functions = (
+        queries.map { query ->
+          ApiFunctionToGenerateVo(
+            method = RequestMethod.GET,
+            functionName = query.functionName,
+            path = query.path,
+            requestName = "req",
+            requestType = ClassName(config.dtoPackage, query.requestName).takeIf { query.params.isNotEmpty() },
+            responseType = query.responseType(config),
+            responseTypeGenericArguments = query.responseTypeGenericArguments(config),
+          )
+        } + commands.map { command ->
+          ApiFunctionToGenerateVo(
+            method = command.method,
+            functionName = command.functionName,
+            path = command.path,
+            requestName = "req",
+            requestType = ClassName(config.dtoPackage, command.requestName).takeIf { command.params.isNotEmpty() },
+            responseType = command.responseType(config),
+          )
+        }
+      ).toMutableList(),
       separateFeign = true,
     )
   }
@@ -168,6 +187,15 @@ class SqlApiGenerator(
         )
       }
       serviceImplType.addFunction(generateServiceFunction(config, query, sqlConstantName, countSqlConstantName))
+    }
+    commands.forEach { command ->
+      val sqlConstantName = command.functionName.toSqlConstantName()
+      companionObject.addProperty(
+        PropertySpec.builder(sqlConstantName, String::class, KModifier.PRIVATE, KModifier.CONST)
+          .initializer("%S", command.sql)
+          .build()
+      )
+      serviceImplType.addFunction(generateCommandServiceFunction(config, command, sqlConstantName))
     }
 
     serviceImplType.addType(companionObject.build())
@@ -256,6 +284,68 @@ class SqlApiGenerator(
     return body.build()
   }
 
+  private fun generateCommandServiceFunction(
+    config: SqlApiDslCodegenConfig,
+    command: SqlCommandToGenerateVo,
+    sqlConstantName: String,
+  ): FunSpec {
+    val requestClass = ClassName(config.dtoPackage, command.requestName)
+    return FunSpec.builder(command.functionName)
+      .addModifiers(KModifier.OVERRIDE)
+      .also { function ->
+        if (command.params.isNotEmpty()) {
+          function.addParameter("req", requestClass)
+        }
+        command.serviceReturnType(config)?.let {
+          function.returns(it)
+        }
+      }
+      .addCode(command.toServiceFunctionBody(config, sqlConstantName))
+      .build()
+  }
+
+  private fun SqlCommandToGenerateVo.toServiceFunctionBody(
+    config: SqlApiDslCodegenConfig,
+    sqlConstantName: String,
+  ): CodeBlock {
+    val body = CodeBlock.builder()
+    body.addParamsMap(params)
+    when (resultShape) {
+      SqlCommandResultShape.AFFECTED_ROWS -> {
+        body.addStatement("return executor.execute(%N, params)", sqlConstantName)
+      }
+      SqlCommandResultShape.NO_CONTENT -> {
+        body.addStatement("executor.execute(%N, params)", sqlConstantName)
+      }
+      SqlCommandResultShape.GENERATED_KEY -> {
+        val generatedKey = requireNotNull(generatedKey)
+        val responseClass = ClassName(config.dtoPackage, generatedKey.responseName)
+        body.addStatement(
+          "val key = executor.insertAndReturnKey<%T>(%N, params, %S)",
+          generatedKey.field.type.nonNullable(),
+          sqlConstantName,
+          generatedKey.keyColumnName,
+        )
+        body.addStatement("return %T(%N = key)", responseClass, generatedKey.field.name)
+      }
+    }
+    return body.build()
+  }
+
+  private fun CodeBlock.Builder.addParamsMap(params: List<SqlApiField>) {
+    if (params.isEmpty()) {
+      addStatement("val params = emptyMap<String, Any?>()")
+    } else {
+      add("val params = mapOf(\n")
+      indent()
+      params.forEach { param ->
+        addStatement("%S to req.%N,", param.name, param.name)
+      }
+      unindent()
+      add(")\n")
+    }
+  }
+
   private fun SqlQueryToGenerateVo.responseType(config: SqlApiDslCodegenConfig): TypeName {
     val responseClass = ClassName(config.dtoPackage, responseName)
     return when (resultShape) {
@@ -284,6 +374,18 @@ class SqlApiGenerator(
       SqlQueryResultShape.ONE_NULLABLE -> responseClass.copy(nullable = true)
       SqlQueryResultShape.PAGE -> PageDto::class.asClassName().parameterizedBy(responseClass)
     }
+  }
+
+  private fun SqlCommandToGenerateVo.responseType(config: SqlApiDslCodegenConfig): TypeName? {
+    return when (resultShape) {
+      SqlCommandResultShape.AFFECTED_ROWS -> Int::class.asTypeName()
+      SqlCommandResultShape.NO_CONTENT -> null
+      SqlCommandResultShape.GENERATED_KEY -> ClassName(config.dtoPackage, requireNotNull(generatedKey).responseName)
+    }
+  }
+
+  private fun SqlCommandToGenerateVo.serviceReturnType(config: SqlApiDslCodegenConfig): TypeName? {
+    return responseType(config)
   }
 
   private fun TypeName.nonNullable(): TypeName = copy(nullable = false)
