@@ -11,6 +11,8 @@ public interface TodoReportApi {
 
   public fun findTodo(id: Int): TodoReportDto?
 
+  public fun findTodosByIds(ids: Collection<Int>): Collection<TodoReportDto>
+
   public fun pageTodos(
     keyword: String?,
     pageSize: Int,

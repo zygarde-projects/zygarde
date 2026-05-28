@@ -201,9 +201,20 @@ class SqlApiGeneratorTest {
       it shouldContain "public fun createTodo(req: CreateTodoBySqlReq): CreatedTodoKeyDto"
       it shouldContain "public fun updateTodo(req: UpdateTodoBySqlReq): Int"
       it shouldContain "public fun deleteTodo(req: DeleteTodoBySqlReq)"
+      it shouldNotContain "@ResponseStatus"
+    }
+    result.webApiGenerateResult.feignApiInterfaces.single().toString().also {
+      it shouldNotContain "@ResponseStatus"
+    }
+    result.webApiGenerateResult.controllers.single().toString().also {
+      it shouldContain "@ResponseStatus(HttpStatus.CREATED)"
+      it shouldContain "@ApiResponse(responseCode = \"201\")"
+      it shouldContain "@ResponseStatus(HttpStatus.NO_CONTENT)"
+      it shouldContain "@ApiResponse(responseCode = \"204\")"
     }
     result.serviceImplFileSpecs.single().toString().also {
       it shouldContain "private const val CREATE_TODO_SQL"
+      it shouldContain "@Transactional"
       it shouldContain "val key = executor.insertAndReturnKey<Int>(CREATE_TODO_SQL, params, \"id\")"
       it shouldContain "return CreatedTodoKeyDto(id = key)"
       it shouldContain "return executor.execute(UPDATE_TODO_SQL, params)"
@@ -312,6 +323,63 @@ class SqlApiGeneratorTest {
       it shouldContain "override fun listTodos(): Collection<TodoReportDto>"
       it shouldContain "val params = emptyMap<String, Any?>()"
       it shouldNotContain "req."
+    }
+  }
+
+  @Test
+  fun `should generate datasource qualifier and transaction annotations`() {
+    val api = SqlApiToGenerateVo(
+      config = SqlApiDslCodegenConfig(
+        dtoPackage = "example.dto",
+        apiInterfacePackage = "example.api",
+        controllerPackage = "example.controller",
+        serviceInterfacePackage = "example.service",
+        serviceImplPackage = "example.service.impl",
+      ),
+      apiName = "TodoReportApi",
+      basePath = "/api/todo-report",
+      queries = listOf(
+        SqlQueryToGenerateVo(
+          functionName = "searchTodos",
+          path = "/search",
+          sql = "select id as id from todo",
+          requestName = "SearchTodosReq",
+          responseName = "TodoReportDto",
+          params = emptyList(),
+          columns = listOf(SqlApiField("id", Int::class.asTypeName())),
+          transactionPolicy = SqlApiTransactionPolicy.READ_ONLY,
+        )
+      ),
+      commands = listOf(
+        SqlCommandToGenerateVo(
+          functionName = "updateTodo",
+          path = "/update",
+          sql = "update todo set description = :description where id = :id",
+          method = RequestMethod.PUT,
+          requestName = "UpdateTodoBySqlReq",
+          params = listOf(
+            SqlApiField("description", String::class.asTypeName()),
+            SqlApiField("id", Int::class.asTypeName()),
+          ),
+          transactionPolicy = SqlApiTransactionPolicy.NONE,
+        )
+      ),
+      database = SqlApiDatabaseToGenerateVo(
+        dataSourceQualifier = "reportingDataSource",
+        transactionManagerQualifier = "reportingTransactionManager",
+      ),
+    )
+
+    val result = SqlApiGenerator(listOf(api)).generate()
+
+    result.serviceImplFileSpecs.single().toString().also {
+      it shouldContain "@Qualifier(\"reportingDataSource\")"
+      it shouldContain "@Transactional("
+      it shouldContain "transactionManager = \"reportingTransactionManager\""
+      it shouldContain "readOnly = true"
+      it shouldContain "override fun searchTodos(): Collection<TodoReportDto>"
+      it shouldContain "override fun updateTodo(req: UpdateTodoBySqlReq): Int"
+      it shouldNotContain "transactionManager = \"reportingTransactionManager\"\n  override fun updateTodo"
     }
   }
 

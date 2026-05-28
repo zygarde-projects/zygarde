@@ -2,6 +2,7 @@ package zygarde.sql.api
 
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.assertions.throwables.shouldThrow
 import org.junit.jupiter.api.Test
 
 class NamedParameterSqlTest {
@@ -39,5 +40,26 @@ class NamedParameterSqlTest {
     )
 
     parsed.parameterNames.shouldContainExactly("id", "name")
+  }
+
+  @Test
+  fun `should expand iterable parameters and preserve bind order`() {
+    val bound = NamedParameterSql.parse(
+      "select * from todo where owner_id = :ownerId and id in (:ids) or fallback_id in (:ids)"
+    ).bind(
+      mapOf("ownerId" to 7, "ids" to listOf(1, 2, 3))
+    )
+
+    bound.sql shouldBe "select * from todo where owner_id = ? and id in (?, ?, ?) or fallback_id in (?, ?, ?)"
+    bound.parameterValues.shouldContainExactly(7, 1, 2, 3, 1, 2, 3)
+  }
+
+  @Test
+  fun `should reject empty iterable parameters`() {
+    val error = shouldThrow<IllegalArgumentException> {
+      NamedParameterSql.parse("select * from todo where id in (:ids)").bind(mapOf("ids" to emptyList<Int>()))
+    }
+
+    error.message shouldBe "SQL parameter 'ids' must not be empty"
   }
 }

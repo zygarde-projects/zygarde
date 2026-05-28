@@ -12,6 +12,7 @@ class DslSqlQuery(
   private var responseName: String? = null
   private var resultShape: SqlQueryResultShape = SqlQueryResultShape.LIST
   private var page: SqlApiPageToGenerateVo? = null
+  private var transactionPolicy: SqlApiTransactionPolicy? = null
 
   @PublishedApi
   internal val declaredParams: MutableMap<String, SqlApiField> = linkedMapOf()
@@ -49,6 +50,14 @@ class DslSqlQuery(
 
   fun response(name: String) {
     responseName = name
+  }
+
+  fun transactional(enabled: Boolean = true, readOnly: Boolean = true) {
+    transactionPolicy = when {
+      !enabled -> SqlApiTransactionPolicy.NONE
+      readOnly -> SqlApiTransactionPolicy.READ_ONLY
+      else -> SqlApiTransactionPolicy.READ_WRITE
+    }
   }
 
   fun returnsList() {
@@ -152,6 +161,7 @@ class DslSqlQuery(
       columns = columns,
       resultShape = resultShape,
       page = page,
+      transactionPolicy = transactionPolicy,
     )
   }
 

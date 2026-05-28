@@ -73,6 +73,26 @@ class ZygardeSqlExecutorTest {
   }
 
   @Test
+  fun `should execute query with iterable parameter`() {
+    val dataSource = dataSource()
+    dataSource.connection.use { connection ->
+      connection.createStatement().use { statement ->
+        statement.execute("create table todo(id int primary key, description varchar(255))")
+        statement.execute("insert into todo(id, description) values (1, 'first'), (2, 'second'), (3, 'third')")
+      }
+    }
+
+    val rows = ZygardeSqlExecutor(dataSource).query(
+      "select id as id from todo where id in (:ids) order by id",
+      mapOf("ids" to setOf(1, 3))
+    ) { row ->
+      row.getRequired<Int>("id")
+    }
+
+    rows shouldBe listOf(1, 3)
+  }
+
+  @Test
   fun `should execute command and return generated key`() {
     val dataSource = dataSource()
     dataSource.connection.use { connection ->

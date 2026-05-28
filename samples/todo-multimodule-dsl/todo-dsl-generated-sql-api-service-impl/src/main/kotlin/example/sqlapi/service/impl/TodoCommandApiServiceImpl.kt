@@ -8,16 +8,20 @@ import javax.sql.DataSource
 import kotlin.Int
 import kotlin.String
 import org.springframework.beans.factory.`annotation`.Autowired
+import org.springframework.beans.factory.`annotation`.Qualifier
 import org.springframework.stereotype.Service
+import org.springframework.transaction.`annotation`.Transactional
 import zygarde.sql.api.ZygardeSqlExecutor
 
 @Service
 public class TodoCommandApiServiceImpl(
   @Autowired
+  @Qualifier("dataSource")
   private val dataSource: DataSource,
 ) : TodoCommandApiService {
   private val executor: ZygardeSqlExecutor = ZygardeSqlExecutor(dataSource)
 
+  @Transactional(transactionManager = "transactionManager")
   override fun createTodo(req: CreateTodoBySqlReq): CreatedTodoKeyDto {
     val params = mapOf(
       "description" to req.description,
@@ -26,6 +30,7 @@ public class TodoCommandApiServiceImpl(
     return CreatedTodoKeyDto(id = key)
   }
 
+  @Transactional(transactionManager = "transactionManager")
   override fun updateTodo(id: Int, req: UpdateTodoBySqlReq): Int {
     val params = mapOf(
       "description" to req.description,
@@ -34,6 +39,7 @@ public class TodoCommandApiServiceImpl(
     return executor.execute(UPDATE_TODO_SQL, params)
   }
 
+  @Transactional(transactionManager = "transactionManager")
   override fun deleteTodo(id: Int) {
     val params = mapOf(
       "id" to id,

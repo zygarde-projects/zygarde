@@ -1,8 +1,9 @@
 package zygarde.codegen.model
 
 import com.squareup.kotlinpoet.TypeName
-import zygarde.codegen.RequestBodyContentType
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 
 data class ApiFunctionToGenerateVo(
   var method: RequestMethod,
@@ -21,6 +22,7 @@ data class ApiFunctionToGenerateVo(
   var serviceFunctionName: String? = null,
   var postProcessing: Boolean = false,
   var postProcessingParamType: TypeName? = null,
+  var responseStatus: HttpStatus? = null,
   var authenticationDetailName: String = "auth",
   var authenticationDetailType: TypeName? = null,
   var deprecated: Deprecated? = null,

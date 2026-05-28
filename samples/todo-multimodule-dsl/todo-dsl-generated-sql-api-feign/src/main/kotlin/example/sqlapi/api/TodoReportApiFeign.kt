@@ -19,6 +19,10 @@ public interface TodoReportApiFeign : TodoReportApi {
   @GetMapping(value=["/api/todo-report/find/{id}"])
   override fun findTodo(@PathVariable(value="id") id: Int): TodoReportDto?
 
+  @GetMapping(value=["/api/todo-report/find-by-ids"])
+  override fun findTodosByIds(@RequestParam(value="ids") ids: Collection<Int>):
+      Collection<TodoReportDto>
+
   @GetMapping(value=["/api/todo-report/page"])
   override fun pageTodos(
     @RequestParam(value="keyword", required=false) keyword: String?,

@@ -6,14 +6,17 @@ import example.sqlapi.dto.CreatedTodoKeyDto
 import example.sqlapi.dto.UpdateTodoBySqlReq
 import example.sqlapi.service.TodoCommandApiService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import kotlin.Int
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.`annotation`.DeleteMapping
 import org.springframework.web.bind.`annotation`.PathVariable
 import org.springframework.web.bind.`annotation`.PostMapping
 import org.springframework.web.bind.`annotation`.PutMapping
 import org.springframework.web.bind.`annotation`.RequestBody
+import org.springframework.web.bind.`annotation`.ResponseStatus
 import org.springframework.web.bind.`annotation`.RestController
 import zygarde.core.di.DiServiceContext.bean
 
@@ -22,6 +25,8 @@ import zygarde.core.di.DiServiceContext.bean
 public class TodoCommandApiController : TodoCommandApi {
   @PostMapping(value=["/api/todo-command/create"])
   @Operation(summary="createTodo")
+  @ResponseStatus(HttpStatus.CREATED)
+  @ApiResponse(responseCode = "201")
   override fun createTodo(@RequestBody @Valid req: CreateTodoBySqlReq): CreatedTodoKeyDto {
     val service = bean<TodoCommandApiService>()
     val result = service.createTodo(req)
@@ -39,6 +44,8 @@ public class TodoCommandApiController : TodoCommandApi {
 
   @DeleteMapping(value=["/api/todo-command/delete/{id}"])
   @Operation(summary="deleteTodo")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @ApiResponse(responseCode = "204")
   override fun deleteTodo(@PathVariable(value="id") id: Int) {
     val service = bean<TodoCommandApiService>()
     service.deleteTodo(id)

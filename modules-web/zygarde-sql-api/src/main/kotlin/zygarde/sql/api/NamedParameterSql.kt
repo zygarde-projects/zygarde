@@ -3,12 +3,19 @@ package zygarde.sql.api
 data class ParsedSql(
   val sql: String,
   val parameterNames: List<String>,
+  val parameterIndexes: List<Int> = emptyList(),
+)
+
+internal data class BoundSql(
+  val sql: String,
+  val parameterValues: List<Any?>,
 )
 
 object NamedParameterSql {
   fun parse(sql: String): ParsedSql {
     val parsedSql = StringBuilder(sql.length)
     val parameterNames = mutableListOf<String>()
+    val parameterIndexes = mutableListOf<Int>()
     var index = 0
     var inSingleQuote = false
     var inDoubleQuote = false
@@ -121,6 +128,7 @@ object NamedParameterSql {
           nameEnd++
         }
         parameterNames.add(sql.substring(nameStart, nameEnd))
+        parameterIndexes.add(parsedSql.length)
         parsedSql.append('?')
         index = nameEnd
         continue
@@ -130,10 +138,48 @@ object NamedParameterSql {
       index++
     }
 
-    return ParsedSql(parsedSql.toString(), parameterNames)
+    return ParsedSql(parsedSql.toString(), parameterNames, parameterIndexes)
   }
 
   private fun Char.isSqlIdentifierStart(): Boolean = this == '_' || isLetter()
 
   private fun Char.isSqlIdentifierPart(): Boolean = this == '_' || isLetterOrDigit()
+}
+
+internal fun ParsedSql.bind(params: Map<String, Any?>): BoundSql {
+  val boundSql = StringBuilder(sql.length)
+  val parameterValues = mutableListOf<Any?>()
+  var sqlStart = 0
+
+  parameterNames.forEachIndexed { index, parameterName ->
+    if (!params.containsKey(parameterName)) {
+      throw IllegalArgumentException("Missing SQL parameter '$parameterName'")
+    }
+
+    val parameterIndex = parameterIndexes[index]
+    boundSql.append(sql, sqlStart, parameterIndex)
+    params[parameterName].appendBindMarkers(parameterName, boundSql, parameterValues)
+    sqlStart = parameterIndex + 1
+  }
+
+  boundSql.append(sql, sqlStart, sql.length)
+  return BoundSql(boundSql.toString(), parameterValues)
+}
+
+private fun Any?.appendBindMarkers(
+  parameterName: String,
+  sql: StringBuilder,
+  parameterValues: MutableList<Any?>,
+) {
+  if (this is Iterable<*>) {
+    val values = toList()
+    if (values.isEmpty()) {
+      throw IllegalArgumentException("SQL parameter '$parameterName' must not be empty")
+    }
+    sql.append(values.joinToString(", ") { "?" })
+    parameterValues.addAll(values)
+  } else {
+    sql.append('?')
+    parameterValues.add(this)
+  }
 }

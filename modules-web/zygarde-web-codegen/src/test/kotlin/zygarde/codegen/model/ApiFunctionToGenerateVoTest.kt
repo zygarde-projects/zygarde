@@ -3,6 +3,7 @@ package zygarde.codegen.model
 import com.squareup.kotlinpoet.STRING
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.RequestBodyContentType
 
@@ -33,6 +34,7 @@ class ApiFunctionToGenerateVoTest {
     vo.serviceFunctionName shouldBe null
     vo.postProcessing shouldBe false
     vo.postProcessingParamType shouldBe null
+    vo.responseStatus shouldBe null
     vo.authenticationDetailName shouldBe "auth"
     vo.authenticationDetailType shouldBe null
     vo.deprecated shouldBe null
@@ -65,6 +67,7 @@ class ApiFunctionToGenerateVoTest {
       serviceFunctionName = "create",
       postProcessing = true,
       postProcessingParamType = STRING,
+      responseStatus = HttpStatus.CREATED,
       authenticationDetailName = "userAuth",
       authenticationDetailType = STRING,
       deprecated = deprecation
@@ -87,6 +90,7 @@ class ApiFunctionToGenerateVoTest {
     vo.serviceFunctionName shouldBe "create"
     vo.postProcessing shouldBe true
     vo.postProcessingParamType shouldBe STRING
+    vo.responseStatus shouldBe HttpStatus.CREATED
     vo.authenticationDetailName shouldBe "userAuth"
     vo.authenticationDetailType shouldBe STRING
     vo.deprecated shouldBe deprecation

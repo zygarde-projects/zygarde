@@ -11,6 +11,7 @@ class DslSqlCommand(
   private var sqlLiteral: String? = null
   private var requestName: String? = null
   private var method: RequestMethod = RequestMethod.POST
+  private var transactionPolicy: SqlApiTransactionPolicy? = null
 
   @PublishedApi internal var resultShape: SqlCommandResultShape = SqlCommandResultShape.AFFECTED_ROWS
 
@@ -41,6 +42,14 @@ class DslSqlCommand(
 
   fun request(name: String) {
     requestName = name
+  }
+
+  fun transactional(enabled: Boolean = true, readOnly: Boolean = false) {
+    transactionPolicy = when {
+      !enabled -> SqlApiTransactionPolicy.NONE
+      readOnly -> SqlApiTransactionPolicy.READ_ONLY
+      else -> SqlApiTransactionPolicy.READ_WRITE
+    }
   }
 
   fun method(method: RequestMethod) {
@@ -113,6 +122,7 @@ class DslSqlCommand(
       params = params,
       resultShape = resultShape,
       generatedKey = generatedKey,
+      transactionPolicy = transactionPolicy,
     )
   }
 

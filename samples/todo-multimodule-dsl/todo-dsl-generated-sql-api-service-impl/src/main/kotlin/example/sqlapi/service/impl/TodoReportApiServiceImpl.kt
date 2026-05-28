@@ -7,6 +7,7 @@ import kotlin.Int
 import kotlin.String
 import kotlin.collections.Collection
 import org.springframework.beans.factory.`annotation`.Autowired
+import org.springframework.beans.factory.`annotation`.Qualifier
 import org.springframework.stereotype.Service
 import zygarde.`data`.api.PageDto
 import zygarde.sql.api.ZygardeSqlExecutor
@@ -14,6 +15,7 @@ import zygarde.sql.api.ZygardeSqlExecutor
 @Service
 public class TodoReportApiServiceImpl(
   @Autowired
+  @Qualifier("dataSource")
   private val dataSource: DataSource,
 ) : TodoReportApiService {
   private val executor: ZygardeSqlExecutor = ZygardeSqlExecutor(dataSource)
@@ -35,6 +37,18 @@ public class TodoReportApiServiceImpl(
       "id" to id,
     )
     return executor.queryOneOrNull(FIND_TODO_SQL, params) { row ->
+      TodoReportDto(
+        id = row.getRequired<Int>("id"),
+        description = row.getRequired<String>("description")
+      )
+    }
+  }
+
+  override fun findTodosByIds(ids: Collection<Int>): Collection<TodoReportDto> {
+    val params = mapOf(
+      "ids" to ids,
+    )
+    return executor.query(FIND_TODOS_BY_IDS_SQL, params) { row ->
       TodoReportDto(
         id = row.getRequired<Int>("id"),
         description = row.getRequired<String>("description")
@@ -72,6 +86,9 @@ public class TodoReportApiServiceImpl(
 
     private const val FIND_TODO_SQL: String =
         "select t.id as id, t.description as description\nfrom todo t\nwhere t.id = :id"
+
+    private const val FIND_TODOS_BY_IDS_SQL: String =
+        "select t.id as id, t.description as description\nfrom todo t\nwhere t.id in (:ids)\norder by t.id"
 
     private const val PAGE_TODOS_SQL: String =
         "select t.id as id, t.description as description\nfrom todo t\nwhere (:keyword is null or t.description like concat('%', :keyword, '%'))\norder by t.id\nlimit :pageSize offset :offset"

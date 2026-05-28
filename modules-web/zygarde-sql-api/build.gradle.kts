@@ -2,7 +2,9 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
-  implementation("org.springframework:spring-jdbc")
+  api(project(":zygarde-web"))
+  api("org.springframework:spring-jdbc")
+  implementation("org.springframework.boot:spring-boot-autoconfigure")
 
   testImplementation("com.h2database:h2")
   testImplementation("org.springframework.boot:spring-boot-starter-test")

@@ -3,6 +3,7 @@ package zygarde.sql.api
 import java.math.BigDecimal
 import java.sql.Date
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.sql.Time
 import java.sql.Timestamp
 import java.time.LocalDate
@@ -11,29 +12,35 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.sql.DataSource
+import org.springframework.jdbc.UncategorizedSQLException
 import org.springframework.jdbc.datasource.DataSourceUtils
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator
 
 class ZygardeSqlExecutor(
   private val dataSource: DataSource,
 ) {
+  private val sqlExceptionTranslator = SQLErrorCodeSQLExceptionTranslator(dataSource)
+
   fun <T> query(
     sql: String,
     params: Map<String, Any?> = emptyMap(),
     mapper: (ZygardeSqlRow) -> T
   ): List<T> {
-    val parsedSql = NamedParameterSql.parse(sql)
+    val boundSql = NamedParameterSql.parse(sql).bind(params)
     val connection = DataSourceUtils.getConnection(dataSource)
     try {
-      connection.prepareStatement(parsedSql.sql).use { statement ->
-        parsedSql.bindParams(params) { index, value ->
-          statement.setObject(index, value)
-        }
-        statement.executeQuery().use { resultSet ->
-          val result = mutableListOf<T>()
-          while (resultSet.next()) {
-            result.add(mapper(resultSet.toZygardeSqlRow()))
+      translateSqlException(sql) {
+        connection.prepareStatement(boundSql.sql).use { statement ->
+          boundSql.bindParams { index, value ->
+            statement.setObject(index, value)
           }
-          return result
+          statement.executeQuery().use { resultSet ->
+            val result = mutableListOf<T>()
+            while (resultSet.next()) {
+              result.add(mapper(resultSet.toZygardeSqlRow()))
+            }
+            return result
+          }
         }
       }
     } finally {
@@ -61,14 +68,16 @@ class ZygardeSqlExecutor(
     sql: String,
     params: Map<String, Any?> = emptyMap(),
   ): Int {
-    val parsedSql = NamedParameterSql.parse(sql)
+    val boundSql = NamedParameterSql.parse(sql).bind(params)
     val connection = DataSourceUtils.getConnection(dataSource)
     try {
-      connection.prepareStatement(parsedSql.sql).use { statement ->
-        parsedSql.bindParams(params) { index, value ->
-          statement.setObject(index, value)
+      translateSqlException(sql) {
+        connection.prepareStatement(boundSql.sql).use { statement ->
+          boundSql.bindParams { index, value ->
+            statement.setObject(index, value)
+          }
+          return statement.executeUpdate()
         }
-        return statement.executeUpdate()
       }
     } finally {
       DataSourceUtils.releaseConnection(connection, dataSource)
@@ -92,37 +101,43 @@ class ZygardeSqlExecutor(
     keyColumnName: String,
     converter: (Any) -> T,
   ): T {
-    val parsedSql = NamedParameterSql.parse(sql)
+    val boundSql = NamedParameterSql.parse(sql).bind(params)
     val connection = DataSourceUtils.getConnection(dataSource)
     try {
-      connection.prepareStatement(parsedSql.sql, arrayOf(keyColumnName)).use { statement ->
-        parsedSql.bindParams(params) { index, value ->
-          statement.setObject(index, value)
-        }
-        statement.executeUpdate()
-        statement.generatedKeys.use { generatedKeys ->
-          if (!generatedKeys.next()) {
-            throw IllegalStateException("SQL insert did not return generated key '$keyColumnName'")
+      translateSqlException(sql) {
+        connection.prepareStatement(boundSql.sql, arrayOf(keyColumnName)).use { statement ->
+          boundSql.bindParams { index, value ->
+            statement.setObject(index, value)
           }
-          return converter(generatedKeys.getObject(1))
+          statement.executeUpdate()
+          statement.generatedKeys.use { generatedKeys ->
+            if (!generatedKeys.next()) {
+              throw IllegalStateException("SQL insert did not return generated key '$keyColumnName'")
+            }
+            return converter(generatedKeys.getObject(1))
+          }
         }
       }
     } finally {
       DataSourceUtils.releaseConnection(connection, dataSource)
     }
   }
+
+  private inline fun <T> translateSqlException(sql: String, action: () -> T): T {
+    try {
+      return action()
+    } catch (e: SQLException) {
+      throw sqlExceptionTranslator.translate("Zygarde SQL execution", sql, e)
+        ?: UncategorizedSQLException("Zygarde SQL execution", sql, e)
+    }
+  }
 }
 
-@PublishedApi
-internal inline fun ParsedSql.bindParams(
-  params: Map<String, Any?>,
+internal fun BoundSql.bindParams(
   bind: (index: Int, value: Any?) -> Unit,
 ) {
-  parameterNames.forEachIndexed { index, parameterName ->
-    if (!params.containsKey(parameterName)) {
-      throw IllegalArgumentException("Missing SQL parameter '$parameterName'")
-    }
-    bind(index + 1, params[parameterName])
+  parameterValues.forEachIndexed { index, value ->
+    bind(index + 1, value)
   }
 }
 

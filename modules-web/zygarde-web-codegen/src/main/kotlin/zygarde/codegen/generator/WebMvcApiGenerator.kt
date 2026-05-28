@@ -12,9 +12,11 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.cloud.openfeign.SpringQueryMap
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import zygarde.codegen.extension.kotlinpoet.generic
 import zygarde.codegen.model.ApiToGenerateVo
@@ -170,6 +173,18 @@ class WebMvcApiGenerator(
             .addMember("summary=%S", listOf(apiFunctionName, func.description).filter { it.isNotEmpty() }.joinToString(" "))
             .build()
         )
+      func.responseStatus?.let { responseStatus ->
+        webMvcFuncBuilder.addAnnotation(
+          AnnotationSpec.builder(ResponseStatus::class)
+            .addMember("%T.%L", HttpStatus::class, responseStatus.name)
+            .build()
+        )
+        webMvcFuncBuilder.addAnnotation(
+          AnnotationSpec.builder(ApiResponse::class)
+            .addMember("responseCode = %S", responseStatus.value().toString())
+            .build()
+        )
+      }
 
       val servicePostProcessingFuncBuilder = if (func.postProcessing) {
         FunSpec.builder(serviceFunctionName + "PostProcessing")

@@ -5,6 +5,10 @@ import zygarde.codegen.dsl.sqlapi.SqlApiDslCodegen
 class TodoSqlApiCodegen : SqlApiDslCodegen() {
   override fun codegen() {
     sqlApi("TodoReportApi", "/api/todo-report") {
+      database {
+        dataSource("dataSource")
+        transactionManager("transactionManager")
+      }
       query("searchTodos", "/search") {
         sql(
           """
@@ -35,6 +39,21 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         response("TodoReportDto")
         returnsOneOrNull()
       }
+      query("findTodosByIds", "/find-by-ids") {
+        sql(
+          """
+          select t.id as id, t.description as description
+          from todo t
+          where t.id in (:ids)
+          order by t.id
+          """.trimIndent()
+        )
+        queryParam<Collection<Int>>("ids", description = "Todo ids")
+        column<Int>("id")
+        column<String>("description")
+        request("FindTodosByIdsReq")
+        response("TodoReportDto")
+      }
       query("pageTodos", "/page") {
         sql(
           """
@@ -62,6 +81,10 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
       }
     }
     sqlApi("TodoCommandApi", "/api/todo-command") {
+      database {
+        dataSource("dataSource")
+        transactionManager("transactionManager")
+      }
       command("createTodo", "/create") {
         sql(
           """

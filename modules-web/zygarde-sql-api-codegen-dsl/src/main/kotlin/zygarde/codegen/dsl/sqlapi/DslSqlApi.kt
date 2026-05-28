@@ -7,6 +7,24 @@ class DslSqlApi(
 ) {
   private val queries: MutableList<SqlQueryToGenerateVo> = mutableListOf()
   private val commands: MutableList<SqlCommandToGenerateVo> = mutableListOf()
+  private var database: SqlApiDatabaseToGenerateVo = SqlApiDatabaseToGenerateVo()
+  private var transactionPolicy: SqlApiTransactionPolicy? = null
+
+  fun database(dsl: DslSqlDatabase.() -> Unit) {
+    database = DslSqlDatabase().also(dsl).toSqlApiDatabaseToGenerateVo()
+  }
+
+  fun transactional(readOnly: Boolean = false) {
+    transactionPolicy = if (readOnly) {
+      SqlApiTransactionPolicy.READ_ONLY
+    } else {
+      SqlApiTransactionPolicy.READ_WRITE
+    }
+  }
+
+  fun readOnlyTransactional() {
+    transactional(readOnly = true)
+  }
 
   fun query(functionName: String, path: String, dsl: DslSqlQuery.() -> Unit) {
     queries.add(DslSqlQuery(functionName, path).also(dsl).toSqlQueryToGenerateVo())
@@ -23,6 +41,28 @@ class DslSqlApi(
       basePath = basePath,
       queries = queries,
       commands = commands,
+      database = database,
+      transactionPolicy = transactionPolicy,
+    )
+  }
+}
+
+class DslSqlDatabase {
+  private var dataSourceQualifier: String? = null
+  private var transactionManagerQualifier: String? = null
+
+  fun dataSource(beanName: String) {
+    dataSourceQualifier = beanName
+  }
+
+  fun transactionManager(beanName: String) {
+    transactionManagerQualifier = beanName
+  }
+
+  fun toSqlApiDatabaseToGenerateVo(): SqlApiDatabaseToGenerateVo {
+    return SqlApiDatabaseToGenerateVo(
+      dataSourceQualifier = dataSourceQualifier,
+      transactionManagerQualifier = transactionManagerQualifier,
     )
   }
 }

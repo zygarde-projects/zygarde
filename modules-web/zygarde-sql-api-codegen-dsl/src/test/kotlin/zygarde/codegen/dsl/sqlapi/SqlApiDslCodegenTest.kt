@@ -48,6 +48,52 @@ class SqlApiDslCodegenTest : SqlApiDslCodegen() {
   }
 
   @Test
+  fun `should collect API datasource qualifier and transaction policy`() {
+    val codegen = object : SqlApiDslCodegen() {
+      override fun codegen() {
+        sqlApi("TodoReportApi", "/api/todo-report") {
+          database {
+            dataSource("reportingDataSource")
+            transactionManager("reportingTransactionManager")
+          }
+          readOnlyTransactional()
+          query("searchTodos", "/search") {
+            sql("select id as id from todo")
+            column<Int>("id")
+          }
+        }
+      }
+    }
+
+    codegen.codegen()
+
+    codegen.apisToGenerate.single().also {
+      it.database.dataSourceQualifier shouldBe "reportingDataSource"
+      it.database.transactionManagerQualifier shouldBe "reportingTransactionManager"
+      it.transactionPolicy shouldBe SqlApiTransactionPolicy.READ_ONLY
+    }
+  }
+
+  @Test
+  fun `should collect function transaction override`() {
+    val query = DslSqlQuery("searchTodos", "/search")
+    query.sql("select id as id from todo where id = :id")
+    query.param<Int>("id")
+    query.column<Int>("id")
+    query.transactional(readOnly = true)
+
+    query.toSqlQueryToGenerateVo().transactionPolicy shouldBe SqlApiTransactionPolicy.READ_ONLY
+
+    val command = DslSqlCommand("updateTodo", "/update")
+    command.sql("update todo set description = :description where id = :id")
+    command.param<Int>("id")
+    command.param<String>("description")
+    command.transactional(false)
+
+    command.toSqlCommandToGenerateVo().transactionPolicy shouldBe SqlApiTransactionPolicy.NONE
+  }
+
+  @Test
   fun `should reject declared params that SQL does not use`() {
     val query = DslSqlQuery("searchTodos", "/search")
     query.sql("select id as id from todo where id = :id")

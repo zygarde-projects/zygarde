@@ -3,7 +3,9 @@ package zygarde.codegen.generator
 import com.squareup.kotlinpoet.asTypeName
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.ApiFunctionToGenerateVo
@@ -202,5 +204,43 @@ class WebMvcApiGeneratorTest {
     controller shouldContain """value=["/api/todo/{id}"]"""
     controller shouldContain """consumes=["application/merge-patch+json"]"""
     controller shouldContain "@RequestBody"
+  }
+
+  @Test
+  fun `should generate response status on controller only`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(
+        ApiToGenerateVo(
+          apiInterfacePackage = "com.example.api",
+          controllerPackage = "com.example.controller",
+          serviceInterfacePackage = "com.example.service",
+          apiName = "Todo",
+          basePath = "/api",
+          functions = mutableListOf(
+            ApiFunctionToGenerateVo(
+              method = RequestMethod.POST,
+              functionName = "createTodo",
+              path = "/todo",
+              responseStatus = HttpStatus.CREATED,
+              serviceName = "TodoService",
+              serviceFunctionName = "createTodo",
+            )
+          )
+        )
+      )
+    ).generateApis()
+
+    val apiInterface = generateApis.apiInterfaces.single().toString()
+    val feignApiInterface = generateApis.feignApiInterfaces.single().toString()
+    val controller = generateApis.controllers.single().toString()
+
+    apiInterface shouldNotContain "@ResponseStatus"
+    apiInterface shouldNotContain "@ApiResponse"
+    feignApiInterface shouldNotContain "@ResponseStatus"
+    feignApiInterface shouldNotContain "@ApiResponse"
+    controller shouldContain "import io.swagger.v3.oas.annotations.responses.ApiResponse"
+    controller shouldContain "@ApiResponse(responseCode = \"201\")"
+    controller shouldContain "import org.springframework.web.bind.`annotation`.ResponseStatus"
+    controller shouldContain "@ResponseStatus(HttpStatus.CREATED)"
   }
 }

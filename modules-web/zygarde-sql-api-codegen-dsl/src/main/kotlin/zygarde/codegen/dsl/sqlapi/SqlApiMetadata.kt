@@ -9,6 +9,13 @@ data class SqlApiToGenerateVo(
   val basePath: String,
   val queries: List<SqlQueryToGenerateVo>,
   val commands: List<SqlCommandToGenerateVo> = emptyList(),
+  val database: SqlApiDatabaseToGenerateVo = SqlApiDatabaseToGenerateVo(),
+  val transactionPolicy: SqlApiTransactionPolicy? = null,
+)
+
+data class SqlApiDatabaseToGenerateVo(
+  val dataSourceQualifier: String? = null,
+  val transactionManagerQualifier: String? = null,
 )
 
 data class SqlQueryToGenerateVo(
@@ -21,6 +28,7 @@ data class SqlQueryToGenerateVo(
   val columns: List<SqlApiField>,
   val resultShape: SqlQueryResultShape = SqlQueryResultShape.LIST,
   val page: SqlApiPageToGenerateVo? = null,
+  val transactionPolicy: SqlApiTransactionPolicy? = null,
 )
 
 data class SqlApiField(
@@ -61,6 +69,7 @@ data class SqlCommandToGenerateVo(
   val params: List<SqlApiField>,
   val resultShape: SqlCommandResultShape = SqlCommandResultShape.AFFECTED_ROWS,
   val generatedKey: SqlGeneratedKeyToGenerateVo? = null,
+  val transactionPolicy: SqlApiTransactionPolicy? = null,
 )
 
 enum class SqlCommandResultShape {
@@ -74,3 +83,9 @@ data class SqlGeneratedKeyToGenerateVo(
   val field: SqlApiField,
   val keyColumnName: String,
 )
+
+enum class SqlApiTransactionPolicy {
+  NONE,
+  READ_ONLY,
+  READ_WRITE,
+}

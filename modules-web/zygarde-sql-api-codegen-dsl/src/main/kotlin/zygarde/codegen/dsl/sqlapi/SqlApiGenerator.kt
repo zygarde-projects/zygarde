@@ -15,7 +15,10 @@ import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.generator.WebMvcApiGenerator
 import zygarde.codegen.model.ApiFunctionToGenerateVo
@@ -137,6 +140,7 @@ class SqlApiGenerator(
             requestName = "req",
             requestType = ClassName(config.dtoPackage, command.requestName).takeIf { command.requestDtoParams().isNotEmpty() },
             responseType = command.responseType(config),
+            responseStatus = command.responseStatus(),
           )
         }
       ).toMutableList(),
@@ -153,6 +157,15 @@ class SqlApiGenerator(
       .addParameter(
         ParameterSpec.builder("dataSource", DataSource::class)
           .addAnnotation(Autowired::class)
+          .also { parameter ->
+            database.dataSourceQualifier?.let { qualifier ->
+              parameter.addAnnotation(
+                AnnotationSpec.builder(Qualifier::class)
+                  .addMember("%S", qualifier)
+                  .build()
+              )
+            }
+          }
           .build()
       )
       .build()
@@ -190,7 +203,16 @@ class SqlApiGenerator(
             .build()
         )
       }
-      serviceImplType.addFunction(generateServiceFunction(config, query, sqlConstantName, countSqlConstantName))
+      serviceImplType.addFunction(
+        generateServiceFunction(
+          config,
+          query,
+          sqlConstantName,
+          countSqlConstantName,
+          query.effectiveTransactionPolicy(this),
+          database.transactionManagerQualifier,
+        )
+      )
     }
     commands.forEach { command ->
       val sqlConstantName = command.functionName.toSqlConstantName()
@@ -199,7 +221,15 @@ class SqlApiGenerator(
           .initializer("%S", command.sql)
           .build()
       )
-      serviceImplType.addFunction(generateCommandServiceFunction(config, command, sqlConstantName))
+      serviceImplType.addFunction(
+        generateCommandServiceFunction(
+          config,
+          command,
+          sqlConstantName,
+          command.effectiveTransactionPolicy(this),
+          database.transactionManagerQualifier,
+        )
+      )
     }
 
     serviceImplType.addType(companionObject.build())
@@ -214,12 +244,15 @@ class SqlApiGenerator(
     query: SqlQueryToGenerateVo,
     sqlConstantName: String,
     countSqlConstantName: String?,
+    transactionPolicy: SqlApiTransactionPolicy,
+    transactionManagerQualifier: String?,
   ): FunSpec {
     val requestClass = ClassName(config.dtoPackage, query.requestName)
     val responseClass = ClassName(config.dtoPackage, query.responseName)
 
     return FunSpec.builder(query.functionName)
       .addModifiers(KModifier.OVERRIDE)
+      .addTransactionAnnotation(transactionPolicy, transactionManagerQualifier)
       .also { function ->
         query.pathVariables().forEach { (name, type) ->
           function.addParameter(name, type)
@@ -303,10 +336,13 @@ class SqlApiGenerator(
     config: SqlApiDslCodegenConfig,
     command: SqlCommandToGenerateVo,
     sqlConstantName: String,
+    transactionPolicy: SqlApiTransactionPolicy,
+    transactionManagerQualifier: String?,
   ): FunSpec {
     val requestClass = ClassName(config.dtoPackage, command.requestName)
     return FunSpec.builder(command.functionName)
       .addModifiers(KModifier.OVERRIDE)
+      .addTransactionAnnotation(transactionPolicy, transactionManagerQualifier)
       .also { function ->
         command.pathVariables().forEach { (name, type) ->
           function.addParameter(name, type)
@@ -456,6 +492,51 @@ class SqlApiGenerator(
 
   private fun SqlCommandToGenerateVo.serviceReturnType(config: SqlApiDslCodegenConfig): TypeName? {
     return responseType(config)
+  }
+
+  private fun SqlQueryToGenerateVo.effectiveTransactionPolicy(api: SqlApiToGenerateVo): SqlApiTransactionPolicy {
+    return transactionPolicy ?: api.transactionPolicy ?: SqlApiTransactionPolicy.NONE
+  }
+
+  private fun SqlCommandToGenerateVo.effectiveTransactionPolicy(api: SqlApiToGenerateVo): SqlApiTransactionPolicy {
+    return transactionPolicy ?: api.transactionPolicy ?: SqlApiTransactionPolicy.READ_WRITE
+  }
+
+  private fun SqlCommandToGenerateVo.responseStatus(): HttpStatus? {
+    return when (resultShape) {
+      SqlCommandResultShape.NO_CONTENT -> HttpStatus.NO_CONTENT
+      SqlCommandResultShape.GENERATED_KEY -> HttpStatus.CREATED
+      SqlCommandResultShape.AFFECTED_ROWS -> null
+    }
+  }
+
+  private fun FunSpec.Builder.addTransactionAnnotation(
+    transactionPolicy: SqlApiTransactionPolicy,
+    transactionManagerQualifier: String?,
+  ): FunSpec.Builder {
+    when (transactionPolicy) {
+      SqlApiTransactionPolicy.READ_ONLY -> addAnnotation(
+        AnnotationSpec.builder(Transactional::class)
+          .also { annotation ->
+            transactionManagerQualifier?.let {
+              annotation.addMember("transactionManager = %S", it)
+            }
+          }
+          .addMember("readOnly = true")
+          .build()
+      )
+      SqlApiTransactionPolicy.READ_WRITE -> addAnnotation(
+        AnnotationSpec.builder(Transactional::class)
+          .also { annotation ->
+            transactionManagerQualifier?.let {
+              annotation.addMember("transactionManager = %S", it)
+            }
+          }
+          .build()
+      )
+      SqlApiTransactionPolicy.NONE -> Unit
+    }
+    return this
   }
 
   private fun TypeName.nonNullable(): TypeName = copy(nullable = false)

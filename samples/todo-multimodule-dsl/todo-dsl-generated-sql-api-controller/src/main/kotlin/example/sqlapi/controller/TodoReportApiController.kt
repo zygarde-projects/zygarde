@@ -35,6 +35,15 @@ public class TodoReportApiController : TodoReportApi {
     return result
   }
 
+  @GetMapping(value=["/api/todo-report/find-by-ids"])
+  @Operation(summary="findTodosByIds")
+  override fun findTodosByIds(@RequestParam(value="ids") ids: Collection<Int>):
+      Collection<TodoReportDto> {
+    val service = bean<TodoReportApiService>()
+    val result = service.findTodosByIds(ids)
+    return result
+  }
+
   @GetMapping(value=["/api/todo-report/page"])
   @Operation(summary="pageTodos")
   override fun pageTodos(

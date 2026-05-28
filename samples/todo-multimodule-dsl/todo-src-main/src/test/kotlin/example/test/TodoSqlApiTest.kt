@@ -5,11 +5,17 @@ import example.api.TodoApi
 import example.sqlapi.api.TodoCommandApi
 import example.sqlapi.api.TodoReportApi
 import example.sqlapi.dto.CreateTodoBySqlReq
+import example.sqlapi.dto.CreatedTodoKeyDto
 import example.sqlapi.dto.UpdateTodoBySqlReq
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import zygarde.codegen.data.dto.CreateTodoReq
 import zygarde.core.di.DiServiceContext
@@ -17,6 +23,9 @@ import zygarde.core.di.DiServiceContext
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 class TodoSqlApiTest {
+  @Autowired
+  lateinit var restTemplate: TestRestTemplate
+
   @Test
   fun `should search todos with generated SQL API`() {
     val todoApi = feign<TodoApi>()
@@ -44,6 +53,21 @@ class TodoSqlApiTest {
       it?.description shouldBe "find SQL API"
     }
     todoReportApi.findTodo(-1) shouldBe null
+  }
+
+  @Test
+  fun `should find todos by ids with generated SQL API collection parameter`() {
+    val todoApi = feign<TodoApi>()
+    val todoReportApi = feign<TodoReportApi>()
+
+    val first = todoApi.createTodo(CreateTodoReq("find SQL API by ids 1"))
+    todoApi.createTodo(CreateTodoReq("find SQL API by ids ignored"))
+    val third = todoApi.createTodo(CreateTodoReq("find SQL API by ids 3"))
+
+    todoReportApi.findTodosByIds(listOf(first.id, third.id)).also {
+      it.shouldHaveSize(2)
+      it.map { todo -> todo.id } shouldBe listOf(first.id, third.id)
+    }
   }
 
   @Test
@@ -76,6 +100,26 @@ class TodoSqlApiTest {
     todoReportApi.findTodo(created.id)?.description shouldBe "updated command SQL API"
     todoCommandApi.deleteTodo(created.id)
     todoReportApi.findTodo(created.id) shouldBe null
+  }
+
+  @Test
+  fun `should return generated SQL command HTTP statuses`() {
+    val createResponse = restTemplate.postForEntity(
+      "/api/todo-command/create",
+      CreateTodoBySqlReq("command SQL API status"),
+      CreatedTodoKeyDto::class.java,
+    )
+
+    createResponse.statusCode shouldBe HttpStatus.CREATED
+
+    val deleteResponse = restTemplate.exchange(
+      "/api/todo-command/delete/${createResponse.body?.id}",
+      HttpMethod.DELETE,
+      HttpEntity.EMPTY,
+      Void::class.java,
+    )
+
+    deleteResponse.statusCode shouldBe HttpStatus.NO_CONTENT
   }
 
   private inline fun <reified T : Any> feign(): T {
