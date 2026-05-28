@@ -43,15 +43,14 @@ class SqlSelectParserTest {
     val metadata = SqlSelectParser.parse(
       """
       select t."from_id" as "fromId",
-             from_unixtime(t.created_at) as `createdAt`,
-             count(t.id)
+             from_unixtime(t.created_at) as `createdAt`
       from todo t
       where t.status = :status
       """.trimIndent()
     )
 
     metadata.parameterNames.shouldContainExactly("status")
-    metadata.columnAliases.shouldContainExactly("fromId", "createdAt", "output1")
+    metadata.columnAliases.shouldContainExactly("fromId", "createdAt")
   }
 
   @Test
@@ -77,6 +76,42 @@ class SqlSelectParserTest {
     }
 
     error.message shouldBe "SELECT * is not allowed. Please specify output columns."
+  }
+
+  @Test
+  fun `should reject unaliased select expressions`() {
+    val error = shouldThrow<IllegalArgumentException> {
+      SqlSelectParser.parse("select count(id) from todo")
+    }
+
+    error.message shouldBe "SELECT expression 'count(id)' must declare an AS alias."
+  }
+
+  @Test
+  fun `should reject arithmetic select expressions without alias`() {
+    val error = shouldThrow<IllegalArgumentException> {
+      SqlSelectParser.parse("select id + 1 from todo")
+    }
+
+    error.message shouldBe "SELECT expression 'id + 1' must declare an AS alias."
+  }
+
+  @Test
+  fun `should reject aliases that cannot be generated as Kotlin properties`() {
+    val error = shouldThrow<IllegalArgumentException> {
+      SqlSelectParser.parse("select id as `bad-name` from todo")
+    }
+
+    error.message shouldBe "SQL output alias 'bad-name' is not a valid Kotlin property name."
+  }
+
+  @Test
+  fun `should reject duplicate output aliases`() {
+    val error = shouldThrow<IllegalArgumentException> {
+      SqlSelectParser.parse("select id as id, description as id from todo")
+    }
+
+    error.message shouldBe "SQL output columns contain duplicate aliases: id"
   }
 
   @Test

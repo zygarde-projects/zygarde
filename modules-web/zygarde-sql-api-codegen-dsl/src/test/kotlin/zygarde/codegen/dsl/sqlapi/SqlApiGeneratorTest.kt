@@ -50,6 +50,94 @@ class SqlApiGeneratorTest {
   }
 
   @Test
+  fun `should generate single row query contract and service implementation`() {
+    val api = SqlApiToGenerateVo(
+      config = SqlApiDslCodegenConfig(
+        dtoPackage = "example.dto",
+        apiInterfacePackage = "example.api",
+        controllerPackage = "example.controller",
+        serviceInterfacePackage = "example.service",
+        serviceImplPackage = "example.service.impl",
+      ),
+      apiName = "TodoReportApi",
+      basePath = "/api/todo-report",
+      queries = listOf(
+        SqlQueryToGenerateVo(
+          functionName = "findTodo",
+          path = "/find",
+          sql = "select id as id from todo where id = :id",
+          requestName = "FindTodoReq",
+          responseName = "TodoReportDto",
+          params = listOf(SqlApiField("id", Int::class.asTypeName())),
+          columns = listOf(SqlApiField("id", Int::class.asTypeName())),
+          resultShape = SqlQueryResultShape.ONE_NULLABLE,
+        )
+      ),
+    )
+
+    val result = SqlApiGenerator(listOf(api)).generate()
+
+    result.webApiGenerateResult.apiInterfaces.single().toString().also {
+      it shouldContain "public fun findTodo(req: FindTodoReq): TodoReportDto?"
+      it shouldNotContain "Collection<TodoReportDto>"
+    }
+    result.serviceImplFileSpecs.single().toString().also {
+      it shouldContain "override fun findTodo(req: FindTodoReq): TodoReportDto?"
+      it shouldContain "return executor.queryOneOrNull(FIND_TODO_SQL, params)"
+    }
+  }
+
+  @Test
+  fun `should generate page query contract and service implementation`() {
+    val api = SqlApiToGenerateVo(
+      config = SqlApiDslCodegenConfig(
+        dtoPackage = "example.dto",
+        apiInterfacePackage = "example.api",
+        controllerPackage = "example.controller",
+        serviceInterfacePackage = "example.service",
+        serviceImplPackage = "example.service.impl",
+      ),
+      apiName = "TodoReportApi",
+      basePath = "/api/todo-report",
+      queries = listOf(
+        SqlQueryToGenerateVo(
+          functionName = "pageTodos",
+          path = "/page",
+          sql = "select id as id from todo limit :pageSize offset :offset",
+          requestName = "PageTodosReq",
+          responseName = "TodoReportDto",
+          params = listOf(
+            SqlApiField("pageSize", Int::class.asTypeName()),
+            SqlApiField("atPage", Int::class.asTypeName()),
+          ),
+          columns = listOf(SqlApiField("id", Int::class.asTypeName())),
+          resultShape = SqlQueryResultShape.PAGE,
+          page = SqlApiPageToGenerateVo(
+            countSql = "select count(*) as totalCount from todo",
+            countColumnName = "totalCount",
+            pageParamName = "atPage",
+            pageSizeParamName = "pageSize",
+            offsetParamName = "offset",
+          ),
+        )
+      ),
+    )
+
+    val result = SqlApiGenerator(listOf(api)).generate()
+
+    result.webApiGenerateResult.apiInterfaces.single().toString().also {
+      it shouldContain "public fun pageTodos(req: PageTodosReq): PageDto<TodoReportDto>"
+    }
+    result.serviceImplFileSpecs.single().toString().also {
+      it shouldContain "private const val PAGE_TODOS_COUNT_SQL"
+      it shouldContain "\"offset\" to (req.atPage * req.pageSize)"
+      it shouldContain "val items = executor.query(PAGE_TODOS_SQL, params)"
+      it shouldContain "val totalCount = executor.queryOne(PAGE_TODOS_COUNT_SQL, params)"
+      it shouldContain "return PageDto(req.atPage, totalPages, items, totalCount)"
+    }
+  }
+
+  @Test
   fun `should generate no request DTO or req parameter for query without params`() {
     val api = SqlApiToGenerateVo(
       config = SqlApiDslCodegenConfig(

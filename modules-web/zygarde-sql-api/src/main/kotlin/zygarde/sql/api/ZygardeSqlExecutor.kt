@@ -43,6 +43,22 @@ class ZygardeSqlExecutor(
       DataSourceUtils.releaseConnection(connection, dataSource)
     }
   }
+
+  fun <T> queryOne(
+    sql: String,
+    params: Map<String, Any?> = emptyMap(),
+    mapper: (ZygardeSqlRow) -> T
+  ): T {
+    return query(sql, params, mapper).single()
+  }
+
+  fun <T> queryOneOrNull(
+    sql: String,
+    params: Map<String, Any?> = emptyMap(),
+    mapper: (ZygardeSqlRow) -> T
+  ): T? {
+    return query(sql, params, mapper).singleOrNull()
+  }
 }
 
 class ZygardeSqlRow(

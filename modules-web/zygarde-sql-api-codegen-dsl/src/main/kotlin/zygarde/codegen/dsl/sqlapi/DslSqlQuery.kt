@@ -10,6 +10,8 @@ class DslSqlQuery(
   private var sqlLiteral: String? = null
   private var requestName: String? = null
   private var responseName: String? = null
+  private var resultShape: SqlQueryResultShape = SqlQueryResultShape.LIST
+  private var page: SqlApiPageToGenerateVo? = null
 
   @PublishedApi
   internal val declaredParams: MutableMap<String, SqlApiField> = linkedMapOf()
@@ -37,19 +39,87 @@ class DslSqlQuery(
     responseName = name
   }
 
+  fun returnsList() {
+    resultShape = SqlQueryResultShape.LIST
+    page = null
+  }
+
+  fun returnsOne() {
+    resultShape = SqlQueryResultShape.ONE
+    page = null
+  }
+
+  fun returnsOneOrNull() {
+    resultShape = SqlQueryResultShape.ONE_NULLABLE
+    page = null
+  }
+
+  fun returnsPage(
+    countSql: String,
+    countColumnName: String = "totalCount",
+    pageParamName: String = "atPage",
+    pageSizeParamName: String = "pageSize",
+    offsetParamName: String = "offset",
+  ) {
+    resultShape = SqlQueryResultShape.PAGE
+    page = SqlApiPageToGenerateVo(
+      countSql = countSql,
+      countColumnName = countColumnName,
+      pageParamName = pageParamName,
+      pageSizeParamName = pageSizeParamName,
+      offsetParamName = offsetParamName,
+    )
+  }
+
   fun toSqlQueryToGenerateVo(): SqlQueryToGenerateVo {
     val sql = requireNotNull(sqlLiteral) { "SQL is required for query '$functionName'" }
     val metadata = SqlSelectParser.parse(sql)
+    val page = page
+    val countMetadata = page?.let { SqlSelectParser.parse(it.countSql) }
+    if (resultShape == SqlQueryResultShape.PAGE) {
+      requireNotNull(page) { "Page SQL configuration is required for query '$functionName'" }
+      require(metadata.parameterNames.contains(page.offsetParamName)) {
+        "Page SQL query '$functionName' must use offset parameter ':${page.offsetParamName}'"
+      }
+      require(metadata.parameterNames.contains(page.pageSizeParamName)) {
+        "Page SQL query '$functionName' must use page size parameter ':${page.pageSizeParamName}'"
+      }
+      require(countMetadata?.columnAliases?.contains(page.countColumnName) == true) {
+        "Page count SQL query '$functionName' must select '${page.countColumnName}'"
+      }
+    }
     val defaultType = String::class.asTypeName().copy(nullable = true)
-    val params = metadata.parameterNames.map { paramName ->
-      declaredParams[paramName] ?: SqlApiField(paramName, defaultType)
-    } + declaredParams.values.filterNot { declaredParam ->
-      metadata.parameterNames.contains(declaredParam.name)
+    val defaultPageNumberType = Int::class.asTypeName()
+    val sqlParamNames = (metadata.parameterNames + countMetadata.orEmptyParameterNames()).distinct()
+    val requestParamNames = sqlParamNames
+      .filterNot { page?.offsetParamName == it }
+      .toMutableList()
+      .also { paramNames ->
+        page?.let {
+          paramNames.addIfAbsent(it.pageParamName)
+          paramNames.addIfAbsent(it.pageSizeParamName)
+        }
+      }
+    val supportedDeclaredParamNames = requestParamNames.toSet()
+    val unusedDeclaredParamNames = declaredParams.keys - supportedDeclaredParamNames
+    require(unusedDeclaredParamNames.isEmpty()) {
+      "SQL query '$functionName' declares parameters that are not used by SQL: ${unusedDeclaredParamNames.joinToString()}"
+    }
+
+    val params = requestParamNames.map { paramName ->
+      declaredParams[paramName]
+        ?: if (page?.pageParamName == paramName || page?.pageSizeParamName == paramName) {
+          SqlApiField(paramName, defaultPageNumberType)
+        } else {
+          SqlApiField(paramName, defaultType)
+        }
+    }
+    val unusedDeclaredColumnNames = declaredColumns.keys - metadata.columnAliases.toSet()
+    require(unusedDeclaredColumnNames.isEmpty()) {
+      "SQL query '$functionName' declares columns that are not selected by SQL: ${unusedDeclaredColumnNames.joinToString()}"
     }
     val columns = metadata.columnAliases.map { columnName ->
       declaredColumns[columnName] ?: SqlApiField(columnName, defaultType)
-    } + declaredColumns.values.filterNot { declaredColumn ->
-      metadata.columnAliases.contains(declaredColumn.name)
     }
     require(columns.isNotEmpty()) {
       "SQL query '$functionName' must declare at least one output column or use SELECT expressions with AS aliases"
@@ -63,6 +133,18 @@ class DslSqlQuery(
       responseName = responseName ?: functionName.replaceFirstChar { it.uppercase() } + "Dto",
       params = params,
       columns = columns,
+      resultShape = resultShape,
+      page = page,
     )
+  }
+
+  private fun SqlSelectMetadata?.orEmptyParameterNames(): List<String> {
+    return this?.parameterNames ?: emptyList()
+  }
+
+  private fun MutableList<String>.addIfAbsent(value: String) {
+    if (!contains(value)) {
+      add(value)
+    }
   }
 }

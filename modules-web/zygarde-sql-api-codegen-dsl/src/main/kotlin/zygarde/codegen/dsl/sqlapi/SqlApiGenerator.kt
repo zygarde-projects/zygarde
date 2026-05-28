@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.generator.WebMvcApiGenerator
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
+import zygarde.data.api.PageDto
 import zygarde.sql.api.ZygardeSqlExecutor
 import java.io.Serializable
 import javax.sql.DataSource
@@ -112,8 +113,8 @@ class SqlApiGenerator(
           path = query.path,
           requestName = "req",
           requestType = ClassName(config.dtoPackage, query.requestName).takeIf { query.params.isNotEmpty() },
-          responseType = Collection::class.asClassName(),
-          responseTypeGenericArguments = listOf(ClassName(config.dtoPackage, query.responseName)),
+          responseType = query.responseType(config),
+          responseTypeGenericArguments = query.responseTypeGenericArguments(config),
         )
       }.toMutableList(),
       separateFeign = true,
@@ -156,7 +157,17 @@ class SqlApiGenerator(
           .initializer("%S", query.sql)
           .build()
       )
-      serviceImplType.addFunction(generateServiceFunction(config, query, sqlConstantName))
+      val countSqlConstantName = query.page?.let {
+        "${query.functionName.toSqlConstantName().removeSuffix("_SQL")}_COUNT_SQL"
+      }
+      if (countSqlConstantName != null) {
+        companionObject.addProperty(
+          PropertySpec.builder(countSqlConstantName, String::class, KModifier.PRIVATE, KModifier.CONST)
+            .initializer("%S", query.page.countSql)
+            .build()
+        )
+      }
+      serviceImplType.addFunction(generateServiceFunction(config, query, sqlConstantName, countSqlConstantName))
     }
 
     serviceImplType.addType(companionObject.build())
@@ -169,11 +180,11 @@ class SqlApiGenerator(
   private fun generateServiceFunction(
     config: SqlApiDslCodegenConfig,
     query: SqlQueryToGenerateVo,
-    sqlConstantName: String
+    sqlConstantName: String,
+    countSqlConstantName: String?,
   ): FunSpec {
     val requestClass = ClassName(config.dtoPackage, query.requestName)
     val responseClass = ClassName(config.dtoPackage, query.responseName)
-    val responseCollectionType = Collection::class.asClassName().parameterizedBy(responseClass)
 
     return FunSpec.builder(query.functionName)
       .addModifiers(KModifier.OVERRIDE)
@@ -182,14 +193,15 @@ class SqlApiGenerator(
           function.addParameter("req", requestClass)
         }
       }
-      .returns(responseCollectionType)
-      .addCode(query.toServiceFunctionBody(responseClass, sqlConstantName))
+      .returns(query.serviceReturnType(config))
+      .addCode(query.toServiceFunctionBody(responseClass, sqlConstantName, countSqlConstantName))
       .build()
   }
 
   private fun SqlQueryToGenerateVo.toServiceFunctionBody(
     responseClass: ClassName,
     sqlConstantName: String,
+    countSqlConstantName: String?,
   ): CodeBlock {
     val body = CodeBlock.builder()
     if (params.isEmpty()) {
@@ -200,11 +212,19 @@ class SqlApiGenerator(
       params.forEach { param ->
         body.addStatement("%S to req.%N,", param.name, param.name)
       }
+      page?.let {
+        body.addStatement("%S to (req.%N * req.%N),", it.offsetParamName, it.pageParamName, it.pageSizeParamName)
+      }
       body.unindent()
       body.add(")\n")
     }
 
-    body.add("return executor.query(%N, params) { row ->\n", sqlConstantName)
+    when (resultShape) {
+      SqlQueryResultShape.LIST -> body.add("return executor.query(%N, params) { row ->\n", sqlConstantName)
+      SqlQueryResultShape.ONE -> body.add("return executor.queryOne(%N, params) { row ->\n", sqlConstantName)
+      SqlQueryResultShape.ONE_NULLABLE -> body.add("return executor.queryOneOrNull(%N, params) { row ->\n", sqlConstantName)
+      SqlQueryResultShape.PAGE -> body.add("val items = executor.query(%N, params) { row ->\n", sqlConstantName)
+    }
     body.indent()
     body.add("%T(\n", responseClass)
     body.indent()
@@ -217,7 +237,53 @@ class SqlApiGenerator(
     body.add(")\n")
     body.unindent()
     body.add("}\n")
+    if (resultShape == SqlQueryResultShape.PAGE) {
+      val page = requireNotNull(page)
+      val countSql = requireNotNull(countSqlConstantName)
+      body.add("val totalCount = executor.queryOne(%N, params) { row ->\n", countSql)
+      body.indent()
+      body.addStatement("row.getRequired<Long>(%S)", page.countColumnName)
+      body.unindent()
+      body.add("}\n")
+      body.addStatement(
+        "val totalPages = if (req.%N <= 0) 0 else ((totalCount + req.%N - 1) / req.%N).toInt()",
+        page.pageSizeParamName,
+        page.pageSizeParamName,
+        page.pageSizeParamName,
+      )
+      body.addStatement("return %T(req.%N, totalPages, items, totalCount)", PageDto::class, page.pageParamName)
+    }
     return body.build()
+  }
+
+  private fun SqlQueryToGenerateVo.responseType(config: SqlApiDslCodegenConfig): TypeName {
+    val responseClass = ClassName(config.dtoPackage, responseName)
+    return when (resultShape) {
+      SqlQueryResultShape.LIST -> Collection::class.asClassName()
+      SqlQueryResultShape.ONE -> responseClass
+      SqlQueryResultShape.ONE_NULLABLE -> responseClass.copy(nullable = true)
+      SqlQueryResultShape.PAGE -> PageDto::class.asClassName()
+    }
+  }
+
+  private fun SqlQueryToGenerateVo.responseTypeGenericArguments(config: SqlApiDslCodegenConfig): List<TypeName> {
+    val responseClass = ClassName(config.dtoPackage, responseName)
+    return when (resultShape) {
+      SqlQueryResultShape.LIST,
+      SqlQueryResultShape.PAGE -> listOf(responseClass)
+      SqlQueryResultShape.ONE,
+      SqlQueryResultShape.ONE_NULLABLE -> emptyList()
+    }
+  }
+
+  private fun SqlQueryToGenerateVo.serviceReturnType(config: SqlApiDslCodegenConfig): TypeName {
+    val responseClass = ClassName(config.dtoPackage, responseName)
+    return when (resultShape) {
+      SqlQueryResultShape.LIST -> Collection::class.asClassName().parameterizedBy(responseClass)
+      SqlQueryResultShape.ONE -> responseClass
+      SqlQueryResultShape.ONE_NULLABLE -> responseClass.copy(nullable = true)
+      SqlQueryResultShape.PAGE -> PageDto::class.asClassName().parameterizedBy(responseClass)
+    }
   }
 
   private fun TypeName.nonNullable(): TypeName = copy(nullable = false)

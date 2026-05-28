@@ -12,6 +12,7 @@ data class SqlSelectMetadata(
 object SqlSelectParser {
   private val splitByAsRegex = Regex("""(?i)\s+AS\s+""")
   private val functionCallRegex = Regex("""(?s).*\(.*\).*""")
+  private val kotlinPropertyNameRegex = Regex("""[A-Za-z_][A-Za-z0-9_]*""")
 
   fun parse(sql: String): SqlSelectMetadata {
     val parameterNames = NamedParameterSql.parse(sql).parameterNames.distinct()
@@ -30,8 +31,7 @@ object SqlSelectParser {
         throw IllegalArgumentException("SQL API only supports SELECT statements")
       }
 
-      var autoNameIndex = 1
-      statement.selectItems.map { selectItem ->
+      val columnAliases = statement.selectItems.map { selectItem ->
         val selectField = selectItem.toString()
         if (selectField == "*" || selectField.endsWith(".*")) {
           throw IllegalArgumentException("SELECT * is not allowed. Please specify output columns.")
@@ -42,15 +42,27 @@ object SqlSelectParser {
         var name = if (splitByAs.size > 1) splitByAs[1].trim() else source
 
         if (splitByAs.size == 1 && name.matches(functionCallRegex)) {
-          name = "output${autoNameIndex++}"
+          throw IllegalArgumentException("SELECT expression '$source' must declare an AS alias.")
         }
 
         if (name.contains(".")) {
           name = name.substringAfterLast(".")
         }
 
-        name.unquoteIdentifier()
+        val alias = name.unquoteIdentifier()
+        if (!alias.matches(kotlinPropertyNameRegex)) {
+          if (splitByAs.size == 1) {
+            throw IllegalArgumentException("SELECT expression '$source' must declare an AS alias.")
+          }
+          throw IllegalArgumentException("SQL output alias '$alias' is not a valid Kotlin property name.")
+        }
+        alias
       }
+      val duplicateAliases = columnAliases.groupBy { it.lowercase() }.filterValues { it.size > 1 }.values.map { it.first() }
+      require(duplicateAliases.isEmpty()) {
+        "SQL output columns contain duplicate aliases: ${duplicateAliases.joinToString()}"
+      }
+      columnAliases
     } catch (e: IllegalArgumentException) {
       throw e
     } catch (e: Exception) {

@@ -51,4 +51,24 @@ class ZygardeSqlExecutorTest {
     }
     nullColumnError.message shouldBe "Required SQL column 'description' was null"
   }
+
+  @Test
+  fun `should query one row or nullable one row`() {
+    val dataSource = dataSource()
+    dataSource.connection.use { connection ->
+      connection.createStatement().use { statement ->
+        statement.execute("create table todo(id int primary key, description varchar(255))")
+        statement.execute("insert into todo(id, description) values (1, 'first')")
+      }
+    }
+
+    val executor = ZygardeSqlExecutor(dataSource)
+
+    executor.queryOne("select description as description from todo where id = :id", mapOf("id" to 1)) { row ->
+      row.getRequired<String>("description")
+    } shouldBe "first"
+    executor.queryOneOrNull("select description as description from todo where id = :id", mapOf("id" to 2)) { row ->
+      row.getRequired<String>("description")
+    } shouldBe null
+  }
 }
