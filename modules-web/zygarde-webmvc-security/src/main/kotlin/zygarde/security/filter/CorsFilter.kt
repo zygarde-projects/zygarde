@@ -22,7 +22,7 @@ class CorsFilter(
     val res = response as HttpServletResponse
     res.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"))
     res.setHeader("Access-Control-Allow-Credentials", "true")
-    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
     res.setHeader("Access-Control-Max-Age", "3600")
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, $allowHeadersFlatted")
     res.setHeader("Access-Control-Expose-Headers", exposeHeadersFlatted)

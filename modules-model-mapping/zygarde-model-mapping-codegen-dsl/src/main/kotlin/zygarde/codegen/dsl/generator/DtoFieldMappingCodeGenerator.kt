@@ -9,11 +9,13 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import zygarde.codegen.dsl.meta.DtoMetaResolver
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
@@ -31,6 +33,7 @@ class DtoFieldMappingCodeGenerator(
 ) {
   val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
+  private val mergePatchFieldClass = ClassName("zygarde.json.patch", "MergePatchField")
   var dtoToExtraToDtoMappingMap = dtoFieldMappings
     .filter { it.modelField.extra && it is DtoFieldMapping.ModelToDtoFieldMappingVo }
     .filterNot { it.compound }
@@ -44,6 +47,7 @@ class DtoFieldMappingCodeGenerator(
     .groupBy({ it.first }, { it.second })
 
   fun generateFileSpec(): DtoFieldMappingGenerateResult {
+    validatePatchReqDtos()
     return DtoFieldMappingGenerateResult(
       dtoFileSpecs = listOf(
         generateDtos(),
@@ -54,9 +58,22 @@ class DtoFieldMappingCodeGenerator(
         generateDtoExtraValue(),
         generateMapToDtoExtension(),
         generateApplyFromDtoExtension(),
+        generateApplyPatchExtension(),
         generateCompoundDtoBuilder(),
       ).flatten()
     )
+  }
+
+  private fun validatePatchReqDtos() {
+    dtoFieldMappings
+      .groupBy { it.dto }
+      .forEach { (dto, mappings) ->
+        val containsPatchReqMapping = mappings.any { it is DtoFieldMapping.PatchReqFieldMapping }
+        val containsNonPatchReqMapping = mappings.any { it !is DtoFieldMapping.PatchReqFieldMapping }
+        if (containsPatchReqMapping && containsNonPatchReqMapping) {
+          throw IllegalArgumentException("Patch request DTO '${dto.name}' cannot mix patchReq mappings with from/field/applyTo mappings.")
+        }
+      }
   }
 
   private fun generateCompoundDtoBuilder(): List<FileSpec> {
@@ -171,6 +188,26 @@ $callDtoStatements
       dto.annotations().forEach { a ->
         dtoClassBuilder.addAnnotation(a)
       }
+      if (mappings.any { it is DtoFieldMapping.PatchReqFieldMapping }) {
+        dtoClassBuilder.addAnnotation(
+          AnnotationSpec.builder(ClassName("com.fasterxml.jackson.annotation", "JsonIgnoreProperties"))
+            .addMember("ignoreUnknown = false")
+            .build()
+        )
+        dtoClassBuilder.addFunction(
+          FunSpec.builder("rejectUnknownPatchField")
+            .addAnnotation(ClassName("com.fasterxml.jackson.annotation", "JsonAnySetter"))
+            .addAnnotation(
+              AnnotationSpec.builder(Suppress::class)
+                .addMember("%S", "UNUSED_PARAMETER")
+                .build()
+            )
+            .addParameter("fieldName", String::class)
+            .addParameter("value", Any::class.asTypeName().copy(nullable = true))
+            .addStatement("throw %T(%S + fieldName + %S)", IllegalArgumentException::class, "Unknown JSON merge patch field '", "'")
+            .build()
+        )
+      }
 
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
       val fieldNameToInterfacePropertyMap = dto.superClass()?.takeIf { it.java.isInterface }?.memberProperties?.associateBy { it.name } ?: emptyMap()
@@ -187,6 +224,8 @@ $callDtoStatements
             .also {
               if (fieldType.isNullable) {
                 it.defaultValue("null")
+              } else if (mapping is DtoFieldMapping.PatchReqFieldMapping) {
+                it.defaultValue("%T.Absent", mergePatchFieldClass)
               } else {
                 if (fieldType is ParameterizedTypeName) {
                   if (fieldType.rawType == Collection::class.asClassName()) {
@@ -212,10 +251,7 @@ $callDtoStatements
               }
             }
             .addAnnotation(
-              AnnotationSpec.builder(Schema::class)
-                .addMember("description=%S", comment.orEmpty())
-                .addSchemaRequiredMode(!fieldType.isNullable)
-                .build()
+              buildSchemaAnnotation(mapping, fieldType, comment.orEmpty())
             )
             .also { p ->
               mapping?.additionalAnnotations?.forEach { a -> p.addAnnotation(a) }
@@ -484,6 +520,110 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
       }
   }
 
-  private fun DtoFieldMapping.fieldType(): TypeName =
-    DtoMetaResolver.resolveFieldType(this, dtoPackageName)
+  private fun generateApplyPatchExtension(): List<FileSpec> {
+    return dtoFieldMappings
+      .mapNotNull { if (it is DtoFieldMapping.PatchReqFieldMapping) it else null }
+      .groupBy { it.modelField.modelClass }
+      .map { e ->
+        val modelClass = e.key
+        val extensionClassName = "${modelClass.simpleName}PatchExtensions"
+        val extensionFileSpecBuilder = FileSpec.builder(modelExtensionPackageName, extensionClassName)
+        val extensionClassBuilder = TypeSpec.objectBuilder(ClassName(modelExtensionPackageName, extensionClassName))
+
+        e.value.groupBy { it.dto }.forEach { dto, mappings ->
+          val functionBuilder = FunSpec.builder("applyPatch")
+            .addParameter("req", ClassName(dtoPackageName, dto.name))
+            .receiver(modelClass)
+            .returns(modelClass)
+
+          mappings.forEach { mapping ->
+            val fieldName = mapping.modelField.fieldName
+            functionBuilder.beginControlFlow("when (val patchField = req.$fieldName)")
+            functionBuilder.addStatement("%T.Absent -> Unit", mergePatchFieldClass)
+            if (mapping.modelField.fieldNullable) {
+              functionBuilder.addStatement("%T.NullValue -> this.$fieldName = null", mergePatchFieldClass)
+            } else {
+              functionBuilder.addStatement(
+                "%T.NullValue -> require(false)·{ %S }",
+                mergePatchFieldClass,
+                "JSON merge patch field '$fieldName' cannot be null",
+              )
+            }
+            functionBuilder.addStatement("is %T.Value -> this.$fieldName = patchField.value", mergePatchFieldClass)
+            functionBuilder.endControlFlow()
+          }
+
+          extensionClassBuilder.addFunction(
+            functionBuilder.addStatement("return this").build()
+          )
+        }
+
+        extensionFileSpecBuilder
+          .addType(extensionClassBuilder.build())
+          .build()
+      }
+  }
+
+  private fun DtoFieldMapping.fieldType(): TypeName {
+    val resolvedFieldType = DtoMetaResolver.resolveFieldType(this, dtoPackageName)
+    return if (this is DtoFieldMapping.PatchReqFieldMapping) {
+      mergePatchFieldClass.parameterizedBy(resolvedFieldType.copy(nullable = false))
+    } else {
+      resolvedFieldType
+    }
+  }
+
+  private fun TypeName.schemaImplementationType(): TypeName {
+    return when (this) {
+      is ParameterizedTypeName -> rawType
+      else -> copy(nullable = false)
+    }
+  }
+
+  private fun buildSchemaAnnotation(
+    mapping: DtoFieldMapping?,
+    fieldType: TypeName,
+    comment: String,
+  ): AnnotationSpec {
+    if (mapping is DtoFieldMapping.PatchReqFieldMapping) {
+      val modelFieldType = mapping.modelField.fieldClass
+      if (modelFieldType.isOpenApiArrayType()) {
+        return AnnotationSpec.builder(ArraySchema::class)
+          .addMember(
+            "arraySchema = %T(description = %S, nullable = %L, requiredMode = %T.RequiredMode.NOT_REQUIRED)",
+            Schema::class,
+            comment,
+            mapping.modelField.fieldNullable,
+            Schema::class,
+          )
+          .addMember("schema = %T(implementation = %T::class)", Schema::class, modelFieldType.openApiArrayItemImplementationType())
+          .build()
+      }
+
+      return AnnotationSpec.builder(Schema::class)
+        .addMember("description=%S", comment)
+        .addMember("implementation = %T::class", modelFieldType.schemaImplementationType())
+        .addMember("nullable = %L", mapping.modelField.fieldNullable)
+        .addSchemaRequiredMode(false)
+        .build()
+    }
+
+    return AnnotationSpec.builder(Schema::class)
+      .addMember("description=%S", comment)
+      .addSchemaRequiredMode(!fieldType.isNullable)
+      .build()
+  }
+
+  private fun TypeName.isOpenApiArrayType(): Boolean {
+    return this is ParameterizedTypeName &&
+      rawType in setOf(Collection::class.asClassName(), List::class.asClassName(), Set::class.asClassName())
+  }
+
+  private fun TypeName.openApiArrayItemImplementationType(): TypeName {
+    return if (this is ParameterizedTypeName) {
+      typeArguments.firstOrNull()?.schemaImplementationType() ?: Any::class.asTypeName()
+    } else {
+      Any::class.asTypeName()
+    }
+  }
 }

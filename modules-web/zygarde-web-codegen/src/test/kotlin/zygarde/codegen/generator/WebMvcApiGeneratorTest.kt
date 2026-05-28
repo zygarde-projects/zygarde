@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
 
@@ -119,5 +120,47 @@ class WebMvcApiGeneratorTest {
     controller shouldContain "import org.springdoc.core.annotations.ParameterObject"
     controller shouldContain "@ParameterObject"
     controller shouldContain """@GetMapping(value=["/api/todo/search"])"""
+  }
+
+  @Test
+  fun `should generate JSON merge patch mapping`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(
+        ApiToGenerateVo(
+          apiInterfacePackage = "com.example.api",
+          controllerPackage = "com.example.controller",
+          serviceInterfacePackage = "com.example.service",
+          apiName = "Todo",
+          basePath = "/api",
+          functions = mutableListOf(
+            ApiFunctionToGenerateVo(
+              method = RequestMethod.PATCH,
+              functionName = "patchTodo",
+              path = "/todo/{id}",
+              pathVariables = mapOf("id" to Int::class.asTypeName()),
+              requestName = "patch",
+              requestType = CreateTodoReq::class.asTypeName(),
+              requestBodyContentType = RequestBodyContentType.JSON_MERGE_PATCH,
+              responseType = TodoDto::class.asTypeName(),
+              serviceName = "TodoService",
+              serviceFunctionName = "patchTodo",
+            )
+          )
+        )
+      )
+    ).generateApis()
+
+    val feignApiInterface = generateApis.feignApiInterfaces.single().toString()
+    val controller = generateApis.controllers.single().toString()
+
+    feignApiInterface shouldContain "import org.springframework.web.bind.`annotation`.PatchMapping"
+    feignApiInterface shouldContain "@PatchMapping("
+    feignApiInterface shouldContain """value=["/api/todo/{id}"]"""
+    feignApiInterface shouldContain """consumes=["application/merge-patch+json"]"""
+    feignApiInterface shouldContain "@RequestBody"
+    controller shouldContain "@PatchMapping("
+    controller shouldContain """value=["/api/todo/{id}"]"""
+    controller shouldContain """consumes=["application/merge-patch+json"]"""
+    controller shouldContain "@RequestBody"
   }
 }

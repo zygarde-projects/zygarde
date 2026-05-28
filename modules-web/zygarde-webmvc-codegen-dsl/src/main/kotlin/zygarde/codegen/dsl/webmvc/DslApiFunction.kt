@@ -3,6 +3,7 @@ package zygarde.codegen.dsl.webmvc
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asTypeName
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.data.api.PageDto
 import kotlin.reflect.KClass
@@ -18,6 +19,7 @@ class DslApiFunction(
   var serviceFunctionName: String? = null
   var requestType: TypeName? = null
   var requestTypeGenericArguments: List<TypeName> = emptyList()
+  var requestBodyContentType: RequestBodyContentType = RequestBodyContentType.DEFAULT
   var responseType: TypeName? = null
   var responseTypeGenericArguments: List<TypeName> = emptyList()
   var servicePostProcessing: Boolean = false
@@ -54,6 +56,10 @@ class DslApiFunction(
     requestTypeGenericArguments = listOf(T::class.asTypeName())
   }
 
+  fun jsonMergePatch() {
+    requestBodyContentType = RequestBodyContentType.JSON_MERGE_PATCH
+  }
+
   inline fun <reified T : Any> res() {
     responseType = T::class.asTypeName()
   }
@@ -88,6 +94,7 @@ class DslApiFunction(
       requestName = requestName,
       requestType = requestType,
       requestTypeGenericArguments = requestTypeGenericArguments,
+      requestBodyContentType = requestBodyContentType,
       responseType = responseType,
       responseTypeGenericArguments = responseTypeGenericArguments,
       serviceName = serviceName,

@@ -109,6 +109,14 @@ sealed class DtoFieldMapping(
       dto = dto,
     )
 
+  data class PatchReqFieldMapping(
+    override var modelField: ModelMetaField,
+    override var dto: CodegenDto,
+  ) : DtoFieldMapping(
+      modelField = modelField,
+      dto = dto,
+    )
+
   data class ModelToDtoFieldMappingVo(
     override var modelField: ModelMetaField,
     override var dto: CodegenDto,

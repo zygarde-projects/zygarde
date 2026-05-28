@@ -2,6 +2,7 @@ package zygarde.codegen.dsl.webmvc
 
 import com.squareup.kotlinpoet.asTypeName
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
 import zygarde.data.api.PageDto
@@ -31,6 +32,17 @@ class DslApi(
     buildForMethod(functionName, path, RequestMethod.DELETE, dsl)
   }
 
+  fun patch(functionName: String, path: String, dsl: (DslApiFunction.() -> Unit)) {
+    buildForMethod(functionName, path, RequestMethod.PATCH, dsl)
+  }
+
+  fun mergePatch(functionName: String, path: String, dsl: (DslApiFunction.() -> Unit)) {
+    buildForMethod(functionName, path, RequestMethod.PATCH) {
+      requestBodyContentType = RequestBodyContentType.JSON_MERGE_PATCH
+      dsl.invoke(this)
+    }
+  }
+
   @JvmName("getWithReified")
   inline fun <reified REQ, reified RES> get(functionName: String, path: String, crossinline dsl: (DslApiFunction.() -> Unit)) {
     buildForMethodReified(functionName, path, RequestMethod.GET, REQ::class, emptyList(), RES::class, emptyList(), dsl)
@@ -44,6 +56,19 @@ class DslApi(
   @JvmName("putWithReified")
   inline fun <reified REQ, reified RES> put(functionName: String, path: String, crossinline dsl: (DslApiFunction.() -> Unit)) {
     buildForMethodReified(functionName, path, RequestMethod.PUT, REQ::class, emptyList(), RES::class, emptyList(), dsl)
+  }
+
+  @JvmName("patchWithReified")
+  inline fun <reified REQ, reified RES> patch(functionName: String, path: String, crossinline dsl: (DslApiFunction.() -> Unit)) {
+    buildForMethodReified(functionName, path, RequestMethod.PATCH, REQ::class, emptyList(), RES::class, emptyList(), dsl)
+  }
+
+  @JvmName("mergePatchWithReified")
+  inline fun <reified REQ, reified RES> mergePatch(functionName: String, path: String, crossinline dsl: (DslApiFunction.() -> Unit)) {
+    buildForMethodReified(functionName, path, RequestMethod.PATCH, REQ::class, emptyList(), RES::class, emptyList()) {
+      requestBodyContentType = RequestBodyContentType.JSON_MERGE_PATCH
+      dsl.invoke(this)
+    }
   }
 
   @JvmName("getWithReifiedForList")

@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 
 class DslApiTest {
   data class TestRequest(val name: String)
@@ -147,6 +148,52 @@ class DslApiTest {
   }
 
   @Test
+  fun `should add PATCH function`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // when
+    api.patch("patchTest", "/test/{id}") {
+      pathVariable<Int>("id")
+      req<TestRequest>()
+      res<TestResponse>()
+    }
+
+    // then
+    val vo = api.toApiToGenerateVo()
+    vo.functions shouldHaveSize 1
+    vo.functions[0].apply {
+      functionName shouldBe "patchTest"
+      method shouldBe RequestMethod.PATCH
+      requestBodyContentType shouldBe RequestBodyContentType.DEFAULT
+    }
+  }
+
+  @Test
+  fun `should add JSON merge patch function`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // when
+    api.mergePatch("mergePatchTest", "/test/{id}") {
+      pathVariable<Int>("id")
+      req<TestRequest>()
+      res<TestResponse>()
+    }
+
+    // then
+    val vo = api.toApiToGenerateVo()
+    vo.functions shouldHaveSize 1
+    vo.functions[0].apply {
+      functionName shouldBe "mergePatchTest"
+      method shouldBe RequestMethod.PATCH
+      requestBodyContentType shouldBe RequestBodyContentType.JSON_MERGE_PATCH
+    }
+  }
+
+  @Test
   fun `should add GET function with reified types`() {
     // given
     val config = createConfig()
@@ -202,6 +249,39 @@ class DslApiTest {
     val vo = api.toApiToGenerateVo()
     vo.functions shouldHaveSize 1
     vo.functions[0].method shouldBe RequestMethod.PUT
+  }
+
+  @Test
+  fun `should add PATCH function with reified types`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // when
+    api.patch<TestRequest, TestResponse>("patchWithTypes", "/test") {}
+
+    // then
+    val vo = api.toApiToGenerateVo()
+    vo.functions shouldHaveSize 1
+    vo.functions[0].method shouldBe RequestMethod.PATCH
+  }
+
+  @Test
+  fun `should add JSON merge patch function with reified types`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // when
+    api.mergePatch<TestRequest, TestResponse>("mergePatchWithTypes", "/test") {}
+
+    // then
+    val vo = api.toApiToGenerateVo()
+    vo.functions shouldHaveSize 1
+    vo.functions[0].apply {
+      method shouldBe RequestMethod.PATCH
+      requestBodyContentType shouldBe RequestBodyContentType.JSON_MERGE_PATCH
+    }
   }
 
   @Test
@@ -287,10 +367,11 @@ class DslApiTest {
     api.post("post1", "/1") {}
     api.put("put1", "/1") {}
     api.delete("delete1", "/1") {}
+    api.patch("patch1", "/1") {}
 
     // then
     val vo = api.toApiToGenerateVo()
-    vo.functions shouldHaveSize 4
+    vo.functions shouldHaveSize 5
   }
 
   @Test

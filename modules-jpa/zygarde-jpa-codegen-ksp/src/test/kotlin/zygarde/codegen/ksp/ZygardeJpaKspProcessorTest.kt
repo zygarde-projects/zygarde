@@ -49,6 +49,13 @@ class ZygardeJpaKspProcessorTest {
     simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchCount("
     simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchPage("
     simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchOneOrThrow("
+    simpleBookDaoExtensions shouldContain "fun <PATCH> SimpleBookDao.patchOne("
+    simpleBookDaoExtensions shouldContain "patch: PATCH"
+    simpleBookDaoExtensions shouldContain "patchContent: SimpleBook.(patch: PATCH) -> Unit"
+    simpleBookDaoExtensions shouldContain "entity.patchContent(patch)"
+    simpleBookDaoExtensions shouldNotContain "JsonNode"
+    simpleBookDaoExtensions shouldNotContain "objectMapper"
+    simpleBookDaoExtensions shouldNotContain "patch.has("
   }
 
   @Test
@@ -122,6 +129,8 @@ class ZygardeJpaKspProcessorTest {
     extContent shouldContain "fun ScopedOrderDao.search("
     extContent shouldContain "fun ScopedOrderDao.searchOne("
     extContent shouldContain "fun ScopedOrderDao.searchCount("
+    extContent shouldContain "fun <PATCH> ScopedOrderDao.patchOne("
+    extContent shouldContain "searchOneOrThrow(scope, errorCode, searchContent)"
   }
 
   @Test

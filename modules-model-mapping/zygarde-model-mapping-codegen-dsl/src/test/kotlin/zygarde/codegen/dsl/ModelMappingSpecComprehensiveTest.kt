@@ -53,6 +53,7 @@ class ModelMappingSpecComprehensiveTest {
     spec.fromObjectProvider<ObjectProvider>(TestEntity::name)
     spec.fromFieldProvider<FieldProvider>(TestEntity::optionalName)
     spec.applyTo(TestEntity::validated)
+    spec.patchReq(TestEntity::validated)
     spec.field(TestEntity::validated)
     spec.field<String>("manual", nullable = true)
     spec.fieldNullable(TestEntity::optionalName)
@@ -61,7 +62,7 @@ class ModelMappingSpecComprehensiveTest {
     spec.fieldRef("ownerField", TestDtos.RefDto, nullable = true)
     spec.fieldRefCollection("refFields", TestDtos.RefDto)
 
-    mappings shouldHaveSize 16
+    mappings shouldHaveSize 17
 
     mappings[0].also {
       it.shouldBeInstanceOf<DtoFieldMapping.ModelToDtoFieldMappingVo>()
@@ -103,27 +104,31 @@ class ModelMappingSpecComprehensiveTest {
       it.additionalAnnotations shouldHaveSize 1
     }
     mappings[9].also {
+      it.shouldBeInstanceOf<DtoFieldMapping.PatchReqFieldMapping>()
+      it.additionalAnnotations shouldHaveSize 0
+    }
+    mappings[10].also {
       it.shouldBeInstanceOf<DtoFieldMapping.DtoFieldNoMapping>()
       it.additionalAnnotations shouldHaveSize 1
       it.compound shouldBe true
     }
-    mappings[10].also {
+    mappings[11].also {
       it.shouldBeInstanceOf<DtoFieldMapping.DtoFieldNoMapping>()
       it.modelField.fieldName shouldBe "manual"
       it.modelField.fieldNullable shouldBe true
       it.compound shouldBe true
     }
-    mappings[11].forceNull shouldBe ForceNull.NULL
-    mappings[12].refCollection shouldBe true
-    mappings[13].also {
+    mappings[12].forceNull shouldBe ForceNull.NULL
+    mappings[13].refCollection shouldBe true
+    mappings[14].also {
       it.refCollection shouldBe true
       it.forceNull shouldBe ForceNull.NULL
     }
-    mappings[14].also {
+    mappings[15].also {
       it.dtoRef shouldBe TestDtos.RefDto
       it.modelField.fieldNullable shouldBe true
     }
-    mappings[15].also {
+    mappings[16].also {
       it.dtoRef shouldBe TestDtos.RefDto
       it.refCollection shouldBe true
     }

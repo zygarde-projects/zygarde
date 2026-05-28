@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.STRING
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 
 class ApiFunctionToGenerateVoTest {
   @Test
@@ -24,6 +25,7 @@ class ApiFunctionToGenerateVoTest {
     vo.requestName shouldBe "req"
     vo.requestType shouldBe null
     vo.requestTypeGenericArguments shouldBe emptyList()
+    vo.requestBodyContentType shouldBe RequestBodyContentType.DEFAULT
     vo.responseType shouldBe null
     vo.responseTypeGenericArguments shouldBe emptyList()
     vo.serviceName shouldBe null
@@ -53,6 +55,7 @@ class ApiFunctionToGenerateVoTest {
       requestName = "createReq",
       requestType = requestType,
       requestTypeGenericArguments = listOf(STRING),
+      requestBodyContentType = RequestBodyContentType.JSON_MERGE_PATCH,
       responseType = responseType,
       responseTypeGenericArguments = listOf(STRING),
       serviceName = "UserService",
@@ -73,6 +76,7 @@ class ApiFunctionToGenerateVoTest {
     vo.requestName shouldBe "createReq"
     vo.requestType shouldBe requestType
     vo.requestTypeGenericArguments shouldBe listOf(STRING)
+    vo.requestBodyContentType shouldBe RequestBodyContentType.JSON_MERGE_PATCH
     vo.responseType shouldBe responseType
     vo.responseTypeGenericArguments shouldBe listOf(STRING)
     vo.serviceName shouldBe "UserService"

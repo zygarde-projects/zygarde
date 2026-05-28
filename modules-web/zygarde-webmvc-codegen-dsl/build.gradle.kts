@@ -4,6 +4,7 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
   implementation(platform(project(":zygarde-bom-codegen")))
   implementation(project(":zygarde-core"))
+  implementation(project(":zygarde-webmvc"))
   implementation(project(":zygarde-web-codegen"))
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.springframework.boot:spring-boot-starter-web")

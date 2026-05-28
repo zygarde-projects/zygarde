@@ -35,6 +35,13 @@ class ZygardeApiKspProcessorTest {
     generatedFileNames shouldContain "TestApiFeign.kt"
     generatedFileNames shouldContain "TestApiController.kt"
     generatedFileNames shouldContain "TestService.kt"
+
+    val controllerFile = compilation.kspSourcesDir.walkTopDown()
+      .find { it.name == "TestApiController.kt" }
+    val controllerSource = controllerFile?.readText().orEmpty()
+    controllerSource shouldContain "@PatchMapping("
+    controllerSource shouldContain """value=["/api/test/{id}"]"""
+    controllerSource shouldContain """consumes=["application/merge-patch+json"]"""
   }
 }
 

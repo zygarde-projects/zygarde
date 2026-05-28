@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.string.shouldContain
 import jakarta.validation.constraints.NotBlank
@@ -19,8 +20,9 @@ import zygarde.codegen.value.ValueProvider
 class DtoFieldMappingCodeGeneratorComprehensiveTest {
   data class Product(
     val id: Int?,
-    val name: String,
-    val rawCode: String?,
+    var name: String,
+    var rawCode: String?,
+    var tags: List<String>,
     val owner: Owner?,
     val owners: List<Owner>,
   )
@@ -36,6 +38,7 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
     ProductSummaryDto,
     OwnerDto,
     UpdateProductReq,
+    ProductPatchReq,
     InterfaceDto,
     AnnotatedDto,
   }
@@ -148,6 +151,12 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
       DtoFieldMapping.ModelApplyFromDtoFieldMappingVo(field("id", String::class.asTypeName()), TestDtos.UpdateProductReq).also {
         it.valueProvider = ParseIntProvider::class
       },
+      DtoFieldMapping.PatchReqFieldMapping(field("name", String::class.asTypeName()), TestDtos.ProductPatchReq),
+      DtoFieldMapping.PatchReqFieldMapping(field("rawCode", String::class.asTypeName(), nullable = true), TestDtos.ProductPatchReq),
+      DtoFieldMapping.PatchReqFieldMapping(
+        field("tags", List::class.asClassName().parameterizedBy(String::class.asTypeName())),
+        TestDtos.ProductPatchReq
+      ),
     )
     val compoundMappings = listOf(
       DtoFieldMapping.ModelToDtoFieldMappingVo(field("id", Int::class.asTypeName(), nullable = true), TestDtos.ProductSummaryDto).also {
@@ -184,6 +193,30 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
       it shouldContain "ParseIntProvider().getValue(req.id)"
       it shouldContain "return this"
     }
+    result.dtoFileSpecs.first { it.name == "ProductPatchReq" }.toString().also {
+      it shouldContain "@JsonIgnoreProperties(ignoreUnknown = false)"
+      it shouldContain "@JsonAnySetter"
+      it shouldContain "@Suppress(\"UNUSED_PARAMETER\")"
+      it shouldContain "fun rejectUnknownPatchField("
+      it shouldContain "Unknown JSON merge patch field '"
+      it shouldContain "name: MergePatchField<String> = MergePatchField.Absent"
+      it shouldContain "rawCode: MergePatchField<String> = MergePatchField.Absent"
+      it shouldContain "tags: MergePatchField<List<String>> = MergePatchField.Absent"
+      it shouldContain "implementation = String::class"
+      it shouldContain "@ArraySchema"
+      it shouldContain "schema = Schema(implementation = String::class)"
+      it shouldContain "nullable = false"
+      it shouldContain "nullable = true"
+      it shouldContain "requiredMode=Schema.RequiredMode.NOT_REQUIRED"
+    }
+    result.modelMappingFileSpecs.first { it.name == "ProductPatchExtensions" }.toString().also {
+      it shouldContain "applyPatch(req: ProductPatchReq)"
+      it shouldContain "MergePatchField.Absent -> Unit"
+      it shouldContain "MergePatchField.NullValue -> require(false)"
+      it shouldContain "MergePatchField.NullValue -> this.rawCode = null"
+      it shouldContain "is MergePatchField.Value -> this.name = patchField.value"
+      it shouldContain "is MergePatchField.Value -> this.tags = patchField.value"
+    }
     result.modelMappingFileSpecs.first { it.name == "ProductSummaryDtoBuilder" }.toString().also {
       it shouldContain "object ProductSummaryDtoBuilder"
       it shouldContain "fun build(product:"
@@ -193,6 +226,20 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
       it shouldContain "name = product.name"
       it shouldContain "badge = badge"
     }
+  }
+
+  @Test
+  fun `should reject DTO that mixes patchReq with other mappings`() {
+    val ex = shouldThrow<IllegalArgumentException> {
+      DtoFieldMappingCodeGenerator(
+        listOf(
+          DtoFieldMapping.PatchReqFieldMapping(field("name", String::class.asTypeName()), TestDtos.ProductPatchReq),
+          DtoFieldMapping.ModelToDtoFieldMappingVo(field("id", Int::class.asTypeName()), TestDtos.ProductPatchReq),
+        )
+      ).generateFileSpec()
+    }
+
+    ex.message shouldContain "Patch request DTO 'ProductPatchReq' cannot mix patchReq mappings with from/field/applyTo mappings."
   }
 
   @Test

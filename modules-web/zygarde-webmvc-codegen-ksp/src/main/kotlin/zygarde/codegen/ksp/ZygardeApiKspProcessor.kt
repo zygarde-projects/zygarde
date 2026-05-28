@@ -12,6 +12,7 @@ import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.ZyApi
 import zygarde.codegen.generator.WebMvcApiGenerator
 import zygarde.codegen.ksp.ZygardeWebMvcKspOptions.BASE_PACKAGE
@@ -122,6 +123,9 @@ class ZygardeApiKspProcessor(
 
             val methodStr = genApi.getArgumentValueAsEnumEntry("method") ?: "GET"
             val method = RequestMethod.valueOf(methodStr)
+            val requestBodyContentType = RequestBodyContentType.valueOf(
+              genApi.getArgumentValueAsEnumEntry("requestBodyContentType") ?: RequestBodyContentType.DEFAULT.name
+            )
 
             val deprecated = genApi.getArgumentValueAsBoolean("deprecated")
             val deprecatedMessage = genApi.getArgumentValueAsString("deprecatedMessage")
@@ -139,6 +143,7 @@ class ZygardeApiKspProcessor(
                 reqRefTypeName
               },
               requestTypeGenericArguments = listOfNotNull(reqRefTypeName.takeIf { reqCollection }),
+              requestBodyContentType = requestBodyContentType,
               responseType = if (resCollection) {
                 Collection::class.asTypeName()
               } else if (resPage) {

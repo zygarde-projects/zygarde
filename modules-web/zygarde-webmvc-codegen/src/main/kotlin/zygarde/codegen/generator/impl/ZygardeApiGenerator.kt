@@ -86,6 +86,7 @@ class ZygardeApiGenerator(
                 reqRefTypeName
               },
               requestTypeGenericArguments = listOfNotNull(reqRefTypeName.takeIf { genApi.reqCollection }),
+              requestBodyContentType = genApi.requestBodyContentType,
               responseType = if (genApi.resCollection) {
                 Collection::class.asTypeName()
               } else if (genApi.resPage) {

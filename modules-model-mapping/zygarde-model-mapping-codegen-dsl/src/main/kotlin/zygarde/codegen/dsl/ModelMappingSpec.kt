@@ -12,6 +12,7 @@ import zygarde.codegen.meta.ModelMetaField
 import zygarde.codegen.value.AutoIntIdValueProvider
 import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.codegen.value.ValueProvider
+import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.javaField
 
@@ -146,6 +147,14 @@ open class ModelMappingSpec(
     props.forEach { p ->
       DtoFieldMapping.ModelApplyFromDtoFieldMappingVo(p.asModelMetaField(), dto)
         .also { it.applyValidationAnnotations(p) }
+        .also(dsl)
+        .also(dtoFieldMappings::add)
+    }
+  }
+
+  fun patchReq(vararg props: KMutableProperty1<*, *>, dsl: (DtoFieldMapping.PatchReqFieldMapping.() -> Unit) = {}) {
+    props.forEach { p ->
+      DtoFieldMapping.PatchReqFieldMapping(p.asModelMetaField(), dto)
         .also(dsl)
         .also(dtoFieldMappings::add)
     }

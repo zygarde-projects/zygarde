@@ -1,6 +1,7 @@
 package zygarde.codegen.model
 
 import com.squareup.kotlinpoet.TypeName
+import zygarde.codegen.RequestBodyContentType
 import org.springframework.web.bind.annotation.RequestMethod
 
 data class ApiFunctionToGenerateVo(
@@ -12,6 +13,7 @@ data class ApiFunctionToGenerateVo(
   var requestName: String = "req",
   var requestType: TypeName? = null,
   var requestTypeGenericArguments: List<TypeName> = emptyList(),
+  var requestBodyContentType: RequestBodyContentType = RequestBodyContentType.DEFAULT,
   var responseType: TypeName? = null,
   var responseTypeGenericArguments: List<TypeName> = emptyList(),
   var serviceName: String? = null,

@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.UNIT
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
@@ -106,7 +107,6 @@ class ZygardeJpaDaoGenerator(
         } else {
           null
         }
-
         val searchContentType = searchContentLambdaType(entityType)
         buildExtensionFileSpec(
           daoPackage,
@@ -379,6 +379,15 @@ class ZygardeJpaDaoGenerator(
       )
 
       fileSpec.addFunction(
+        buildPatchOneFunction(
+          daoType = daoType,
+          entityType = entityType,
+          searchContentType = searchContentType,
+          scopeClassName = scopeClassName,
+        )
+      )
+
+      fileSpec.addFunction(
         FunSpec.builder("searchPage")
           .receiver(daoType)
           .addParameter(scopeParam)
@@ -479,6 +488,14 @@ class ZygardeJpaDaoGenerator(
             .build()
         )
         .addFunction(
+          buildPatchOneFunction(
+            daoType = daoType,
+            entityType = entityType,
+            searchContentType = searchContentType,
+            scopeClassName = null,
+          )
+        )
+        .addFunction(
           FunSpec.builder("searchPage")
             .receiver(daoType)
             .addParameter("req", PagingAndSortingRequest::class)
@@ -505,6 +522,51 @@ class ZygardeJpaDaoGenerator(
     }
 
     return fileSpec
+  }
+
+  private fun buildPatchOneFunction(
+    daoType: ClassName,
+    entityType: TypeName,
+    searchContentType: LambdaTypeName,
+    scopeClassName: ClassName?,
+  ): FunSpec {
+    val patchType = TypeVariableName("PATCH")
+    val patchContentType = LambdaTypeName.get(
+      receiver = entityType,
+      parameters = listOf(ParameterSpec.builder("patch", patchType).build()),
+      returnType = UNIT,
+    )
+    return FunSpec.builder("patchOne")
+      .receiver(daoType)
+      .addTypeVariable(patchType)
+      .also { builder ->
+        scopeClassName?.let { builder.addParameter("scope", it) }
+      }
+      .addParameter("patch", patchType)
+      .addParameter(
+        ParameterSpec.builder("errorCode", ErrorCode::class)
+          .defaultValue("%T.ERROR", CommonErrorCode::class)
+          .build()
+      )
+      .addParameter("patchContent", patchContentType)
+      .addParameter("searchContent", searchContentType)
+      .returns(entityType)
+      .addCode(buildPatchOneBody(scopeClassName != null))
+      .build()
+  }
+
+  private fun buildPatchOneBody(
+    scoped: Boolean,
+  ): CodeBlock {
+    val builder = CodeBlock.builder()
+    if (scoped) {
+      builder.addStatement("val entity = searchOneOrThrow(scope, errorCode, searchContent)")
+    } else {
+      builder.addStatement("val entity = searchOneOrThrow(errorCode, searchContent)")
+    }
+    builder.addStatement("entity.patchContent(patch)")
+    builder.addStatement("return save(entity)")
+    return builder.build()
   }
 
   /**

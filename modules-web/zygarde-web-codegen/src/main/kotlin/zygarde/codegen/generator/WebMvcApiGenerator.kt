@@ -18,6 +18,7 @@ import org.springframework.cloud.openfeign.SpringQueryMap
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -138,11 +139,15 @@ class WebMvcApiGenerator(
             RequestMethod.POST -> PostMapping::class
             RequestMethod.PUT -> PutMapping::class
             RequestMethod.DELETE -> DeleteMapping::class
+            RequestMethod.PATCH -> PatchMapping::class
             else -> GetMapping::class
           }
         )
         .also { annSpec ->
           annSpec.addMember("value=[%S]", absoluteMappingPath(basePath, func.path))
+          func.requestBodyContentType.value?.let { contentType ->
+            annSpec.addMember("consumes=[%S]", contentType)
+          }
         }
         .build()
 
@@ -217,7 +222,7 @@ class WebMvcApiGenerator(
           val apiInterfaceRequestBodyParamBuilder = ParameterSpec.builder(func.requestName, reqType)
 
           val requestBodyParamAnnoationClass = when (func.method) {
-            RequestMethod.POST, RequestMethod.PUT -> RequestBody::class
+            RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH -> RequestBody::class
             else -> SpringQueryMap::class
           }
           if (separateFeign) {
@@ -236,7 +241,7 @@ class WebMvcApiGenerator(
           webMvcFuncBuilder.addParameter(
             ParameterSpec.builder(func.requestName, reqType)
               .also { paramSpec ->
-                if (func.method in listOf(RequestMethod.POST, RequestMethod.PUT)) {
+                if (func.method in listOf(RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH)) {
                   paramSpec.addAnnotation(RequestBody::class)
                 }
                 if (func.method == RequestMethod.GET) {

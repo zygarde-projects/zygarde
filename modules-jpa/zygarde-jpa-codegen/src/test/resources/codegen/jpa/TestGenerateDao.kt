@@ -1,5 +1,6 @@
 package codegen.jpa
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import zygarde.codegen.ZyModel
 import zygarde.data.jpa.entity.AuditedAutoIntIdEntity
 import zygarde.data.jpa.entity.AuditedSequenceIntIdEntity
@@ -15,7 +16,10 @@ import jakarta.persistence.IdClass
 @Entity
 class SimpleBook(
   @Id
-  var id: Long
+  var id: Long,
+  @field:JsonProperty("book_price")
+  var price: Int = 0,
+  var amount: String? = null,
 )
 
 @ZyModel

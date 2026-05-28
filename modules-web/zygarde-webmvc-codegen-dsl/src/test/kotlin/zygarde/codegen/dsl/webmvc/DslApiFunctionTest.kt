@@ -8,6 +8,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
+import zygarde.codegen.RequestBodyContentType
 import zygarde.data.api.PageDto
 
 class DslApiFunctionTest {
@@ -40,6 +41,7 @@ class DslApiFunctionTest {
     function.serviceFunctionName shouldBe null
     function.requestType shouldBe null
     function.responseType shouldBe null
+    function.requestBodyContentType shouldBe RequestBodyContentType.DEFAULT
     function.servicePostProcessing shouldBe false
     function.authenticationDetailName shouldBe "auth"
   }
@@ -154,6 +156,19 @@ class DslApiFunctionTest {
   }
 
   @Test
+  fun `should set JSON merge patch request content type`() {
+    // given
+    val function = DslApiFunction("test", "/test", RequestMethod.PATCH)
+
+    // when
+    function.jsonMergePatch()
+
+    // then
+    function.requestBodyContentType shouldBe RequestBodyContentType.JSON_MERGE_PATCH
+    function.toApiFunctionToGenerate().requestBodyContentType shouldBe RequestBodyContentType.JSON_MERGE_PATCH
+  }
+
+  @Test
   fun `should set response type with reified`() {
     // given
     val function = DslApiFunction("test", "/test", RequestMethod.GET)
@@ -238,6 +253,7 @@ class DslApiFunctionTest {
       pathVariable<Int>("id")
       req<TestRequest>()
       res<TestResponse>()
+      jsonMergePatch()
       serviceName = "TestService"
       serviceFunctionName = "testServiceFunc"
     }
@@ -252,6 +268,7 @@ class DslApiFunctionTest {
     vo.description shouldBe "Test function"
     vo.pathVariables shouldContainKey "id"
     vo.requestType shouldBe TestRequest::class.asTypeName()
+    vo.requestBodyContentType shouldBe RequestBodyContentType.JSON_MERGE_PATCH
     vo.responseType shouldBe TestResponse::class.asTypeName()
     vo.serviceName shouldBe "TestService"
     vo.serviceFunctionName shouldBe "testServiceFunc"
