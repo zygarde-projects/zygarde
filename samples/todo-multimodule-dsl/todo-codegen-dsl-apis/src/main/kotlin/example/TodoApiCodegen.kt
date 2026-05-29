@@ -1,5 +1,6 @@
 package example
 
+import example.codegen.data.dao.TodoDao
 import zygarde.codegen.data.dto.CreateTodoReq
 import zygarde.codegen.data.dto.TodoDto
 import zygarde.codegen.data.dto.UpdateTodoReq
@@ -23,7 +24,6 @@ class TodoApiCodegen : WebMvcDslCodegen() {
       post("createTodo", "") {
         req<CreateTodoReq>()
         res<TodoDto>()
-        servicePostProcessing<String>()
       }
       put("updateTodo", "{todoId}") {
         todoIdPathVariable()
@@ -32,6 +32,17 @@ class TodoApiCodegen : WebMvcDslCodegen() {
       }
       delete("deleteTodo", "{todoId}") {
         todoIdPathVariable()
+      }
+
+      crudServiceImpl<Todo, Int>("TodoApiService") {
+        dao<TodoDao>("todoDao")
+        dtoBuilder<TodoDto>("TodoDtoBuilder")
+        applyExtensions("TodoApplyValueExtensions")
+        list("getTodoList")
+        get("getTodo", idParam = "todoId")
+        create<CreateTodoReq>("createTodo")
+        update<UpdateTodoReq>("updateTodo", idParam = "todoId")
+        delete("deleteTodo", idParam = "todoId")
       }
     }
 

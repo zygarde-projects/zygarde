@@ -1,10 +1,12 @@
 package zygarde.codegen.dsl.webmvc
 
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asTypeName
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
+import zygarde.codegen.model.CrudServiceImplToGenerateVo
 import zygarde.data.api.PageDto
 import kotlin.reflect.KClass
 
@@ -15,6 +17,7 @@ class DslApi(
 ) {
   var feignUrlProperty: String? = null
   private val functions: MutableList<ApiFunctionToGenerateVo> = mutableListOf()
+  private val crudServiceImpls: MutableList<CrudServiceImplToGenerateVo> = mutableListOf()
 
   fun get(functionName: String, path: String, dsl: (DslApiFunction.() -> Unit)) {
     buildForMethod(functionName, path, RequestMethod.GET, dsl)
@@ -120,7 +123,27 @@ class DslApi(
       functions = functions,
       separateFeign = true,
       feignUrlProperty = feignUrlProperty,
+      serviceImplPackage = config.serviceImplPackage,
+      crudServiceImpls = crudServiceImpls,
     )
+  }
+
+  inline fun <reified ENTITY : Any, reified ID : Any> crudServiceImpl(
+    serviceName: String,
+    noinline dsl: DslCrudServiceImpl.() -> Unit
+  ) {
+    addCrudServiceImpl(serviceName, ENTITY::class.asTypeName(), ID::class.asTypeName(), dsl)
+  }
+
+  @PublishedApi
+  internal fun addCrudServiceImpl(
+    serviceName: String,
+    entityType: TypeName,
+    idType: TypeName,
+    dsl: DslCrudServiceImpl.() -> Unit
+  ) {
+    val crudServiceImpl = DslCrudServiceImpl(serviceName, entityType, idType).also(dsl)
+    crudServiceImpls.add(crudServiceImpl.toCrudServiceImplToGenerateVo())
   }
 
   fun buildForMethod(

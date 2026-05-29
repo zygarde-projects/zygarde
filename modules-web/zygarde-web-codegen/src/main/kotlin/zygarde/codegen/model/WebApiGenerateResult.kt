@@ -7,4 +7,5 @@ data class WebApiGenerateResult(
   val feignApiInterfaces: List<FileSpec>,
   val controllers: List<FileSpec>,
   val serviceInterfaces: List<FileSpec>,
+  val serviceImpls: List<FileSpec> = emptyList(),
 )

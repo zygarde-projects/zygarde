@@ -16,7 +16,8 @@ class DslApiEdgeCaseTest {
   private fun createConfig() = WebMvcDslCodegenConfig(
     apiInterfacePackage = "com.test.api",
     controllerPackage = "com.test.controller",
-    serviceInterfacePackage = "com.test.service"
+    serviceInterfacePackage = "com.test.service",
+    serviceImplPackage = "com.test.service.impl",
   )
 
   @Test

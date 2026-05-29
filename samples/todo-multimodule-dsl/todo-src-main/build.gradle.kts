@@ -14,6 +14,7 @@ dependencies {
   implementation(project(":todo-dsl-generated-graphql-schema"))
   implementation(project(":todo-dsl-generated-graphql-service-interface"))
   implementation(project(":todo-dsl-generated-model-mapping"))
+  implementation(project(":todo-dsl-generated-service-impl"))
   implementation(project(":todo-dsl-generated-service-interface"))
   implementation(project(":todo-dsl-generated-sql-api-controller"))
   implementation(project(":todo-dsl-generated-sql-api-dto"))

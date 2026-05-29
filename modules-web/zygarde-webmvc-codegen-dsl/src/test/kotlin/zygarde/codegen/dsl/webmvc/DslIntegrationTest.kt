@@ -20,7 +20,8 @@ class DslIntegrationTest {
     val config = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.test.api",
       controllerPackage = "com.test.controller",
-      serviceInterfacePackage = "com.test.service"
+      serviceInterfacePackage = "com.test.service",
+      serviceImplPackage = "com.test.service.impl",
     )
     val api = DslApi(config, "UserApi", "/api/users")
 
@@ -77,7 +78,8 @@ class DslIntegrationTest {
     val config = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.test.api",
       controllerPackage = "com.test.controller",
-      serviceInterfacePackage = "com.test.service"
+      serviceInterfacePackage = "com.test.service",
+      serviceImplPackage = "com.test.service.impl",
     )
 
     // when
@@ -147,7 +149,8 @@ class DslIntegrationTest {
     val config = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.test.api",
       controllerPackage = "com.test.controller",
-      serviceInterfacePackage = "com.test.service"
+      serviceInterfacePackage = "com.test.service",
+      serviceImplPackage = "com.test.service.impl",
     )
     val api = DslApi(config, "TestApi")
 
@@ -171,7 +174,8 @@ class DslIntegrationTest {
     val config = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.test.api",
       controllerPackage = "com.test.controller",
-      serviceInterfacePackage = "com.test.service"
+      serviceInterfacePackage = "com.test.service",
+      serviceImplPackage = "com.test.service.impl",
     )
     val api = DslApi(config, "ExternalApi")
 

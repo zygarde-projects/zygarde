@@ -6,16 +6,22 @@ import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.RequestBodyContentType
+import zygarde.codegen.model.CrudOperationKind
 
 class DslApiTest {
   data class TestRequest(val name: String)
 
   data class TestResponse(val id: Int, val name: String)
 
+  class TestEntity
+
+  interface TestDao
+
   private fun createConfig() = WebMvcDslCodegenConfig(
     apiInterfacePackage = "com.test.api",
     controllerPackage = "com.test.controller",
-    serviceInterfacePackage = "com.test.service"
+    serviceInterfacePackage = "com.test.service",
+    serviceImplPackage = "com.test.service.impl",
   )
 
   @Test
@@ -394,7 +400,8 @@ class DslApiTest {
     val config = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.example.api",
       controllerPackage = "com.example.controller",
-      serviceInterfacePackage = "com.example.service"
+      serviceInterfacePackage = "com.example.service",
+      serviceImplPackage = "com.example.service.impl",
     )
     val api = DslApi(config, "ExampleApi", "/api/example")
 
@@ -405,6 +412,7 @@ class DslApiTest {
     vo.apiInterfacePackage shouldBe "com.example.api"
     vo.controllerPackage shouldBe "com.example.controller"
     vo.serviceInterfacePackage shouldBe "com.example.service"
+    vo.serviceImplPackage shouldBe "com.example.service.impl"
     vo.apiName shouldBe "ExampleApi"
     vo.basePath shouldBe "/api/example"
     vo.separateFeign shouldBe true
@@ -426,5 +434,32 @@ class DslApiTest {
       requestType shouldBe null
       responseType shouldBe null
     }
+  }
+
+  @Test
+  fun `should declare CRUD service impl metadata`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // when
+    api.get("getTestList", "") {
+      resCollection<TestResponse>()
+    }
+    api.crudServiceImpl<TestEntity, Int>("TestService") {
+      dao<TestDao>("testDao")
+      dtoBuilder<TestResponse>("TestResponseBuilder")
+      applyExtensions("TestApplyValueExtensions")
+      list("getTestList")
+    }
+
+    // then
+    val crudServiceImpl = api.toApiToGenerateVo().crudServiceImpls.single()
+    crudServiceImpl.serviceName shouldBe "TestService"
+    crudServiceImpl.daoPropertyName shouldBe "testDao"
+    crudServiceImpl.dtoBuilderType.canonicalName shouldBe "zygarde.codegen.model.extensions.TestResponseBuilder"
+    crudServiceImpl.applyExtensionsType?.canonicalName shouldBe "zygarde.codegen.model.extensions.TestApplyValueExtensions"
+    crudServiceImpl.operations.single().kind shouldBe CrudOperationKind.LIST
+    crudServiceImpl.operations.single().functionName shouldBe "getTestList"
   }
 }

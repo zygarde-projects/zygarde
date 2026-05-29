@@ -70,6 +70,7 @@ class WebMvcApiGenerator(
       feignApiInterfaces = feignApiInterfaceFileSpecBuilderMap.values.map { it.build() },
       controllers = webMvcControllerFileSpecBuilderMap.values.map { it.build() },
       serviceInterfaces = serviceInterfaceFileSpecBuilderMap.values.map { it.build() },
+      serviceImpls = CrudServiceImplGenerator(apis).generate(),
     )
   }
 

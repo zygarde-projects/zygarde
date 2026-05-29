@@ -1,6 +1,8 @@
 package zygarde.codegen.generator
 
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.asTypeName
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -10,9 +12,16 @@ import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
+import zygarde.codegen.model.CrudOperationKind
+import zygarde.codegen.model.CrudOperationToGenerateVo
+import zygarde.codegen.model.CrudServiceImplToGenerateVo
 
 class WebMvcApiGeneratorTest {
   data class CreateTodoReq(val description: String)
+
+  data class UpdateTodoReq(val description: String)
+
+  data class TodoPatchReq(val description: String?)
 
   data class TodoDto(val id: Int, val description: String)
 
@@ -56,8 +65,164 @@ class WebMvcApiGeneratorTest {
       it.feignApiInterfaces.size shouldBe 1
       it.controllers.size shouldBe 1
       it.serviceInterfaces.size shouldBe 1
+      it.serviceImpls.size shouldBe 0
 
       // it.controllers.forEach { it.writeTo(System.out) }
+    }
+  }
+
+  @Test
+  fun `should generate CRUD service impl`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(crudApi())
+    ).generateApis()
+
+    val serviceImpl = generateApis.serviceImpls.single().toString()
+
+    serviceImpl shouldContain "package com.example.service.`impl`"
+    serviceImpl shouldContain "import com.example.extensions.TodoApplyValueExtensions.applyFrom"
+    serviceImpl shouldContain "import com.example.extensions.TodoPatchExtensions.applyPatch"
+    serviceImpl shouldContain "import org.springframework.stereotype.Service"
+    serviceImpl shouldContain "@Service"
+    serviceImpl shouldContain "public class TodoServiceImpl"
+    serviceImpl shouldContain ": TodoService"
+    serviceImpl shouldContain "@Autowired"
+    serviceImpl shouldContain "private val todoDao: TodoDao"
+    serviceImpl shouldContain "todoDao.findAll().map(TodoDtoBuilder::build)"
+    serviceImpl shouldContain "todoDao.getById(todoId).let(TodoDtoBuilder::build)"
+    serviceImpl shouldContain "Todo().applyFrom(req).let(todoDao::saveAndFlush).let(TodoDtoBuilder::build)"
+    serviceImpl shouldContain "todoDao.getById(todoId).applyFrom(req).let(todoDao::saveAndFlush).let(TodoDtoBuilder::build)"
+    serviceImpl shouldContain "todoDao.deleteById(todoId)"
+    serviceImpl shouldContain "todoDao.getById(todoId).applyPatch(req).let(todoDao::saveAndFlush).let(TodoDtoBuilder::build)"
+  }
+
+  @Test
+  fun `should fail when CRUD function does not exist`() {
+    shouldThrow<IllegalStateException> {
+      WebMvcApiGenerator(
+        listOf(
+          crudApi(
+            operations = listOf(CrudOperationToGenerateVo(CrudOperationKind.LIST, "missing"))
+          )
+        )
+      ).generateApis()
+    }
+  }
+
+  @Test
+  fun `should fail when CRUD idParam is not a path variable`() {
+    shouldThrow<IllegalArgumentException> {
+      WebMvcApiGenerator(
+        listOf(
+          crudApi(
+            operations = listOf(CrudOperationToGenerateVo(CrudOperationKind.GET, "getTodo", "missingId"))
+          )
+        )
+      ).generateApis()
+    }
+  }
+
+  @Test
+  fun `should fail when CRUD request DTO is missing`() {
+    shouldThrow<IllegalArgumentException> {
+      WebMvcApiGenerator(
+        listOf(
+          crudApi(
+            functions = mutableListOf(
+              ApiFunctionToGenerateVo(
+                method = RequestMethod.POST,
+                functionName = "createTodo",
+                path = "",
+                responseType = TodoDto::class.asTypeName(),
+                serviceName = "TodoService",
+              )
+            ),
+            operations = listOf(
+              CrudOperationToGenerateVo(CrudOperationKind.CREATE, "createTodo", requestType = CreateTodoReq::class.asTypeName())
+            )
+          )
+        )
+      ).generateApis()
+    }
+  }
+
+  @Test
+  fun `should fail when CRUD delete declares response DTO`() {
+    shouldThrow<IllegalArgumentException> {
+      WebMvcApiGenerator(
+        listOf(
+          crudApi(
+            functions = mutableListOf(
+              ApiFunctionToGenerateVo(
+                method = RequestMethod.DELETE,
+                functionName = "deleteTodo",
+                path = "{todoId}",
+                pathVariables = mapOf("todoId" to Int::class.asTypeName()),
+                responseType = TodoDto::class.asTypeName(),
+                serviceName = "TodoService",
+              )
+            ),
+            operations = listOf(CrudOperationToGenerateVo(CrudOperationKind.DELETE, "deleteTodo", "todoId"))
+          )
+        )
+      ).generateApis()
+    }
+  }
+
+  @Test
+  fun `should fail when CRUD function uses post processing`() {
+    shouldThrow<IllegalArgumentException> {
+      WebMvcApiGenerator(
+        listOf(
+          crudApi(
+            functions = mutableListOf(
+              ApiFunctionToGenerateVo(
+                method = RequestMethod.GET,
+                functionName = "getTodoList",
+                path = "",
+                responseType = Collection::class.asTypeName(),
+                responseTypeGenericArguments = listOf(TodoDto::class.asTypeName()),
+                serviceName = "TodoService",
+                postProcessing = true,
+              )
+            ),
+            operations = listOf(CrudOperationToGenerateVo(CrudOperationKind.LIST, "getTodoList"))
+          )
+        )
+      ).generateApis()
+    }
+  }
+
+  @Test
+  fun `should fail when CRUD function uses authentication detail`() {
+    shouldThrow<IllegalArgumentException> {
+      WebMvcApiGenerator(
+        listOf(
+          crudApi(
+            functions = mutableListOf(
+              ApiFunctionToGenerateVo(
+                method = RequestMethod.GET,
+                functionName = "getTodoList",
+                path = "",
+                responseType = Collection::class.asTypeName(),
+                responseTypeGenericArguments = listOf(TodoDto::class.asTypeName()),
+                serviceName = "TodoService",
+                authenticationDetailType = String::class.asTypeName(),
+              )
+            ),
+            operations = listOf(CrudOperationToGenerateVo(CrudOperationKind.LIST, "getTodoList"))
+          )
+        )
+      ).generateApis()
+    }
+  }
+
+  @Test
+  fun `should fail when CRUD service impl is declared twice for same service`() {
+    shouldThrow<IllegalArgumentException> {
+      WebMvcApiGenerator(
+        listOf(crudApi(), crudApi(apiName = "TodoApi2"))
+      ).generateApis()
     }
   }
 
@@ -242,5 +407,99 @@ class WebMvcApiGeneratorTest {
     controller shouldContain "@ApiResponse(responseCode = \"201\")"
     controller shouldContain "import org.springframework.web.bind.`annotation`.ResponseStatus"
     controller shouldContain "@ResponseStatus(HttpStatus.CREATED)"
+  }
+
+  private fun crudApi(
+    apiName: String = "TodoApi",
+    functions: MutableList<ApiFunctionToGenerateVo> = crudFunctions(),
+    operations: List<CrudOperationToGenerateVo> = crudOperations(),
+  ): ApiToGenerateVo {
+    return ApiToGenerateVo(
+      apiInterfacePackage = "com.example.api",
+      controllerPackage = "com.example.controller",
+      serviceInterfacePackage = "com.example.service",
+      apiName = apiName,
+      basePath = "/api/todo",
+      functions = functions,
+      serviceImplPackage = "com.example.service.impl",
+      crudServiceImpls = listOf(
+        CrudServiceImplToGenerateVo(
+          serviceName = "TodoService",
+          entityType = ClassName("com.example.model", "Todo"),
+          idType = Int::class.asTypeName(),
+          daoType = ClassName("com.example.dao", "TodoDao"),
+          daoPropertyName = "todoDao",
+          dtoBuilderType = ClassName("com.example.extensions", "TodoDtoBuilder"),
+          applyExtensionsType = ClassName("com.example.extensions", "TodoApplyValueExtensions"),
+          patchExtensionsType = ClassName("com.example.extensions", "TodoPatchExtensions"),
+          operations = operations,
+        )
+      )
+    )
+  }
+
+  private fun crudFunctions(): MutableList<ApiFunctionToGenerateVo> {
+    return mutableListOf(
+      ApiFunctionToGenerateVo(
+        method = RequestMethod.GET,
+        functionName = "getTodoList",
+        path = "",
+        responseType = Collection::class.asTypeName(),
+        responseTypeGenericArguments = listOf(TodoDto::class.asTypeName()),
+        serviceName = "TodoService",
+      ),
+      ApiFunctionToGenerateVo(
+        method = RequestMethod.GET,
+        functionName = "getTodo",
+        path = "{todoId}",
+        pathVariables = mapOf("todoId" to Int::class.asTypeName()),
+        responseType = TodoDto::class.asTypeName(),
+        serviceName = "TodoService",
+      ),
+      ApiFunctionToGenerateVo(
+        method = RequestMethod.POST,
+        functionName = "createTodo",
+        path = "",
+        requestType = CreateTodoReq::class.asTypeName(),
+        responseType = TodoDto::class.asTypeName(),
+        serviceName = "TodoService",
+      ),
+      ApiFunctionToGenerateVo(
+        method = RequestMethod.PUT,
+        functionName = "updateTodo",
+        path = "{todoId}",
+        pathVariables = mapOf("todoId" to Int::class.asTypeName()),
+        requestType = UpdateTodoReq::class.asTypeName(),
+        responseType = TodoDto::class.asTypeName(),
+        serviceName = "TodoService",
+      ),
+      ApiFunctionToGenerateVo(
+        method = RequestMethod.DELETE,
+        functionName = "deleteTodo",
+        path = "{todoId}",
+        pathVariables = mapOf("todoId" to Int::class.asTypeName()),
+        serviceName = "TodoService",
+      ),
+      ApiFunctionToGenerateVo(
+        method = RequestMethod.PATCH,
+        functionName = "patchTodo",
+        path = "{todoId}",
+        pathVariables = mapOf("todoId" to Int::class.asTypeName()),
+        requestType = TodoPatchReq::class.asTypeName(),
+        responseType = TodoDto::class.asTypeName(),
+        serviceName = "TodoService",
+      ),
+    )
+  }
+
+  private fun crudOperations(): List<CrudOperationToGenerateVo> {
+    return listOf(
+      CrudOperationToGenerateVo(CrudOperationKind.LIST, "getTodoList"),
+      CrudOperationToGenerateVo(CrudOperationKind.GET, "getTodo", "todoId"),
+      CrudOperationToGenerateVo(CrudOperationKind.CREATE, "createTodo", requestType = CreateTodoReq::class.asTypeName()),
+      CrudOperationToGenerateVo(CrudOperationKind.UPDATE, "updateTodo", "todoId", UpdateTodoReq::class.asTypeName()),
+      CrudOperationToGenerateVo(CrudOperationKind.DELETE, "deleteTodo", "todoId"),
+      CrudOperationToGenerateVo(CrudOperationKind.MERGE_PATCH, "patchTodo", "todoId", TodoPatchReq::class.asTypeName()),
+    )
   }
 }

@@ -22,6 +22,7 @@ class WebApiGenerateResultTest {
     result.feignApiInterfaces.shouldBeEmpty()
     result.controllers.shouldBeEmpty()
     result.serviceInterfaces.shouldBeEmpty()
+    result.serviceImpls.shouldBeEmpty()
   }
 
   @Test

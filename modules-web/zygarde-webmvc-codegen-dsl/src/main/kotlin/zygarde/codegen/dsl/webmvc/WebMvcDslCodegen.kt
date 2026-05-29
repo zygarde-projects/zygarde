@@ -6,7 +6,8 @@ abstract class WebMvcDslCodegen {
   private val config: WebMvcDslCodegenConfig = WebMvcDslCodegenConfig(
     apiInterfacePackage = System.getProperty("zygarde.codegen.dsl.webmvc.api-interface.package") ?: "zygarde.generated.api",
     controllerPackage = System.getProperty("zygarde.codegen.dsl.webmvc.controller.package") ?: "zygarde.generated.api.impl",
-    serviceInterfacePackage = System.getProperty("zygarde.codegen.dsl.webmvc.service-interface.package") ?: "zygarde.generated.service"
+    serviceInterfacePackage = System.getProperty("zygarde.codegen.dsl.webmvc.service-interface.package") ?: "zygarde.generated.service",
+    serviceImplPackage = System.getProperty("zygarde.codegen.dsl.webmvc.service-impl.package") ?: "zygarde.generated.service.impl",
   )
   val apisToGenerate: MutableList<ApiToGenerateVo> = mutableListOf()
 

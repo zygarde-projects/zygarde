@@ -49,4 +49,5 @@ fun main() {
   generateResults.feignApiInterfaces.writeSpecToFileOrSysOut("zygarde.codegen.dsl.webmvc.feign-interface.write-to")
   generateResults.controllers.writeSpecToFileOrSysOut("zygarde.codegen.dsl.webmvc.controller.write-to")
   generateResults.serviceInterfaces.writeSpecToFileOrSysOut("zygarde.codegen.dsl.webmvc.service-interface.write-to")
+  generateResults.serviceImpls.writeSpecToFileOrSysOut("zygarde.codegen.dsl.webmvc.service-impl.write-to")
 }

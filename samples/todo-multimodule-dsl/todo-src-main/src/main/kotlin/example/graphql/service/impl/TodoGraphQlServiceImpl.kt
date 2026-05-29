@@ -38,7 +38,7 @@ class TodoGraphQlServiceImpl(
   }
 
   override fun createTodo(input: CreateTodoReq): TodoDto {
-    return todoApiService.createTodo(input) {}
+    return todoApiService.createTodo(input)
   }
 
   override fun updateTodo(id: Int, input: UpdateTodoReq): TodoDto {

@@ -10,13 +10,15 @@ class WebMvcDslCodegenConfigTest {
     val config = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.example.api",
       controllerPackage = "com.example.controller",
-      serviceInterfacePackage = "com.example.service"
+      serviceInterfacePackage = "com.example.service",
+      serviceImplPackage = "com.example.service.impl",
     )
 
     // then
     config.apiInterfacePackage shouldBe "com.example.api"
     config.controllerPackage shouldBe "com.example.controller"
     config.serviceInterfacePackage shouldBe "com.example.service"
+    config.serviceImplPackage shouldBe "com.example.service.impl"
   }
 
   @Test
@@ -25,7 +27,8 @@ class WebMvcDslCodegenConfigTest {
     val config = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.example.api",
       controllerPackage = "com.example.controller",
-      serviceInterfacePackage = "com.example.service"
+      serviceInterfacePackage = "com.example.service",
+      serviceImplPackage = "com.example.service.impl",
     )
 
     // when
@@ -35,6 +38,7 @@ class WebMvcDslCodegenConfigTest {
     copied.apiInterfacePackage shouldBe "com.other.api"
     copied.controllerPackage shouldBe "com.example.controller"
     copied.serviceInterfacePackage shouldBe "com.example.service"
+    copied.serviceImplPackage shouldBe "com.example.service.impl"
   }
 
   @Test
@@ -43,12 +47,14 @@ class WebMvcDslCodegenConfigTest {
     val config1 = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.example.api",
       controllerPackage = "com.example.controller",
-      serviceInterfacePackage = "com.example.service"
+      serviceInterfacePackage = "com.example.service",
+      serviceImplPackage = "com.example.service.impl",
     )
     val config2 = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.example.api",
       controllerPackage = "com.example.controller",
-      serviceInterfacePackage = "com.example.service"
+      serviceInterfacePackage = "com.example.service",
+      serviceImplPackage = "com.example.service.impl",
     )
 
     // then
@@ -61,12 +67,14 @@ class WebMvcDslCodegenConfigTest {
     val config1 = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.example.api",
       controllerPackage = "com.example.controller",
-      serviceInterfacePackage = "com.example.service"
+      serviceInterfacePackage = "com.example.service",
+      serviceImplPackage = "com.example.service.impl",
     )
     val config2 = WebMvcDslCodegenConfig(
       apiInterfacePackage = "com.example.api",
       controllerPackage = "com.example.controller",
-      serviceInterfacePackage = "com.example.service"
+      serviceInterfacePackage = "com.example.service",
+      serviceImplPackage = "com.example.service.impl",
     )
 
     // then

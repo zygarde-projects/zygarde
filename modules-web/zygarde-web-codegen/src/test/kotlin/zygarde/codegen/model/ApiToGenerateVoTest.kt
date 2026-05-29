@@ -26,6 +26,8 @@ class ApiToGenerateVoTest {
     vo.functions.shouldBeEmpty()
     vo.separateFeign shouldBe true
     vo.feignUrlProperty shouldBe null
+    vo.serviceImplPackage shouldBe "zygarde.generated.service.impl"
+    vo.crudServiceImpls.shouldBeEmpty()
   }
 
   @Test

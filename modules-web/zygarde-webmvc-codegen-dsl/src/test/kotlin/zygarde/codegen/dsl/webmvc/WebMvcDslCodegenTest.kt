@@ -68,6 +68,7 @@ class WebMvcDslCodegenTest : WebMvcDslCodegen() {
     System.setProperty("zygarde.codegen.dsl.webmvc.feign-interface.write-to", tempDir.resolve("feign").toString())
     System.setProperty("zygarde.codegen.dsl.webmvc.controller.write-to", tempDir.resolve("controller").toString())
     System.setProperty("zygarde.codegen.dsl.webmvc.service-interface.write-to", tempDir.resolve("service").toString())
+    System.setProperty("zygarde.codegen.dsl.webmvc.service-impl.write-to", tempDir.resolve("service-impl").toString())
 
     try {
       // when
@@ -78,12 +79,14 @@ class WebMvcDslCodegenTest : WebMvcDslCodegen() {
       tempDir.resolve("feign").toFile().shouldExist()
       tempDir.resolve("controller").toFile().shouldExist()
       tempDir.resolve("service").toFile().shouldExist()
+      tempDir.resolve("service-impl").toFile().shouldExist()
     } finally {
       // cleanup - clear system properties
       System.clearProperty("zygarde.codegen.dsl.webmvc.api-interface.write-to")
       System.clearProperty("zygarde.codegen.dsl.webmvc.feign-interface.write-to")
       System.clearProperty("zygarde.codegen.dsl.webmvc.controller.write-to")
       System.clearProperty("zygarde.codegen.dsl.webmvc.service-interface.write-to")
+      System.clearProperty("zygarde.codegen.dsl.webmvc.service-impl.write-to")
     }
   }
 
