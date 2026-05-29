@@ -15,6 +15,9 @@ class ModelMappingMetadata(
 
   fun fieldsOf(dto: CodegenDto): List<ResolvedDtoField>? = fieldsByDto[dto]
 
+  fun providerFieldsOf(dto: CodegenDto): List<ResolvedDtoProviderField>? =
+    fieldsByDto[dto]?.mapNotNull { it.dataProvider }
+
   operator fun contains(dto: CodegenDto): Boolean = dto in fieldsByDto
 
   companion object {

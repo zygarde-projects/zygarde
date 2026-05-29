@@ -9,10 +9,13 @@ import zygarde.codegen.dsl.graphql.GraphQlDslCodegen
 class TodoGraphQlCodegen : GraphQlDslCodegen() {
   override fun codegen() {
     schema("TodoGraphQl") {
-      type<TodoDto>("Todo") {
-        fromAutoIntId(Todo::id)
-        from(Todo::description)
-        ref("file", "File", nullable = true)
+      typeFrom<TodoDto>(TodoModelDslCodegen.TodoDtos.TodoDto, "Todo") {
+        lazyProviders {
+          provider("file") {
+            graphQlType("File")
+            nullable()
+          }
+        }
       }
 
       type("File") {

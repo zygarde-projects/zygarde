@@ -1,5 +1,6 @@
 package zygarde.codegen.model.graphql
 
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
 
 data class GraphQlFunctionToGenerateVo(
@@ -37,6 +38,41 @@ data class GraphQlTypeDefinitionToGenerateVo(
   var unionMemberTypes: MutableList<String> = mutableListOf(),
   var description: String? = null,
 )
+
+data class GraphQlLazyTypeToGenerateVo(
+  var graphQlTypeName: String,
+  var sourceType: ClassName,
+  var sourceAssemblerType: ClassName,
+  var modelType: TypeName,
+  var sourceFields: MutableList<GraphQlLazySourceFieldToGenerateVo>,
+  var providers: MutableList<GraphQlLazyProviderToGenerateVo>,
+)
+
+data class GraphQlLazySourceFieldToGenerateVo(
+  var name: String,
+  var type: TypeName,
+  var modelFieldName: String,
+  var valueProvider: ClassName? = null,
+  var valueProviderParameterType: GraphQlValueProviderParameterType = GraphQlValueProviderParameterType.FIELD,
+  var valueProviderParameterField: String = modelFieldName,
+)
+
+data class GraphQlLazyProviderToGenerateVo(
+  var fieldName: String,
+  var graphQlType: String,
+  var nullable: Boolean,
+  var providerType: ClassName,
+  var keyType: TypeName,
+  var valueType: TypeName,
+  var keySourceFieldName: String,
+  var keySourceType: TypeName,
+  var keySourceNullable: Boolean,
+)
+
+enum class GraphQlValueProviderParameterType {
+  FIELD,
+  OBJECT,
+}
 
 data class GraphQlEnumValueToGenerateVo(
   var name: String,

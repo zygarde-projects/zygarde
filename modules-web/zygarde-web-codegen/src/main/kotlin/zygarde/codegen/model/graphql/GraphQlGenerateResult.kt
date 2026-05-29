@@ -6,6 +6,7 @@ data class GraphQlGenerateResult(
   val controllers: List<FileSpec>,
   val serviceInterfaces: List<FileSpec>,
   val schemas: List<GraphQlSchemaGenerateResult>,
+  val supportTypes: List<FileSpec> = emptyList(),
 )
 
 data class GraphQlSchemaGenerateResult(

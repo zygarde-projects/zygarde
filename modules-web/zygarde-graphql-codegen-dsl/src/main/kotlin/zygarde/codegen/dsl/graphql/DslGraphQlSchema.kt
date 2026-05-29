@@ -1,9 +1,11 @@
 package zygarde.codegen.dsl.graphql
 
+import com.squareup.kotlinpoet.ClassName
 import zygarde.codegen.dsl.meta.ModelMappingMetadata
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazyTypeToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
@@ -20,6 +22,7 @@ class DslGraphQlSchema(
 ) {
   private val functions: MutableList<GraphQlFunctionToGenerateVo> = mutableListOf()
   private val typeDefinitions: MutableList<GraphQlTypeDefinitionToGenerateVo> = mutableListOf()
+  private val lazyTypes: MutableList<GraphQlLazyTypeToGenerateVo> = mutableListOf()
 
   private val typeMapper: GraphQlTypeMapper = GraphQlTypeMapper()
   private val dtoDeriver: GraphQlDtoDeriver by lazy { GraphQlDtoDeriver(modelMappingMetadata, typeMapper) }
@@ -159,7 +162,17 @@ class DslGraphQlSchema(
     description: String? = null,
     exclude: Set<String> = emptySet(),
   ) {
-    deriveDtoTypeDefinition(dto, GraphQlTypeDefinitionKind.TYPE, "type", name, description, exclude)
+    typeFrom(dto, name, description, exclude) {}
+  }
+
+  fun typeFrom(
+    dto: CodegenDto,
+    name: String = dto.name,
+    description: String? = null,
+    exclude: Set<String> = emptySet(),
+    dsl: DslGraphQlDtoTypeDefinition.() -> Unit = {},
+  ) {
+    deriveDtoTypeDefinition(dto, GraphQlTypeDefinitionKind.TYPE, "type", name, description, exclude, dsl)
   }
 
   @JvmName("typedTypeFrom")
@@ -168,8 +181,9 @@ class DslGraphQlSchema(
     name: String = dto.name,
     description: String? = null,
     exclude: Set<String> = emptySet(),
+    noinline dsl: DslGraphQlDtoTypeDefinition.() -> Unit = {},
   ) {
-    typeFrom(dto, name, description, exclude)
+    typeFrom(dto, name, description, exclude, dsl)
     registerGraphQlType(T::class, name)
   }
 
@@ -180,7 +194,7 @@ class DslGraphQlSchema(
     description: String? = null,
     exclude: Set<String> = emptySet(),
   ) {
-    deriveDtoTypeDefinition(dto, GraphQlTypeDefinitionKind.INPUT, "input", name, description, exclude)
+    deriveDtoTypeDefinition(dto, GraphQlTypeDefinitionKind.INPUT, "input", name, description, exclude) {}
   }
 
   @JvmName("typedInputFrom")
@@ -201,14 +215,20 @@ class DslGraphQlSchema(
     name: String,
     description: String?,
     exclude: Set<String>,
+    dsl: DslGraphQlDtoTypeDefinition.() -> Unit,
   ) {
     requireGraphQlName(name, "GraphQL type definition name")
     requireUniqueGraphQlName(name, typeDefinitions.map { it.name }, "GraphQL type definition")
     requireGraphQlDescription(description, "GraphQL $keyword '$name'")
+    val dtoDefinition = DslGraphQlDtoTypeDefinition(name, modelMappingMetadata.providerFieldsOf(dto).orEmpty()).also(dsl)
+    val lazyProviders = dtoDefinition.lazyProvidersConfig()
+    val sourceType = if (lazyProviders != null) ClassName(config.serviceInterfacePackage, "${name}GraphQlSource") else null
+    val sourceAssemblerType = if (lazyProviders != null) ClassName(config.serviceInterfacePackage, "${name}GraphQlSourceAssembler") else null
     val existingNames = typeDefinitions.mapTo(mutableSetOf()) { it.name }
-    dtoDeriver
-      .derive(dto, kind, name, description, exclude) { it in existingNames }
-      .forEach { typeDefinitions.add(it) }
+    val derived = dtoDeriver
+      .derive(dto, kind, name, description, exclude, lazyProviders, sourceType, sourceAssemblerType) { it in existingNames }
+    derived.typeDefinitions.forEach { typeDefinitions.add(it) }
+    derived.lazyType?.let { lazyTypes.add(it) }
   }
 
   fun toGraphQlApiToGenerateVo(): GraphQlApiToGenerateVo {
@@ -218,6 +238,7 @@ class DslGraphQlSchema(
       apiName = schemaName,
       functions = functions,
       typeDefinitions = typeDefinitions,
+      lazyTypes = lazyTypes,
     )
   }
 

@@ -8,9 +8,11 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
+import org.springframework.graphql.data.method.annotation.BatchMapping
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -21,14 +23,19 @@ import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlGenerateResult
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazyProviderToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazySourceFieldToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazyTypeToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlSchemaGenerateResult
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlValueProviderParameterType
 import zygarde.codegen.model.graphql.graphQlStringLiteral
 import zygarde.codegen.model.graphql.requireGraphQlDeprecationReason
 import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
+import zygarde.data.provider.DataProviderContext
 
 class GraphQlApiGenerator(
   private val apis: Collection<GraphQlApiToGenerateVo>
@@ -37,6 +44,7 @@ class GraphQlApiGenerator(
   private val controllerBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
   private val serviceInterfaceFileSpecBuilderMap = mutableMapOf<String, FileSpec.Builder>()
   private val serviceInterfaceBuilderMap = mutableMapOf<String, TypeSpec.Builder>()
+  private val supportFileSpecs = mutableListOf<FileSpec>()
 
   private val beanFunc = MemberName("zygarde.core.di.DiServiceContext", "bean")
 
@@ -56,6 +64,7 @@ class GraphQlApiGenerator(
     return GraphQlGenerateResult(
       controllers = controllerFileSpecBuilderMap.values.map { it.build() },
       serviceInterfaces = serviceInterfaceFileSpecBuilderMap.values.map { it.build() },
+      supportTypes = supportFileSpecs,
       schemas = apis.map { it.toSchemaGenerateResult(emittedOperationTypes) },
     )
   }
@@ -197,6 +206,7 @@ class GraphQlApiGenerator(
   }
 
   private fun GraphQlApiToGenerateVo.generate() {
+    lazyTypes.forEach { supportFileSpecs.addAll(it.generateSupportTypes()) }
     if (functions.isEmpty()) {
       return
     }
@@ -206,6 +216,7 @@ class GraphQlApiGenerator(
       .filterValues { it > 1 }
       .keys
     val controllerName = "${apiName}Controller"
+    val lazyTypesByGraphQlType = lazyTypes.associateBy { it.graphQlTypeName }
     controllerFileSpecBuilderMap.getOrPut(controllerName) {
       FileSpec.builder(controllerPackage, controllerName)
     }
@@ -227,11 +238,11 @@ class GraphQlApiGenerator(
 
       val serviceFuncBuilder = FunSpec.builder(serviceFunctionName)
         .addModifiers(KModifier.ABSTRACT)
-        .returns(function.kotlinResponseType())
+        .returns(function.kotlinResponseType(lazyTypesByGraphQlType))
 
       val controllerFuncBuilder = FunSpec.builder(controllerFunctionName)
         .addAnnotation(function.toMappingAnnotationSpec())
-        .returns(function.kotlinResponseType())
+        .returns(function.kotlinResponseType(lazyTypesByGraphQlType))
 
       val paramsToCallServiceInterface = mutableListOf<String>()
       function.arguments.forEach { argument ->
@@ -259,7 +270,121 @@ class GraphQlApiGenerator(
         .takeUnless(serviceInterfaceBuilder.funSpecs::contains)
         ?.let(serviceInterfaceBuilder::addFunction)
     }
+    lazyTypes.forEach { lazyType ->
+      lazyType.providers.forEach { provider ->
+        controllerBuilder.addFunction(provider.toBatchMappingFunction(lazyType, provider.toBatchMappingFunctionName(lazyType)))
+      }
+    }
   }
+
+  private fun GraphQlLazyTypeToGenerateVo.generateSupportTypes(): List<FileSpec> {
+    val sourceConstructor = FunSpec.constructorBuilder()
+    val sourceBuilder = TypeSpec.classBuilder(sourceType)
+      .addModifiers(KModifier.DATA)
+    sourceFields.forEach { field ->
+      sourceConstructor.addParameter(field.name, field.type)
+      sourceBuilder.addProperty(
+        PropertySpec.builder(field.name, field.type)
+          .initializer(field.name)
+          .build()
+      )
+    }
+    sourceBuilder.primaryConstructor(sourceConstructor.build())
+
+    val assemblerBuilder = TypeSpec.classBuilder(sourceAssemblerType)
+      .addFunction(
+        FunSpec.builder("build")
+          .addParameter("model", modelType)
+          .returns(sourceType)
+          .addStatement("return buildAll(listOf(model)).single()")
+          .build()
+      )
+    val buildAllBuilder = FunSpec.builder("buildAll")
+      .addParameter("models", Collection::class.asTypeName().parameterizedBy(modelType))
+      .returns(Collection::class.asTypeName().parameterizedBy(sourceType))
+
+    val sourceArgs = mutableListOf<Any>(sourceType)
+    val fieldAssignments = sourceFields.joinToString(",\n") { field ->
+      val expression = field.toAssemblerExpression(sourceArgs)
+      "  ${field.name.toKotlinReferenceName()} = $expression"
+    }
+    buildAllBuilder.addStatement(
+      """return models.map·{ model ->
+%T(
+$fieldAssignments
+)
+}""",
+      *sourceArgs.toTypedArray(),
+    )
+    assemblerBuilder.addFunction(buildAllBuilder.build())
+
+    return listOf(
+      FileSpec.builder(sourceType.packageName, sourceType.simpleName)
+        .addType(sourceBuilder.build())
+        .build(),
+      FileSpec.builder(sourceAssemblerType.packageName, sourceAssemblerType.simpleName)
+        .addType(assemblerBuilder.build())
+        .build(),
+    )
+  }
+
+  private fun GraphQlLazySourceFieldToGenerateVo.toAssemblerExpression(args: MutableList<Any>): String {
+    valueProvider?.let { provider ->
+      args.add(provider)
+      return when (valueProviderParameterType) {
+        GraphQlValueProviderParameterType.FIELD -> "%T().getValue(model.${valueProviderParameterField.toKotlinReferenceName()})"
+        GraphQlValueProviderParameterType.OBJECT -> "%T().getValue(model)"
+      }
+    }
+    return "model.${modelFieldName.toKotlinReferenceName()}"
+  }
+
+  private fun GraphQlLazyProviderToGenerateVo.toBatchMappingFunction(
+    lazyType: GraphQlLazyTypeToGenerateVo,
+    functionName: String,
+  ): FunSpec {
+    val valuesType = Map::class.asTypeName().parameterizedBy(lazyType.sourceType, valueType)
+    val providerPropertyName = providerType.simpleName.replaceFirstChar { it.lowercase() }
+    val builder = FunSpec.builder(functionName)
+      .addAnnotation(
+        AnnotationSpec.builder(BatchMapping::class)
+          .addMember("typeName = %S", lazyType.graphQlTypeName)
+          .addMember("field = %S", fieldName)
+          .build()
+      )
+      .addParameter("items", List::class.asTypeName().parameterizedBy(lazyType.sourceType))
+      .returns(valuesType)
+
+    builder.addStatement("val %N = %M<%T>()", providerPropertyName, beanFunc, providerType)
+    builder.addStatement("val keys = items.mapNotNull·{ it.%N }.distinct()", keySourceFieldName)
+    builder.addStatement("val values = %N.load(keys, %T.EMPTY)", providerPropertyName, DataProviderContext::class)
+    if (nullable) {
+      builder.addStatement(
+        """return items.mapNotNull·{ item ->
+val value = item.%N?.let(values::get)
+value?.let·{ item to it }
+}.toMap()""",
+        keySourceFieldName,
+      )
+    } else {
+      val missingNullKeyMessage = "Data provider ${providerType.simpleName} did not return value for field '$fieldName' and key 'null'"
+      val missingKeyMessagePrefix = "Data provider ${providerType.simpleName} did not return value for field '$fieldName' and key '"
+      builder.addStatement(
+        """return items.associateWith·{ item ->
+val key = item.%N ?: throw IllegalStateException(%S)
+values[key] ?: throw IllegalStateException(%S + key + %S)
+}""",
+        keySourceFieldName,
+        missingNullKeyMessage,
+        missingKeyMessagePrefix,
+        "'",
+      )
+    }
+    return builder.build()
+  }
+
+  private fun GraphQlLazyProviderToGenerateVo.toBatchMappingFunctionName(lazyType: GraphQlLazyTypeToGenerateVo): String =
+    lazyType.graphQlTypeName.replaceFirstChar { it.lowercase() } + fieldName.replaceFirstChar { it.uppercase() }
 
   private fun GraphQlFunctionToGenerateVo.toControllerFunctionName(duplicatedControllerFunctionNames: Set<String>): String {
     if (functionName !in duplicatedControllerFunctionNames) {
@@ -294,11 +419,12 @@ class GraphQlApiGenerator(
       .build()
   }
 
-  private fun zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo.kotlinResponseType(): TypeName {
+  private fun GraphQlFunctionToGenerateVo.kotlinResponseType(lazyTypesByGraphQlType: Map<String, GraphQlLazyTypeToGenerateVo>): TypeName {
+    val actualResponseType = lazyTypesByGraphQlType[responseGraphQlType]?.sourceType ?: responseType
     return if (responseCollection) {
-      responseType.toCollectionType(itemNullable = responseItemNullable, nullable = responseNullable)
+      actualResponseType.toCollectionType(itemNullable = responseItemNullable, nullable = responseNullable)
     } else {
-      responseType.copy(nullable = responseNullable)
+      actualResponseType.copy(nullable = responseNullable)
     }
   }
 

@@ -76,6 +76,7 @@ fun main() {
   val generateResults = GraphQlApiGenerator(apisToGenerate).generateApis()
 
   generateResults.controllers.writeSpecToFileOrSysOut("zygarde.codegen.dsl.graphql.controller.write-to")
-  generateResults.serviceInterfaces.writeSpecToFileOrSysOut("zygarde.codegen.dsl.graphql.service-interface.write-to")
+  (generateResults.serviceInterfaces + generateResults.supportTypes)
+    .writeSpecToFileOrSysOut("zygarde.codegen.dsl.graphql.service-interface.write-to")
   generateResults.schemas.writeSchemaToFileOrSysOut("zygarde.codegen.dsl.graphql.schema.write-to")
 }

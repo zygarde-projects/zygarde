@@ -3,6 +3,8 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
+  implementation(project(":zygarde-jpa"))
+  implementation(project(":zygarde-model-mapping"))
   implementation(project(":todo-src-core"))
   implementation(project(":todo-dsl-generated-dto"))
 }

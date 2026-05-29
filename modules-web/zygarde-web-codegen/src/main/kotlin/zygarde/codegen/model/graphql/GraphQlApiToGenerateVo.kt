@@ -6,4 +6,5 @@ data class GraphQlApiToGenerateVo(
   var apiName: String,
   var functions: MutableList<GraphQlFunctionToGenerateVo> = mutableListOf(),
   var typeDefinitions: MutableList<GraphQlTypeDefinitionToGenerateVo> = mutableListOf(),
+  var lazyTypes: MutableList<GraphQlLazyTypeToGenerateVo> = mutableListOf(),
 )

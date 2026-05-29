@@ -1,13 +1,22 @@
 package zygarde.codegen.dsl.graphql
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.asClassName
 import zygarde.codegen.dsl.meta.ModelMappingMetadata
 import zygarde.codegen.dsl.meta.ResolvedDtoField
+import zygarde.codegen.dsl.meta.ResolvedDtoProviderField
+import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
 import zygarde.codegen.model.graphql.GraphQlEnumValueToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazyProviderToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazySourceFieldToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazyTypeToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlValueProviderParameterType
 import zygarde.codegen.model.graphql.requireGraphQlName
 
 /**
@@ -25,12 +34,20 @@ internal class GraphQlDtoDeriver(
 ) {
   private val dtoGraphQlNames = mutableMapOf<CodegenDto, String>()
 
+  data class DeriveResult(
+    val typeDefinitions: List<GraphQlTypeDefinitionToGenerateVo>,
+    val lazyType: GraphQlLazyTypeToGenerateVo?,
+  )
+
   private data class DeriveRequest(
     val dto: CodegenDto,
     val kind: GraphQlTypeDefinitionKind,
     val name: String,
     val description: String?,
     val exclude: Set<String>,
+    val lazyProviders: GraphQlLazyProvidersConfig?,
+    val sourceType: ClassName?,
+    val sourceAssemblerType: ClassName?,
   )
 
   private class BuiltType(
@@ -51,8 +68,11 @@ internal class GraphQlDtoDeriver(
     name: String,
     description: String?,
     exclude: Set<String>,
+    lazyProviders: GraphQlLazyProvidersConfig?,
+    sourceType: ClassName?,
+    sourceAssemblerType: ClassName?,
     alreadyDeclared: (String) -> Boolean,
-  ): List<GraphQlTypeDefinitionToGenerateVo> {
+  ): DeriveResult {
     require(kind == GraphQlTypeDefinitionKind.TYPE || kind == GraphQlTypeDefinitionKind.INPUT) {
       "GraphQL DTO derivation supports only 'type' and 'input' kinds"
     }
@@ -60,7 +80,8 @@ internal class GraphQlDtoDeriver(
     val result = mutableListOf<GraphQlTypeDefinitionToGenerateVo>()
     val producedNames = mutableSetOf<String>()
     val queue = ArrayDeque<DeriveRequest>()
-    queue.add(DeriveRequest(dto, kind, name, description, exclude))
+    queue.add(DeriveRequest(dto, kind, name, description, exclude, lazyProviders, sourceType, sourceAssemblerType))
+    var lazyType: GraphQlLazyTypeToGenerateVo? = null
     while (queue.isNotEmpty()) {
       val request = queue.removeFirst()
       if (request.name in producedNames || alreadyDeclared(request.name)) {
@@ -68,6 +89,9 @@ internal class GraphQlDtoDeriver(
       }
       val built = buildType(request)
       result.add(built.type)
+      if (request.dto == dto) {
+        lazyType = buildLazyType(request, built.type.fields)
+      }
       producedNames.add(request.name)
       built.enums.forEach { enum ->
         if (enum.name !in producedNames && !alreadyDeclared(enum.name)) {
@@ -78,11 +102,11 @@ internal class GraphQlDtoDeriver(
       built.referencedDtos.forEach { refDto ->
         val refName = graphQlNameOf(refDto)
         if (refName !in producedNames && !alreadyDeclared(refName)) {
-          queue.add(DeriveRequest(refDto, request.kind, refName, null, emptySet()))
+          queue.add(DeriveRequest(refDto, request.kind, refName, null, emptySet(), null, null, null))
         }
       }
     }
-    return result
+    return DeriveResult(typeDefinitions = result, lazyType = lazyType)
   }
 
   private fun buildType(request: DeriveRequest): BuiltType {
@@ -94,14 +118,16 @@ internal class GraphQlDtoDeriver(
       )
     val referencedDtos = mutableListOf<CodegenDto>()
     val enums = mutableListOf<GraphQlTypeDefinitionToGenerateVo>()
+    val lazyProviderOverrides = request.lazyProviders?.overrides.orEmpty()
     val graphQlFields = fields
       .filterNot { it.name in request.exclude }
       .map { field ->
         requireGraphQlName(field.name, "GraphQL ${request.kind.keyword()} '${request.name}' field")
         GraphQlFieldToGenerateVo(
           name = field.name,
-          graphQlType = resolveFieldGraphQlType(request, field, referencedDtos, enums),
-          nullable = field.nullable,
+          graphQlType = resolveLazyProviderGraphQlType(field, lazyProviderOverrides)
+            ?: resolveFieldGraphQlType(request, field, referencedDtos, enums),
+          nullable = resolveLazyProviderNullable(field, lazyProviderOverrides) ?: field.nullable,
           collection = field.collection,
           description = field.comment,
         )
@@ -121,6 +147,122 @@ internal class GraphQlDtoDeriver(
       enums = enums,
     )
   }
+
+  private fun buildLazyType(
+    request: DeriveRequest,
+    graphQlFields: List<GraphQlFieldToGenerateVo>,
+  ): GraphQlLazyTypeToGenerateVo? {
+    request.lazyProviders ?: return null
+    val fields = metadata.fieldsOf(request.dto).orEmpty()
+      .filterNot { it.name in request.exclude }
+    val providerFields = fields.mapNotNull { it.dataProvider }
+    require(providerFields.isNotEmpty()) {
+      "GraphQL type '${request.name}' enables lazyProviders() but DTO '${request.dto.name}' has no provider fields"
+    }
+    val modelType = fields.mapNotNull { it.modelType }.distinct().singleOrNull()
+      ?: throw IllegalArgumentException(
+        "GraphQL type '${request.name}' lazyProviders() requires DTO '${request.dto.name}' to map from exactly one model type"
+      )
+    val sourceType = requireNotNull(request.sourceType) { "GraphQL type '${request.name}' lazyProviders() requires a source type" }
+    val sourceAssemblerType = requireNotNull(request.sourceAssemblerType) {
+      "GraphQL type '${request.name}' lazyProviders() requires a source assembler type"
+    }
+    val sourceFields = buildSourceFields(fields)
+    val graphQlFieldsByName = graphQlFields.associateBy { it.name }
+    return GraphQlLazyTypeToGenerateVo(
+      graphQlTypeName = request.name,
+      sourceType = sourceType,
+      sourceAssemblerType = sourceAssemblerType,
+      modelType = modelType,
+      sourceFields = sourceFields.toMutableList(),
+      providers = providerFields.map { provider ->
+        provider.toLazyProvider(
+          graphQlType = graphQlFieldsByName.getValue(provider.fieldName).graphQlType,
+          nullable = graphQlFieldsByName.getValue(provider.fieldName).nullable,
+        )
+      }.toMutableList(),
+    )
+  }
+
+  private fun buildSourceFields(fields: List<ResolvedDtoField>): List<GraphQlLazySourceFieldToGenerateVo> {
+    val publicFields = fields
+      .filter { it.dataProvider == null }
+      .map { field ->
+        GraphQlLazySourceFieldToGenerateVo(
+          name = field.name,
+          type = field.toKotlinFieldType(),
+          modelFieldName = requireNotNull(field.modelFieldName),
+          valueProvider = field.valueProvider,
+          valueProviderParameterType = field.valueProviderParameterType.toGraphQlValueProviderParameterType(),
+          valueProviderParameterField = field.valueProviderParameterField ?: requireNotNull(field.modelFieldName),
+        )
+      }
+    val publicFieldNames = publicFields.mapTo(mutableSetOf()) { it.name }
+    val keyFields = fields
+      .mapNotNull { it.dataProvider }
+      .filterNot { it.keySourceFieldName in publicFieldNames }
+      .distinctBy { it.keySourceFieldName }
+      .map { provider ->
+        GraphQlLazySourceFieldToGenerateVo(
+          name = provider.keySourceFieldName,
+          type = provider.keySourceType.copy(nullable = provider.keySourceNullable),
+          modelFieldName = provider.keySourceFieldName,
+        )
+      }
+    return publicFields + keyFields
+  }
+
+  private fun ResolvedDtoField.toKotlinFieldType(): TypeName {
+    val elementType = rawType.copy(nullable = !collection && nullable)
+    return if (collection) {
+      Collection::class.asClassName().parameterizedBy(rawType).copy(nullable = nullable)
+    } else {
+      elementType
+    }
+  }
+
+  private fun ResolvedDtoProviderField.toLazyProvider(
+    graphQlType: String,
+    nullable: Boolean,
+  ): GraphQlLazyProviderToGenerateVo =
+    GraphQlLazyProviderToGenerateVo(
+      fieldName = fieldName,
+      graphQlType = graphQlType,
+      nullable = nullable,
+      providerType = providerType,
+      keyType = keyType,
+      valueType = valueType,
+      keySourceFieldName = keySourceFieldName,
+      keySourceType = keySourceType,
+      keySourceNullable = keySourceNullable,
+    )
+
+  private fun resolveLazyProviderGraphQlType(
+    field: ResolvedDtoField,
+    overrides: Map<String, GraphQlLazyProviderOverride>,
+  ): String? {
+    val provider = field.dataProvider ?: return null
+    return overrides[field.name]?.graphQlType ?: defaultProviderGraphQlType(provider.valueType)
+  }
+
+  private fun resolveLazyProviderNullable(
+    field: ResolvedDtoField,
+    overrides: Map<String, GraphQlLazyProviderOverride>,
+  ): Boolean? {
+    val provider = field.dataProvider ?: return null
+    return overrides[field.name]?.nullable ?: provider.nullable
+  }
+
+  private fun defaultProviderGraphQlType(valueType: TypeName): String {
+    val typeName = (valueType.copy(nullable = false) as? ClassName)?.simpleName ?: valueType.toString().substringAfterLast('.')
+    return typeName.removeSuffix("Dto")
+  }
+
+  private fun ValueProviderParameterType.toGraphQlValueProviderParameterType(): GraphQlValueProviderParameterType =
+    when (this) {
+      ValueProviderParameterType.FIELD -> GraphQlValueProviderParameterType.FIELD
+      ValueProviderParameterType.OBJECT -> GraphQlValueProviderParameterType.OBJECT
+    }
 
   private fun resolveFieldGraphQlType(
     request: DeriveRequest,

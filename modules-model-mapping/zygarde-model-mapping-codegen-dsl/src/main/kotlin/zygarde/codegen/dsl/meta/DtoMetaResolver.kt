@@ -70,10 +70,11 @@ object DtoMetaResolver {
   }
 
   private fun DtoFieldMapping.toResolvedDtoField(dtoPackageName: String): ResolvedDtoField {
+    val modelToDto = this as? DtoFieldMapping.ModelToDtoFieldMappingVo
     val declaredType = (
       dtoRefClass
         ?: dtoRef?.let { ClassName(dtoPackageName, it.name) }
-        ?: (this as? DtoFieldMapping.ModelToDtoFieldMappingVo)?.dataProviderValueType
+        ?: modelToDto?.dataProviderValueType
         ?: modelField.fieldClass
     ).kotlin(false)
     return ResolvedDtoField(
@@ -84,6 +85,37 @@ object DtoMetaResolver {
       dtoRef = dtoRef,
       id = isAutoId(),
       comment = (comment ?: modelField.comment).takeUnless { it.isNullOrBlank() },
+      modelType = modelField.modelClass,
+      modelFieldName = modelField.fieldName,
+      modelFieldType = modelField.fieldClass,
+      modelFieldNullable = modelField.fieldNullable,
+      valueProvider = modelToDto?.valueProvider,
+      valueProviderParameterType = modelToDto?.valueProviderParameterType ?: zygarde.codegen.dsl.model.type.ValueProviderParameterType.FIELD,
+      valueProviderParameterField = modelToDto?.valueProviderParameterField,
+      dataProvider = modelToDto?.toResolvedDtoProviderField(),
+    )
+  }
+
+  private fun DtoFieldMapping.ModelToDtoFieldMappingVo.toResolvedDtoProviderField(): ResolvedDtoProviderField? {
+    val provider = dataProvider ?: return null
+    val keyType = requireNotNull(dataProviderKeyType) {
+      "Data provider field '${dto.name}.${modelField.fieldName}' requires a key type."
+    }
+    val valueType = requireNotNull(dataProviderValueType) {
+      "Data provider field '${dto.name}.${modelField.fieldName}' requires a value type."
+    }
+    val keyField = requireNotNull(dataProviderKeyField) {
+      "Data provider field '${dto.name}.${modelField.fieldName}' requires key(...)."
+    }
+    return ResolvedDtoProviderField(
+      fieldName = modelField.fieldName,
+      providerType = provider,
+      keyType = keyType,
+      valueType = valueType,
+      keySourceFieldName = keyField.fieldName,
+      keySourceType = keyField.fieldClass,
+      keySourceNullable = keyField.fieldNullable,
+      nullable = resolveFieldNullable(this),
     )
   }
 

@@ -11,6 +11,8 @@ import zygarde.codegen.generator.GraphQlApiGenerator
 import zygarde.codegen.meta.CodegenDtoSimple
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
+import zygarde.data.provider.DataProvider
+import zygarde.data.provider.DataProviderContext
 import zygarde.core.annotation.Comment
 import java.time.LocalDate
 
@@ -18,6 +20,12 @@ class GraphQlDtoDerivationTest {
   data class BookDto(val id: Int, val title: String)
 
   data class CreateBookReq(val title: String)
+
+  data class ProductDto(val id: Int, val name: String, val file: FileDto?)
+
+  data class ProductWithFileIdDto(val id: Int, val fileId: String?, val file: FileDto?)
+
+  data class FileDto(val id: String)
 
   class Author {
     var id: Int = 0
@@ -34,6 +42,17 @@ class GraphQlDtoDerivationTest {
     var publishedAt: LocalDate? = null
   }
 
+  class Product {
+    var id: Int = 0
+    var name: String = ""
+    var fileId: String? = null
+  }
+
+  class FileProvider : DataProvider<String, FileDto> {
+    override fun load(keys: Collection<String>, context: DataProviderContext): Map<String, FileDto> =
+      keys.associateWith { FileDto(it) }
+  }
+
   enum class BookStatus {
     DRAFT,
     PUBLISHED,
@@ -43,6 +62,11 @@ class GraphQlDtoDerivationTest {
     AuthorDto,
     BookDto,
     CreateBookReq,
+  }
+
+  enum class ProviderDto : CodegenDtoSimple {
+    ProductDto,
+    ProductWithFileIdDto,
   }
 
   class TestModelSpec : ModelMappingCodegenSpec({
@@ -60,7 +84,28 @@ class GraphQlDtoDerivationTest {
     }
   })
 
+  class ProviderModelSpec : ModelMappingCodegenSpec({
+    ProviderDto.ProductDto {
+      fromAutoIntId(Product::id)
+      from(Product::name)
+      provide<FileProvider, String, FileDto>("file") {
+        key(Product::fileId)
+        nullable()
+      }
+    }
+    ProviderDto.ProductWithFileIdDto {
+      fromAutoIntId(Product::id)
+      from(Product::fileId)
+      provide<FileProvider, String, FileDto>("file") {
+        key(Product::fileId)
+        nullable()
+      }
+    }
+  })
+
   private fun metadata(): ModelMappingMetadata = DtoMetaResolver.resolve(TestModelSpec().dtoFieldMappings)
+
+  private fun providerMetadata(): ModelMappingMetadata = DtoMetaResolver.resolve(ProviderModelSpec().dtoFieldMappings)
 
   private fun deriveSchema(
     metadata: ModelMappingMetadata = metadata(),
@@ -233,5 +278,98 @@ class GraphQlDtoDerivationTest {
     schema shouldContain "type AuthorDto {"
     schema shouldContain "enum BookStatus {"
     schema shouldContain "input CreateBookInput {"
+  }
+
+  @Test
+  fun `should expose model mapping provider metadata`() {
+    val provider = providerMetadata().providerFieldsOf(ProviderDto.ProductDto).orEmpty().single()
+
+    provider.fieldName shouldBe "file"
+    provider.providerType.simpleName shouldBe "FileProvider"
+    provider.keySourceFieldName shouldBe "fileId"
+    provider.nullable shouldBe true
+  }
+
+  @Test
+  fun `should derive lazy GraphQL provider source and batch resolver metadata`() {
+    val api = deriveSchema(metadata = providerMetadata()) {
+      type("File") {
+        field<String>("id")
+      }
+      typeFrom<ProductDto>(ProviderDto.ProductDto, name = "Product") {
+        lazyProviders {
+          provider("file") {
+            graphQlType("File")
+            nullable()
+          }
+        }
+      }
+      query("products") {
+        returnsCollection<ProductDto>()
+      }
+    }
+
+    val product = api.typeDefinitions.single { it.name == "Product" }
+    product.fields.map { it.name } shouldBe listOf("id", "name", "file")
+    product.fields.single { it.name == "file" }.apply {
+      graphQlType shouldBe "File"
+      nullable shouldBe true
+    }
+
+    val lazyType = api.lazyTypes.single()
+    lazyType.sourceType.simpleName shouldBe "ProductGraphQlSource"
+    lazyType.sourceFields.map { it.name } shouldBe listOf("id", "name", "fileId")
+    lazyType.providers.single().apply {
+      fieldName shouldBe "file"
+      keySourceFieldName shouldBe "fileId"
+      providerType.simpleName shouldBe "FileProvider"
+    }
+
+    val generated = GraphQlApiGenerator(listOf(api)).generateApis()
+    generated.schemas.single().content shouldContain "file: File"
+    generated.schemas.single().content shouldContain "products: [Product!]!"
+    generated.schemas.single().content shouldContain "type Product {"
+    generated.schemas.single().content shouldContain "name: String!"
+    generated.schemas.single().content shouldContain "file: File"
+    generated.schemas.single().content shouldContain "type File {"
+    generated.schemas.single().content shouldContain "id: String!"
+    generated.schemas.single().content.contains("fileId") shouldBe false
+    generated.serviceInterfaces.single().toString() shouldContain "Collection<ProductGraphQlSource>"
+    generated.supportTypes.map { it.name }.toSet() shouldBe setOf("ProductGraphQlSource", "ProductGraphQlSourceAssembler")
+    generated.controllers.single().toString().also {
+      it shouldContain "@BatchMapping"
+      it shouldContain "fun productFile("
+      it shouldContain "typeName = \"Product\""
+      it shouldContain "field = \"file\""
+      it shouldContain "fileProvider.load(keys, DataProviderContext.EMPTY)"
+    }
+  }
+
+  @Test
+  fun `should not duplicate source fields when provider key is also public`() {
+    val api = deriveSchema(metadata = providerMetadata()) {
+      typeFrom<ProductWithFileIdDto>(ProviderDto.ProductWithFileIdDto, name = "ProductWithFileId") {
+        lazyProviders()
+      }
+    }
+
+    api.lazyTypes.single().sourceFields.map { it.name } shouldBe listOf("id", "fileId")
+  }
+
+  @Test
+  fun `should reject lazy provider override for unknown DTO provider field`() {
+    val ex = shouldThrow<IllegalArgumentException> {
+      deriveSchema(metadata = providerMetadata()) {
+        typeFrom<ProductDto>(ProviderDto.ProductDto, name = "Product") {
+          lazyProviders {
+            provider("owner") {
+              graphQlType("Owner")
+            }
+          }
+        }
+      }
+    }
+
+    ex.message shouldContain "no provider field 'owner'"
   }
 }
