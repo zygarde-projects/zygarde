@@ -17,6 +17,8 @@ import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import zygarde.codegen.dsl.meta.DtoMetaResolver
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
@@ -57,6 +59,7 @@ class DtoFieldMappingCodeGenerator(
       modelMappingFileSpecs = listOf(
         generateDtoExtraValue(),
         generateMapToDtoExtension(),
+        generateDtoAssemblers(),
         generateApplyFromDtoExtension(),
         generateApplyPatchExtension(),
         generateCompoundDtoBuilder(),
@@ -107,6 +110,7 @@ class DtoFieldMappingCodeGenerator(
 
         mappings
           .filter { it.modelField.extra }
+          .filter { it.dataProvider == null }
           .forEach { mapping ->
             funcBuilder
               .addParameter(
@@ -129,7 +133,9 @@ class DtoFieldMappingCodeGenerator(
             val fieldName = mapping.modelField.fieldName
             val valueProviderParameterField = mapping.valueProviderParameterField
             val valueProvider = mapping.valueProvider
-            if (valueProvider != null) {
+            if (mapping.dataProvider != null) {
+              "$fieldName = ${mapping.providerPlaceholderExpression()}"
+            } else if (valueProvider != null) {
               val valueProviderParam = when (mapping.valueProviderParameterType) {
                 ValueProviderParameterType.FIELD -> "$modelParamName.$valueProviderParameterField"
                 ValueProviderParameterType.OBJECT -> modelParamName
@@ -407,7 +413,9 @@ $callDtoStatements
             val valueProviderParameterType = mapping.valueProviderParameterType
             val valueProviderParameterField = mapping.valueProviderParameterField
             val isExtraField = mapping.modelField.extra
-            if (valueProvider != null) {
+            if (mapping.dataProvider != null) {
+              "  $dtoFieldName = ${mapping.providerPlaceholderExpression()}"
+            } else if (valueProvider != null) {
               codeBlockArgs.add(valueProvider)
               val valueProviderParam = when (valueProviderParameterType) {
                 ValueProviderParameterType.FIELD -> "this.$valueProviderParameterField"
@@ -468,6 +476,140 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
         extensionFileSpecBuilder
           .addType(extensionClassBuilder.build())
           .build()
+      }
+  }
+
+  private fun generateDtoAssemblers(): List<FileSpec> {
+    return dtoFieldMappings
+      .mapNotNull { if (it is DtoFieldMapping.ModelToDtoFieldMappingVo) it else null }
+      .groupBy { it.dto }
+      .mapNotNull { (dto, mappingsByDto) ->
+        val modelClasses = mappingsByDto
+          .map { it.modelField.modelClass }
+          .filter { it != Any::class.asClassName() }
+          .toSet()
+        val hasUnsupportedExtraField = mappingsByDto.any { it.modelField.extra && it.dataProvider == null }
+        if (modelClasses.size != 1 || hasUnsupportedExtraField) {
+          null
+        } else {
+          val modelClass = modelClasses.single()
+          val dtoClass = ClassName(dtoPackageName, dto.name)
+          val assemblerClassName = "${dto.name}Assembler"
+          val assemblerClass = ClassName(modelExtensionPackageName, assemblerClassName)
+          val providerMappings = mappingsByDto.filter { it.dataProvider != null }
+          providerMappings.forEach { mapping ->
+            requireNotNull(mapping.dataProviderKeyField) {
+              "Data provider field '${dto.name}.${mapping.modelField.fieldName}' requires key(...)."
+            }
+          }
+
+          val constructor = FunSpec.constructorBuilder()
+          val assemblerBuilder = TypeSpec.classBuilder(assemblerClass)
+            .addAnnotation(Component::class)
+            .addFunction(
+              FunSpec.builder("build")
+                .addParameter("model", modelClass)
+                .returns(dtoClass)
+                .addStatement("return buildAll(listOf(model)).single()")
+                .build()
+            )
+
+          providerMappings
+            .map { requireNotNull(it.dataProvider) }
+            .distinct()
+            .forEach { provider ->
+              val providerPropertyName = provider.providerPropertyName()
+              constructor.addParameter(
+                ParameterSpec.builder(providerPropertyName, provider)
+                  .addAnnotation(Autowired::class)
+                  .build()
+              )
+              assemblerBuilder.addProperty(
+                PropertySpec.builder(providerPropertyName, provider, KModifier.PRIVATE)
+                  .initializer(providerPropertyName)
+                  .build()
+              )
+            }
+
+          val buildAllBuilder = FunSpec.builder("buildAll")
+            .addParameter("models", Collection::class.asClassName().parameterizedBy(modelClass))
+            .returns(Collection::class.asClassName().parameterizedBy(dtoClass))
+            .addStatement("val modelList = models.toList()")
+
+          providerMappings.forEach { mapping ->
+            val keyField = requireNotNull(mapping.dataProviderKeyField)
+            val provider = requireNotNull(mapping.dataProvider)
+            buildAllBuilder.addStatement(
+              "val %N = modelList.mapNotNull·{ it.%N }.distinct()",
+              mapping.providerKeysVariableName(),
+              keyField.fieldName,
+            )
+            buildAllBuilder.addStatement(
+              "val %N = %N.load(%N)",
+              mapping.providerValuesVariableName(),
+              provider.providerPropertyName(),
+              mapping.providerKeysVariableName(),
+            )
+          }
+
+          val codeBlockArgs = mutableListOf<Any>(dtoClass)
+          val dtoFieldSetterStatements = mappingsByDto.map { mapping ->
+            val dtoFieldName = mapping.modelField.fieldName
+            val modelFieldName = mapping.modelField.fieldName
+            val dtoRef = mapping.dtoRef
+            val q = if (mapping.modelField.fieldNullable) "?" else ""
+            val valueProvider = mapping.valueProvider
+            val valueProviderParameterType = mapping.valueProviderParameterType
+            val valueProviderParameterField = mapping.valueProviderParameterField
+            val isExtraField = mapping.modelField.extra
+            if (mapping.dataProvider != null) {
+              "  $dtoFieldName = ${mapping.providerValueExpression("model")}"
+            } else if (valueProvider != null) {
+              codeBlockArgs.add(valueProvider)
+              val valueProviderParam = when (valueProviderParameterType) {
+                ValueProviderParameterType.FIELD -> "model.$valueProviderParameterField"
+                ValueProviderParameterType.OBJECT -> "model"
+              }
+
+              "  $dtoFieldName = %T().getValue($valueProviderParam)"
+            } else if (isExtraField) {
+              "  $dtoFieldName = ${mapping.providerPlaceholderExpression()}"
+            } else if (dtoRef != null) {
+              val modelForToDtoExtensions = mapping.modelField.fieldClass.toString()
+              codeBlockArgs.add(
+                MemberName(
+                  "$modelExtensionPackageName.${modelForToDtoExtensions}ToDtoExtensions",
+                  "to${dtoRef.name}"
+                )
+              )
+              if (mapping.refCollection) {
+                "  $dtoFieldName = model.$modelFieldName$q.map{it.%M()}"
+              } else {
+                "  $dtoFieldName = model.$modelFieldName$q.%M()"
+              }
+            } else {
+              "  $dtoFieldName = model.$modelFieldName"
+            }
+          }
+
+          buildAllBuilder.addStatement(
+            """return modelList.map·{ model ->
+%T(
+${dtoFieldSetterStatements.joinToString(",\r\n")}
+)
+}""",
+            *codeBlockArgs.toTypedArray(),
+          )
+
+          FileSpec.builder(modelExtensionPackageName, assemblerClassName)
+            .addType(
+              assemblerBuilder
+                .primaryConstructor(constructor.build())
+                .addFunction(buildAllBuilder.build())
+                .build()
+            )
+            .build()
+        }
       }
   }
 
@@ -570,6 +712,41 @@ ${dtoFieldSetterStatements.joinToString(",\r\n")}
       mergePatchFieldClass.parameterizedBy(resolvedFieldType.copy(nullable = false))
     } else {
       resolvedFieldType
+    }
+  }
+
+  private fun ClassName.providerPropertyName(): String {
+    return simpleName.replaceFirstChar { it.lowercase() }
+  }
+
+  private fun DtoFieldMapping.ModelToDtoFieldMappingVo.providerKeysVariableName(): String {
+    return "${modelField.fieldName}Keys"
+  }
+
+  private fun DtoFieldMapping.ModelToDtoFieldMappingVo.providerValuesVariableName(): String {
+    return "${modelField.fieldName}Values"
+  }
+
+  private fun DtoFieldMapping.ModelToDtoFieldMappingVo.providerPlaceholderExpression(): String {
+    return if (fieldType().isNullable) {
+      "null"
+    } else {
+      """error("Data provider field '${dto.name}.${modelField.fieldName}' requires ${dto.name}Assembler")"""
+    }
+  }
+
+  private fun DtoFieldMapping.ModelToDtoFieldMappingVo.providerValueExpression(modelRef: String): String {
+    val provider = requireNotNull(dataProvider)
+    val keyField = requireNotNull(dataProviderKeyField)
+    val keyExpression = "$modelRef.${keyField.fieldName}"
+    val valuesVariable = providerValuesVariableName()
+    return if (fieldType().isNullable) {
+      "$keyExpression?.let { $valuesVariable[it] }"
+    } else {
+      val missingNullKeyMessage = "Data provider ${provider.simpleName} did not return value for field '${modelField.fieldName}' and key 'null'"
+      "$keyExpression?.let { key -> $valuesVariable[key] ?: throw IllegalStateException(" +
+        "\"Data provider ${provider.simpleName} did not return value for field '${modelField.fieldName}' and key '\$key'\") } " +
+        "?: throw IllegalStateException(\"$missingNullKeyMessage\")"
     }
   }
 

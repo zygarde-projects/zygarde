@@ -52,6 +52,61 @@ class SqlApiGeneratorTest {
   }
 
   @Test
+  fun `should generate hidden columns and provider response fields`() {
+    val api = SqlApiToGenerateVo(
+      config = SqlApiDslCodegenConfig(
+        dtoPackage = "example.dto",
+        apiInterfacePackage = "example.api",
+        controllerPackage = "example.controller",
+        serviceInterfacePackage = "example.service",
+        serviceImplPackage = "example.service.impl",
+      ),
+      apiName = "TodoReportApi",
+      basePath = "/api/todo-report",
+      queries = listOf(
+        SqlQueryToGenerateVo(
+          functionName = "searchTodos",
+          path = "/search",
+          sql = "select id as id, file_id as fileId from todo",
+          requestName = "SearchTodosReq",
+          responseName = "TodoReportDto",
+          params = emptyList(),
+          columns = listOf(
+            SqlApiField("id", Int::class.asTypeName()),
+            SqlApiField("fileId", String::class.asTypeName().copy(nullable = true), hidden = true),
+          ),
+          providerFields = listOf(
+            SqlApiDataProviderField(
+              name = "file",
+              providerType = ClassName("example.provider", "FileProvider"),
+              keyType = String::class.asTypeName(),
+              valueType = ClassName("example.dto", "FileDto").copy(nullable = true),
+              keyColumnName = "fileId",
+              nullable = true,
+            )
+          ),
+        )
+      ),
+    )
+
+    val result = SqlApiGenerator(listOf(api)).generate()
+
+    result.dtoFileSpecs.first { it.name == "TodoReportDto" }.toString().also {
+      it shouldContain "public var id: Int"
+      it shouldContain "public var `file`: FileDto? = null"
+      it shouldNotContain "fileId"
+    }
+    result.serviceImplFileSpecs.single().toString().also {
+      it shouldContain "private val fileProvider: FileProvider"
+      it shouldContain "private data class SearchTodosRow"
+      it shouldContain "public val fileId: String?"
+      it shouldContain "val fileKeys = rows.mapNotNull { it.fileId }.distinct()"
+      it shouldContain "val fileValues = fileProvider.load(fileKeys)"
+      it shouldContain "`file` = row.fileId?.let { fileValues[it] }"
+    }
+  }
+
+  @Test
   fun `should generate single row query contract and service implementation`() {
     val api = SqlApiToGenerateVo(
       config = SqlApiDslCodegenConfig(

@@ -2,6 +2,7 @@ package zygarde.codegen.dsl.model.internal
 
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.TypeName
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
@@ -128,6 +129,10 @@ sealed class DtoFieldMapping(
     var valueProvider: ClassName? = null,
     var valueProviderParameterType: ValueProviderParameterType = ValueProviderParameterType.FIELD,
     var valueProviderParameterField: String = modelField.fieldName,
+    var dataProvider: ClassName? = null,
+    var dataProviderKeyType: TypeName? = null,
+    var dataProviderValueType: TypeName? = null,
+    var dataProviderKeyField: ModelMetaField? = null,
   ) : DtoFieldMapping(
       modelField,
       dto,

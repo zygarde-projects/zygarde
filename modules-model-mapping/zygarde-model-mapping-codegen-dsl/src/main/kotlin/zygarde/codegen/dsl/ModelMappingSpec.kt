@@ -143,6 +143,35 @@ open class ModelMappingSpec(
     }
   }
 
+  inline fun <reified P : Any, reified K : Any, reified V> provide(
+    fieldName: String,
+    dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = {}
+  ) {
+    dtoFieldMappings.add(
+      DtoFieldMapping
+        .ModelToDtoFieldMappingVo(
+          modelField = ModelMetaField(
+            modelClass = Any::class.asTypeName(),
+            fieldName = fieldName,
+            fieldClass = V::class.asTypeName(),
+            fieldNullable = false,
+            extra = true,
+          ),
+          dto = dto,
+          dataProvider = P::class.asClassName(),
+          dataProviderKeyType = K::class.asTypeName(),
+          dataProviderValueType = V::class.asTypeName(),
+        )
+        .also(dsl)
+        .also { it.compound = true }
+    )
+  }
+
+  fun DtoFieldMapping.ModelToDtoFieldMappingVo.key(prop: KProperty1<*, *>) {
+    dataProviderKeyField = prop.asModelMetaField()
+    modelField = modelField.copy(modelClass = dataProviderKeyField?.modelClass ?: modelField.modelClass)
+  }
+
   fun applyTo(vararg props: KProperty1<*, *>, dsl: (DtoFieldMapping.ModelApplyFromDtoFieldMappingVo.() -> Unit) = {}) {
     props.forEach { p ->
       DtoFieldMapping.ModelApplyFromDtoFieldMappingVo(p.asModelMetaField(), dto)

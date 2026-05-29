@@ -12,7 +12,7 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
       query("searchTodos", "/search") {
         sql(
           """
-          select t.id as id, t.description as description
+          select t.id as id, t.description as description, t.file_id as fileId
           from todo t
           where (:keyword is null or t.description like concat('%', :keyword, '%'))
           order by t.id
@@ -21,13 +21,18 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         queryParam<String?>("keyword", description = "Search keyword")
         column<Int>("id")
         column<String>("description")
+        hiddenColumn<String?>("fileId")
+        provide<FileDtoProvider, String, FileDto>("file") {
+          keyColumn("fileId")
+          nullable()
+        }
         request("SearchTodosReq")
         response("TodoReportDto")
       }
       query("findTodo", "/find/{id}") {
         sql(
           """
-          select t.id as id, t.description as description
+          select t.id as id, t.description as description, t.file_id as fileId
           from todo t
           where t.id = :id
           """.trimIndent()
@@ -35,6 +40,11 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         pathParam<Int>("id", description = "Todo id")
         column<Int>("id")
         column<String>("description")
+        hiddenColumn<String?>("fileId")
+        provide<FileDtoProvider, String, FileDto>("file") {
+          keyColumn("fileId")
+          nullable()
+        }
         request("FindTodoReq")
         response("TodoReportDto")
         returnsOneOrNull()
@@ -42,7 +52,7 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
       query("findTodosByIds", "/find-by-ids") {
         sql(
           """
-          select t.id as id, t.description as description
+          select t.id as id, t.description as description, t.file_id as fileId
           from todo t
           where t.id in (:ids)
           order by t.id
@@ -51,13 +61,18 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         queryParam<Collection<Int>>("ids", description = "Todo ids")
         column<Int>("id")
         column<String>("description")
+        hiddenColumn<String?>("fileId")
+        provide<FileDtoProvider, String, FileDto>("file") {
+          keyColumn("fileId")
+          nullable()
+        }
         request("FindTodosByIdsReq")
         response("TodoReportDto")
       }
       query("pageTodos", "/page") {
         sql(
           """
-          select t.id as id, t.description as description
+          select t.id as id, t.description as description, t.file_id as fileId
           from todo t
           where (:keyword is null or t.description like concat('%', :keyword, '%'))
           order by t.id
@@ -76,13 +91,18 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         queryParam<Int>("pageSize", description = "Page size")
         column<Int>("id")
         column<String>("description")
+        hiddenColumn<String?>("fileId")
+        provide<FileDtoProvider, String, FileDto>("file") {
+          keyColumn("fileId")
+          nullable()
+        }
         request("PageTodosReq")
         response("TodoReportDto")
       }
       query("findCurrentTodo", "/current") {
         sql(
           """
-          select t.id as id, t.description as description
+          select t.id as id, t.description as description, t.file_id as fileId
           from todo t
           where t.id = :currentTodoId
           """.trimIndent()
@@ -90,6 +110,11 @@ class TodoSqlApiCodegen : SqlApiDslCodegen() {
         contextParam<Int?>("currentTodoId", resolver = CurrentTodoIdResolver::class)
         column<Int>("id")
         column<String>("description")
+        hiddenColumn<String?>("fileId")
+        provide<FileDtoProvider, String, FileDto>("file") {
+          keyColumn("fileId")
+          nullable()
+        }
         request("FindCurrentTodoReq")
         response("TodoReportDto")
         returnsOneOrNull()

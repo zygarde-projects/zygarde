@@ -100,4 +100,31 @@ class ModelToDtoDsl<E : Any>(
       valueProviderParameterType = ValueProviderParameterType.OBJECT
     }
   }
+
+  inline fun <reified P : Any, reified K : Any, reified V> provide(
+    fieldName: String,
+    dsl: (ModelToDtoFieldMappingVo.() -> Unit) = {}
+  ) {
+    dtoFieldMappings.add(
+      ModelToDtoFieldMappingVo(
+        modelField = ModelMetaField(
+          modelClass = modelClass.asTypeName(),
+          fieldName = fieldName,
+          fieldClass = V::class.asTypeName(),
+          fieldNullable = false,
+          extra = true,
+        ),
+        dto = dto,
+        dataProvider = P::class.asClassName(),
+        dataProviderKeyType = K::class.asTypeName(),
+        dataProviderValueType = V::class.asTypeName(),
+      )
+        .also(dsl)
+    )
+  }
+
+  fun ModelToDtoFieldMappingVo.key(field: ModelMetaField) {
+    dataProviderKeyField = field
+    modelField = modelField.copy(modelClass = field.modelClass)
+  }
 }

@@ -18,6 +18,8 @@ import jakarta.validation.constraints.NotEmpty
 @ZyModel
 class Todo(
   var description: String = "",
+  @Column(name = "file_id")
+  var fileId: String? = "todo-file",
   var checkTimes: Int = 0,
 ) : AutoIntIdEntity()
 

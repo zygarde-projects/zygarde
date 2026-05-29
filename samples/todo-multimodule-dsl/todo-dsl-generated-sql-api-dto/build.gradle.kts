@@ -3,6 +3,7 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
+  api(project(":todo-src-core"))
   implementation(project(":zygarde-core"))
 }
 

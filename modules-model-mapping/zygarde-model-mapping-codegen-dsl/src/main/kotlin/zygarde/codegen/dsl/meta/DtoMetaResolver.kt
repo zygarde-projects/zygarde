@@ -43,6 +43,7 @@ object DtoMetaResolver {
     return (
       mapping.dtoRefClass
         ?: mapping.dtoRef?.let { ClassName(dtoPackageName, it.name) }
+        ?: (mapping as? DtoFieldMapping.ModelToDtoFieldMappingVo)?.dataProviderValueType
         ?: mapping.modelField.fieldClass
     )
       .kotlin(!mapping.refCollection && fieldTypeNullable)
@@ -72,6 +73,7 @@ object DtoMetaResolver {
     val declaredType = (
       dtoRefClass
         ?: dtoRef?.let { ClassName(dtoPackageName, it.name) }
+        ?: (this as? DtoFieldMapping.ModelToDtoFieldMappingVo)?.dataProviderValueType
         ?: modelField.fieldClass
     ).kotlin(false)
     return ResolvedDtoField(

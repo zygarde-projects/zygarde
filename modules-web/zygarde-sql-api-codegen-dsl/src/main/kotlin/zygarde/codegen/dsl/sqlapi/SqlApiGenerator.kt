@@ -46,7 +46,7 @@ class SqlApiGenerator(
     val queryDtoTypes = queries.flatMap { query ->
       listOfNotNull(
         (query.requestName to query.requestDtoParams()).takeIf { it.second.isNotEmpty() },
-        query.responseName to query.columns,
+        query.responseName to query.responseDtoFields(),
       )
     }
     val commandDtoTypes = commands.flatMap { command ->
@@ -171,12 +171,20 @@ class SqlApiGenerator(
           }
           .build()
       )
-      .build()
+    val providerTypes = queries.flatMap { it.providerFields.map { providerField -> providerField.providerType } }.distinct()
+    providerTypes.forEach { providerType ->
+      constructor.addParameter(
+        ParameterSpec.builder(providerType.providerPropertyName(), providerType)
+          .addAnnotation(Autowired::class)
+          .build()
+      )
+    }
+    val constructorSpec = constructor.build()
 
     val serviceImplType = TypeSpec.classBuilder(serviceImplName)
       .addAnnotation(Service::class)
       .addSuperinterface(serviceClass)
-      .primaryConstructor(constructor)
+      .primaryConstructor(constructorSpec)
       .addProperty(
         PropertySpec.builder("dataSource", DataSource::class, KModifier.PRIVATE)
           .initializer("dataSource")
@@ -187,6 +195,13 @@ class SqlApiGenerator(
           .initializer("%T(dataSource)", ZygardeSqlExecutor::class)
           .build()
       )
+    providerTypes.forEach { providerType ->
+      serviceImplType.addProperty(
+        PropertySpec.builder(providerType.providerPropertyName(), providerType, KModifier.PRIVATE)
+          .initializer(providerType.providerPropertyName())
+          .build()
+      )
+    }
 
     val companionObject = TypeSpec.companionObjectBuilder()
     queries.forEach { query ->
@@ -205,6 +220,9 @@ class SqlApiGenerator(
             .initializer("%S", query.page.countSql)
             .build()
         )
+      }
+      if (query.providerFields.isNotEmpty()) {
+        serviceImplType.addType(query.generateRowType())
       }
       serviceImplType.addFunction(
         generateServiceFunction(
@@ -277,6 +295,10 @@ class SqlApiGenerator(
     sqlConstantName: String,
     countSqlConstantName: String?,
   ): CodeBlock {
+    if (providerFields.isNotEmpty()) {
+      return toProviderServiceFunctionBody(responseClass, sqlConstantName, countSqlConstantName)
+    }
+
     val body = CodeBlock.builder()
     if (params.isEmpty()) {
       body.addStatement("val params = emptyMap<String, Any?>()")
@@ -331,6 +353,97 @@ class SqlApiGenerator(
         paramValueExpression(page.pageSizeParamName),
       )
       body.addStatement("return %T(%L, totalPages, items, totalCount)", PageDto::class, paramValueExpression(page.pageParamName))
+    }
+    return body.build()
+  }
+
+  private fun SqlQueryToGenerateVo.toProviderServiceFunctionBody(
+    responseClass: ClassName,
+    sqlConstantName: String,
+    countSqlConstantName: String?,
+  ): CodeBlock {
+    val body = CodeBlock.builder()
+    if (params.isEmpty()) {
+      body.addStatement("val params = emptyMap<String, Any?>()")
+    } else {
+      body.add("val params = mapOf(\n")
+      body.indent()
+      params.forEach { param ->
+        body.addStatement("%S to %L,", param.name, param.valueExpression())
+      }
+      page?.let {
+        body.addStatement(
+          "%S to (%L * %L),",
+          it.offsetParamName,
+          paramValueExpression(it.pageParamName),
+          paramValueExpression(it.pageSizeParamName),
+        )
+      }
+      body.unindent()
+      body.add(")\n")
+    }
+    body.add("val rows = executor.query(%N, params) { row ->\n", sqlConstantName)
+    body.indent()
+    body.add("%T(\n", rowClassName())
+    body.indent()
+    columns.forEachIndexed { index, column ->
+      val suffix = if (index == columns.lastIndex) "" else ","
+      val accessor = if (column.type.isNullable) "getNullable" else "getRequired"
+      body.addStatement("%N = row.%L<%T>(%S)%L", column.name, accessor, column.type.nonNullable(), column.name, suffix)
+    }
+    body.unindent()
+    body.add(")\n")
+    body.unindent()
+    body.add("}\n")
+
+    providerFields.forEach { providerField ->
+      body.addStatement(
+        "val %N = rows.mapNotNull·{ it.%N }.distinct()",
+        providerField.keysVariableName(),
+        providerField.keyColumnName,
+      )
+      body.addStatement(
+        "val %N = %N.load(%N)",
+        providerField.valuesVariableName(),
+        providerField.providerType.providerPropertyName(),
+        providerField.keysVariableName(),
+      )
+    }
+
+    body.add("val items = rows.map { row ->\n")
+    body.indent()
+    body.add("%T(\n", responseClass)
+    body.indent()
+    responseDtoFields().forEachIndexed { index, field ->
+      val suffix = if (index == responseDtoFields().lastIndex) "" else ","
+      val expression = providerFields.firstOrNull { it.name == field.name }?.providerValueExpression("row") ?: "row.${field.name}"
+      body.addStatement("%N = %L%L", field.name, expression, suffix)
+    }
+    body.unindent()
+    body.add(")\n")
+    body.unindent()
+    body.add("}\n")
+
+    when (resultShape) {
+      SqlQueryResultShape.LIST -> body.addStatement("return items")
+      SqlQueryResultShape.ONE -> body.addStatement("return items.single()")
+      SqlQueryResultShape.ONE_NULLABLE -> body.addStatement("return items.singleOrNull()")
+      SqlQueryResultShape.PAGE -> {
+        val page = requireNotNull(page)
+        val countSql = requireNotNull(countSqlConstantName)
+        body.add("val totalCount = executor.queryOne(%N, params) { row ->\n", countSql)
+        body.indent()
+        body.addStatement("row.getRequired<Long>(%S)", page.countColumnName)
+        body.unindent()
+        body.add("}\n")
+        body.addStatement(
+          "val totalPages = if (%L <= 0) 0 else ((totalCount + %L - 1) / %L).toInt()",
+          paramValueExpression(page.pageSizeParamName),
+          paramValueExpression(page.pageSizeParamName),
+          paramValueExpression(page.pageSizeParamName),
+        )
+        body.addStatement("return %T(%L, totalPages, items, totalCount)", PageDto::class, paramValueExpression(page.pageParamName))
+      }
     }
     return body.build()
   }
@@ -440,7 +553,57 @@ class SqlApiGenerator(
   }
 
   private fun SqlApiField.toDtoField(): SqlApiField {
-    return copy(source = SqlApiParamSource.AUTO)
+    return copy(source = SqlApiParamSource.AUTO, hidden = false)
+  }
+
+  private fun SqlQueryToGenerateVo.responseDtoFields(): List<SqlApiField> {
+    return columns.filterNot { it.hidden } + providerFields.map {
+      SqlApiField(it.name, it.valueType.copy(nullable = it.nullable), it.description)
+    }
+  }
+
+  private fun SqlQueryToGenerateVo.rowClassName(): ClassName {
+    return ClassName("", functionName.replaceFirstChar { it.uppercase() } + "Row")
+  }
+
+  private fun SqlQueryToGenerateVo.generateRowType(): TypeSpec {
+    val constructor = FunSpec.constructorBuilder()
+    val type = TypeSpec.classBuilder(rowClassName())
+      .addModifiers(KModifier.PRIVATE, KModifier.DATA)
+
+    columns.forEach { column ->
+      constructor.addParameter(column.name, column.type)
+      type.addProperty(
+        PropertySpec.builder(column.name, column.type)
+          .initializer(column.name)
+          .build()
+      )
+    }
+
+    return type.primaryConstructor(constructor.build()).build()
+  }
+
+  private fun ClassName.providerPropertyName(): String {
+    return simpleName.replaceFirstChar { it.lowercase() }
+  }
+
+  private fun SqlApiDataProviderField.keysVariableName(): String {
+    return "${name}Keys"
+  }
+
+  private fun SqlApiDataProviderField.valuesVariableName(): String {
+    return "${name}Values"
+  }
+
+  private fun SqlApiDataProviderField.providerValueExpression(rowRef: String): String {
+    val keyExpression = "$rowRef.$keyColumnName"
+    return if (nullable) {
+      "$keyExpression?.let { ${valuesVariableName()}[it] }"
+    } else {
+      "$keyExpression?.let { key -> ${valuesVariableName()}[key] ?: throw IllegalStateException(" +
+        "\"Data provider ${providerType.simpleName} did not return value for field '$name' and key '\$key'\") } " +
+        "?: throw IllegalStateException(\"Data provider ${providerType.simpleName} did not return value for field '$name' and key 'null'\")"
+    }
   }
 
   private fun SqlQueryToGenerateVo.requestDtoParams(): List<SqlApiField> {

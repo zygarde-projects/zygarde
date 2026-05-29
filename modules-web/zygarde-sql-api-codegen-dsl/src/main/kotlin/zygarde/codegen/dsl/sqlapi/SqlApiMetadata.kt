@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl.sqlapi
 
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
 import org.springframework.web.bind.annotation.RequestMethod
 
@@ -26,6 +27,7 @@ data class SqlQueryToGenerateVo(
   val responseName: String,
   val params: List<SqlApiField>,
   val columns: List<SqlApiField>,
+  val providerFields: List<SqlApiDataProviderField> = emptyList(),
   val resultShape: SqlQueryResultShape = SqlQueryResultShape.LIST,
   val page: SqlApiPageToGenerateVo? = null,
   val transactionPolicy: SqlApiTransactionPolicy? = null,
@@ -37,6 +39,17 @@ data class SqlApiField(
   val description: String = "",
   val source: SqlApiParamSource = SqlApiParamSource.AUTO,
   val contextValueSource: SqlApiContextValueSource? = null,
+  val hidden: Boolean = false,
+)
+
+data class SqlApiDataProviderField(
+  val name: String,
+  val providerType: ClassName,
+  val keyType: TypeName,
+  val valueType: TypeName,
+  val keyColumnName: String,
+  val nullable: Boolean = false,
+  val description: String = "",
 )
 
 enum class SqlApiParamSource {

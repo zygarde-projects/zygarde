@@ -7,6 +7,7 @@ import com.squareup.kotlinpoet.asTypeName
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import jakarta.validation.constraints.NotBlank
 import org.junit.jupiter.api.Test
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
@@ -16,18 +17,23 @@ import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDtoSimple
 import zygarde.codegen.meta.ModelMetaField
 import zygarde.codegen.value.ValueProvider
+import zygarde.data.provider.DataProvider
+import zygarde.data.provider.DataProviderContext
 
 class DtoFieldMappingCodeGeneratorComprehensiveTest {
   data class Product(
     val id: Int?,
     var name: String,
     var rawCode: String?,
+    var fileId: String?,
     var tags: List<String>,
     val owner: Owner?,
     val owners: List<Owner>,
   )
 
   data class Owner(val id: Int?, val name: String)
+
+  data class FileDto(val id: String)
 
   interface NamedDto {
     val name: String
@@ -41,6 +47,7 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
     ProductPatchReq,
     InterfaceDto,
     AnnotatedDto,
+    ProductWithFileDto,
   }
 
   class UppercaseProvider : ValueProvider<String?, String> {
@@ -53,6 +60,12 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
 
   class ParseIntProvider : ValueProvider<String, Int> {
     override fun getValue(v: String): Int = v.toInt()
+  }
+
+  class FileProvider : DataProvider<String, FileDto> {
+    override fun load(keys: Collection<String>, context: DataProviderContext): Map<String, FileDto> {
+      return keys.associateWith { FileDto(it) }
+    }
   }
 
   private fun field(
@@ -254,5 +267,41 @@ class DtoFieldMappingCodeGeneratorComprehensiveTest {
 
     result.modelMappingFileSpecs.filter { it.name.contains("ExtraValues") } shouldHaveSize 0
     result.modelMappingFileSpecs.first { it.name == "ProductSummaryDtoBuilder" }.toString() shouldContain "badge: String"
+  }
+
+  @Test
+  fun `should generate provider dto field and spring assembler with batched keys`() {
+    val result = DtoFieldMappingCodeGenerator(
+      listOf(
+        DtoFieldMapping.ModelToDtoFieldMappingVo(field("id", Int::class.asTypeName(), nullable = true), TestDtos.ProductWithFileDto).also {
+          it.forceNull = ForceNull.NOT_NULL
+        },
+        DtoFieldMapping.ModelToDtoFieldMappingVo(field("name", String::class.asTypeName()), TestDtos.ProductWithFileDto),
+        DtoFieldMapping.ModelToDtoFieldMappingVo(
+          field("file", FileDto::class.asTypeName(), extra = true),
+          TestDtos.ProductWithFileDto,
+        ).also {
+          it.dataProvider = FileProvider::class.asClassName()
+          it.dataProviderKeyType = String::class.asTypeName()
+          it.dataProviderValueType = FileDto::class.asTypeName()
+          it.dataProviderKeyField = field("fileId", String::class.asTypeName(), nullable = true)
+          it.nullable()
+        },
+      )
+    ).generateFileSpec()
+
+    result.dtoFileSpecs.first { it.name == "ProductWithFileDto" }.toString().also {
+      it shouldContain "public var `file`: DtoFieldMappingCodeGeneratorComprehensiveTest.FileDto? = null"
+      it shouldNotContain "fileId"
+    }
+    result.modelMappingFileSpecs.first { it.name == "ProductWithFileDtoAssembler" }.toString().also {
+      it shouldContain "@Component"
+      it shouldContain "private val fileProvider: DtoFieldMappingCodeGeneratorComprehensiveTest.FileProvider"
+      it shouldContain "val fileKeys = modelList.mapNotNull { it.fileId }.distinct()"
+      it shouldContain "val fileValues = fileProvider.load(fileKeys)"
+      it shouldContain "id = model.id"
+      it shouldContain "name = model.name"
+      it shouldContain "file = model.fileId?.let { fileValues[it] }"
+    }
   }
 }

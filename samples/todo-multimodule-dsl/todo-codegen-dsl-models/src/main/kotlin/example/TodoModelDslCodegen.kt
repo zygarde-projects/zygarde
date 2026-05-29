@@ -7,6 +7,10 @@ class TodoModelDslCodegen : ModelMappingCodegenSpec({
   TodoDtos.TodoDto {
     fromAutoIntId(Todo::id)
     from(Todo::description)
+    provide<FileDtoProvider, String, FileDto>("file") {
+      key(Todo::fileId)
+      nullable()
+    }
   }
 
   TodoDtos.CreateTodoReq {

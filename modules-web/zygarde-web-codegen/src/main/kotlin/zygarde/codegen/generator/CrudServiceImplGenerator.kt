@@ -59,6 +59,11 @@ internal class CrudServiceImplGenerator(
           .addAnnotation(Autowired::class)
           .build()
       )
+      .addParameter(
+        ParameterSpec.builder(crudService.dtoAssemblerPropertyName(), crudService.dtoAssemblerType)
+          .addAnnotation(Autowired::class)
+          .build()
+      )
       .build()
 
     val typeSpecBuilder = TypeSpec.classBuilder(implClassName)
@@ -67,6 +72,11 @@ internal class CrudServiceImplGenerator(
       .addProperty(
         PropertySpec.builder(crudService.daoPropertyName, crudService.daoType, KModifier.PRIVATE)
           .initializer(crudService.daoPropertyName)
+          .build()
+      )
+      .addProperty(
+        PropertySpec.builder(crudService.dtoAssemblerPropertyName(), crudService.dtoAssemblerType, KModifier.PRIVATE)
+          .initializer(crudService.dtoAssemblerPropertyName())
           .build()
       )
       .addSuperinterface(ClassName(serviceInterfacePackage, crudService.serviceName))
@@ -172,33 +182,33 @@ internal class CrudServiceImplGenerator(
 
     when (operation.kind) {
       CrudOperationKind.LIST -> functionBuilder.addStatement(
-        "return %N.findAll().map(%T::build)",
+        "return %N.buildAll(%N.findAll())",
+        crudService.dtoAssemblerPropertyName(),
         crudService.daoPropertyName,
-        crudService.dtoBuilderType,
       )
 
       CrudOperationKind.GET -> functionBuilder.addStatement(
-        "return %N.getById(%N).let(%T::build)",
+        "return %N.build(%N.getById(%N))",
+        crudService.dtoAssemblerPropertyName(),
         crudService.daoPropertyName,
         operation.requireIdParam(),
-        crudService.dtoBuilderType,
       )
 
       CrudOperationKind.CREATE -> functionBuilder.addStatement(
-        "return %T().applyFrom(%N).let(%N::saveAndFlush).let(%T::build)",
+        "return %N.build(%T().applyFrom(%N).let(%N::saveAndFlush))",
+        crudService.dtoAssemblerPropertyName(),
         crudService.entityType,
         function.requestName,
         crudService.daoPropertyName,
-        crudService.dtoBuilderType,
       )
 
       CrudOperationKind.UPDATE -> functionBuilder.addStatement(
-        "return %N.getById(%N).applyFrom(%N).let(%N::saveAndFlush).let(%T::build)",
+        "return %N.build(%N.getById(%N).applyFrom(%N).let(%N::saveAndFlush))",
+        crudService.dtoAssemblerPropertyName(),
         crudService.daoPropertyName,
         operation.requireIdParam(),
         function.requestName,
         crudService.daoPropertyName,
-        crudService.dtoBuilderType,
       )
 
       CrudOperationKind.DELETE -> {
@@ -211,12 +221,12 @@ internal class CrudServiceImplGenerator(
       }
 
       CrudOperationKind.MERGE_PATCH -> functionBuilder.addStatement(
-        "return %N.getById(%N).applyPatch(%N).let(%N::saveAndFlush).let(%T::build)",
+        "return %N.build(%N.getById(%N).applyPatch(%N).let(%N::saveAndFlush))",
+        crudService.dtoAssemblerPropertyName(),
         crudService.daoPropertyName,
         operation.requireIdParam(),
         function.requestName,
         crudService.daoPropertyName,
-        crudService.dtoBuilderType,
       )
     }
 
@@ -241,5 +251,9 @@ internal class CrudServiceImplGenerator(
     return requireNotNull(idParam) {
       "CRUD operation '$functionName' requires idParam."
     }
+  }
+
+  private fun CrudServiceImplToGenerateVo.dtoAssemblerPropertyName(): String {
+    return dtoAssemblerType.simpleName.replaceFirstChar { it.lowercase() }
   }
 }

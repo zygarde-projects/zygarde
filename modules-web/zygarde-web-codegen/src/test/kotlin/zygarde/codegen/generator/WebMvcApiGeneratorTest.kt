@@ -88,12 +88,13 @@ class WebMvcApiGeneratorTest {
     serviceImpl shouldContain ": TodoService"
     serviceImpl shouldContain "@Autowired"
     serviceImpl shouldContain "private val todoDao: TodoDao"
-    serviceImpl shouldContain "todoDao.findAll().map(TodoDtoBuilder::build)"
-    serviceImpl shouldContain "todoDao.getById(todoId).let(TodoDtoBuilder::build)"
-    serviceImpl shouldContain "Todo().applyFrom(req).let(todoDao::saveAndFlush).let(TodoDtoBuilder::build)"
-    serviceImpl shouldContain "todoDao.getById(todoId).applyFrom(req).let(todoDao::saveAndFlush).let(TodoDtoBuilder::build)"
+    serviceImpl shouldContain "private val todoDtoAssembler: TodoDtoAssembler"
+    serviceImpl shouldContain "todoDtoAssembler.buildAll(todoDao.findAll())"
+    serviceImpl shouldContain "todoDtoAssembler.build(todoDao.getById(todoId))"
+    serviceImpl shouldContain "todoDtoAssembler.build(Todo().applyFrom(req).let(todoDao::saveAndFlush))"
+    serviceImpl shouldContain "todoDtoAssembler.build(todoDao.getById(todoId).applyFrom(req).let(todoDao::saveAndFlush))"
     serviceImpl shouldContain "todoDao.deleteById(todoId)"
-    serviceImpl shouldContain "todoDao.getById(todoId).applyPatch(req).let(todoDao::saveAndFlush).let(TodoDtoBuilder::build)"
+    serviceImpl shouldContain "todoDtoAssembler.build(todoDao.getById(todoId).applyPatch(req).let(todoDao::saveAndFlush))"
   }
 
   @Test

@@ -12,29 +12,30 @@ import org.springframework.stereotype.Service
 import zygarde.codegen.data.dto.CreateTodoReq
 import zygarde.codegen.data.dto.TodoDto
 import zygarde.codegen.data.dto.UpdateTodoReq
-import zygarde.codegen.model.extensions.TodoDtoBuilder
+import zygarde.codegen.model.extensions.TodoDtoAssembler
 
 @Service
 class TodoGraphQlServiceImpl(
   @Autowired private val todoApiService: TodoApiService,
   @Autowired private val todoDao: TodoDao,
+  @Autowired private val todoDtoAssembler: TodoDtoAssembler,
 ) : TodoGraphQlService {
   override fun todos(filter: TodoFilter?): Collection<TodoDto> {
-    return todoDao.search {
+    return todoDtoAssembler.buildAll(todoDao.search {
       id() eq filter?.idEq
       id() inList filter?.idsIn
       description() contains filter?.descriptionContains
-    }.map(TodoDtoBuilder::build)
+    })
   }
 
   override fun todo(id: Int): TodoDto? {
-    return todoDao.findById(id).orElse(null)?.let(TodoDtoBuilder::build)
+    return todoDao.findById(id).orElse(null)?.let(todoDtoAssembler::build)
   }
 
   override fun todosByIds(ids: Collection<Int>): Collection<TodoDto> {
-    return todoDao.search {
+    return todoDtoAssembler.buildAll(todoDao.search {
       id() inList ids
-    }.map(TodoDtoBuilder::build)
+    })
   }
 
   override fun createTodo(input: CreateTodoReq): TodoDto {

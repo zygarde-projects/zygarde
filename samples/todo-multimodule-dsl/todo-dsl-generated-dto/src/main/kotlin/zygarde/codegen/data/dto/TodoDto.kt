@@ -1,5 +1,6 @@
 package zygarde.codegen.`data`.dto
 
+import example.FileDto
 import io.swagger.v3.oas.annotations.media.Schema
 import java.io.Serializable
 import kotlin.Int
@@ -17,4 +18,9 @@ public data class TodoDto(
     requiredMode=Schema.RequiredMode.REQUIRED,
   )
   public var description: String,
+  @Schema(
+    description="",
+    requiredMode=Schema.RequiredMode.NOT_REQUIRED,
+  )
+  public var `file`: FileDto? = null,
 ) : Serializable

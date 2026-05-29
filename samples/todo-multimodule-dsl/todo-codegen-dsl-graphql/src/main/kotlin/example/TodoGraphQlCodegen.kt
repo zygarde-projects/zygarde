@@ -12,6 +12,12 @@ class TodoGraphQlCodegen : GraphQlDslCodegen() {
       type<TodoDto>("Todo") {
         fromAutoIntId(Todo::id)
         from(Todo::description)
+        ref("file", "File", nullable = true)
+      }
+
+      type("File") {
+        field<String>("id")
+        field<String>("name")
       }
 
       type<GraphQlAuthor>("Author") {

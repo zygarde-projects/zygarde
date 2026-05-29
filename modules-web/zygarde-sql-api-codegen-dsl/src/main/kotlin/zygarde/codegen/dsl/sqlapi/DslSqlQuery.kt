@@ -1,5 +1,6 @@
 package zygarde.codegen.dsl.sqlapi
 
+import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import zygarde.sql.api.SqlApiContextParamResolver
 import kotlin.reflect.KClass
@@ -21,6 +22,9 @@ class DslSqlQuery(
 
   @PublishedApi
   internal val declaredColumns: MutableMap<String, SqlApiField> = linkedMapOf()
+
+  @PublishedApi
+  internal val declaredProviderFields: MutableMap<String, SqlApiDataProviderField> = linkedMapOf()
 
   fun sql(sql: String) {
     sqlLiteral = sql
@@ -82,6 +86,20 @@ class DslSqlQuery(
 
   inline fun <reified T> column(name: String, description: String = "") {
     declaredColumns[name] = SqlApiField(name, typeOf<T>().asTypeName(), description)
+  }
+
+  inline fun <reified T> hiddenColumn(name: String, description: String = "") {
+    declaredColumns[name] = SqlApiField(name, typeOf<T>().asTypeName(), description, hidden = true)
+  }
+
+  inline fun <reified P : Any, reified K : Any, reified V> provide(
+    name: String,
+    dsl: SqlApiDataProviderFieldDsl.() -> Unit,
+  ) {
+    val providerField = SqlApiDataProviderFieldDsl(name, P::class.asClassName(), K::class.asTypeName(), V::class.asTypeName())
+      .also(dsl)
+      .toSqlApiDataProviderField()
+    declaredProviderFields[name] = providerField
   }
 
   fun request(name: String) {
@@ -187,6 +205,12 @@ class DslSqlQuery(
     val columns = metadata.columnAliases.map { columnName ->
       declaredColumns[columnName] ?: SqlApiField(columnName, defaultType)
     }
+    val unknownProviderKeyColumns = declaredProviderFields.values
+      .map { it.keyColumnName }
+      .filterNot { keyColumnName -> columns.any { it.name == keyColumnName } }
+    require(unknownProviderKeyColumns.isEmpty()) {
+      "SQL query '$functionName' declares provider key columns that are not selected by SQL: ${unknownProviderKeyColumns.joinToString()}"
+    }
     require(columns.isNotEmpty()) {
       "SQL query '$functionName' must declare at least one output column or use SELECT expressions with AS aliases"
     }
@@ -199,6 +223,7 @@ class DslSqlQuery(
       responseName = responseName ?: functionName.replaceFirstChar { it.uppercase() } + "Dto",
       params = params,
       columns = columns,
+      providerFields = declaredProviderFields.values.toList(),
       resultShape = resultShape,
       page = page,
       transactionPolicy = transactionPolicy,

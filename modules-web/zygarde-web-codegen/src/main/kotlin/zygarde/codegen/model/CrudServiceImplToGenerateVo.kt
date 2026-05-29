@@ -10,6 +10,10 @@ data class CrudServiceImplToGenerateVo(
   val daoType: TypeName,
   val daoPropertyName: String,
   val dtoBuilderType: ClassName,
+  val dtoAssemblerType: ClassName = ClassName(
+    dtoBuilderType.packageName,
+    dtoBuilderType.simpleName.removeSuffix("Builder") + "Assembler"
+  ),
   val applyExtensionsType: ClassName? = null,
   val patchExtensionsType: ClassName? = null,
   val operations: List<CrudOperationToGenerateVo> = emptyList(),
