@@ -117,6 +117,7 @@ nav:
     - Search DSL: guide/search-dsl.md
     - Model Mapping: guide/model-mapping.md
     - Web & REST APIs: guide/web-rest.md
+    - SQL API DSL: guide/sql-api.md
   - Practical Examples:
     - Basic CRUD: examples/basic-crud.md
     - Advanced Queries: examples/advanced-queries.md

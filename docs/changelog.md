@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-05-29
+
 ### Added
+- Added SQL API DSL support for server-side context parameters through `SqlApiContextParamResolver`.
+- Added generated SQL API service implementation binding for context parameters resolved by Spring bean type or bean name.
+- Added SQL API documentation covering query, command, pagination, parameter sources, context resolvers, and code generation properties.
 - Comprehensive documentation site with MkDocs Material
 - Automated documentation deployment via GitHub Actions
 
 ### Changed
+- SQL API generated contracts now keep context parameters out of request DTOs, API interfaces, Feign interfaces, controllers, and service interfaces.
+- SQL API validation now accepts context parameters in main SQL and paged count SQL while still rejecting unused declarations.
 - Improved documentation structure and organization
 
 ### Fixed
@@ -105,11 +112,13 @@ Use this template for future releases:
 
 ## Version History
 
+- **3.1.0** (2026-05-29) - SQL API context parameter resolvers
 - **1.0.0** (2024-01-01) - Initial release
 
 ---
 
 For upgrade instructions and migration guides, see the [documentation](https://zygarde-projects.github.io/zygarde/).
 
-[Unreleased]: https://github.com/zygarde-projects/zygarde/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/zygarde-projects/zygarde/compare/3.1.0...HEAD
+[3.1.0]: https://github.com/zygarde-projects/zygarde/compare/3.0.3...3.1.0
 [1.0.0]: https://github.com/zygarde-projects/zygarde/releases/tag/v1.0.0

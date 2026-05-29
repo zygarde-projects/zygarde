@@ -118,6 +118,58 @@ Run with:
 ./gradlew generateWebApi
 ```
 
+## SQL API DSL Properties
+
+The SQL API DSL uses system properties on the codegen application module. The main class is:
+
+```kotlin
+zygarde.codegen.dsl.sqlapi.SqlApiDslCodegenMainKt
+```
+
+### Package Properties
+
+| Property | Description | Default |
+| --- | --- | --- |
+| `zygarde.codegen.dsl.sql-api.dto.package` | Package for generated request and response DTOs | `zygarde.generated.dto` |
+| `zygarde.codegen.dsl.sql-api.api-interface.package` | Package for generated API interfaces | `zygarde.generated.api` |
+| `zygarde.codegen.dsl.sql-api.controller.package` | Package for generated controllers | `zygarde.generated.controller` |
+| `zygarde.codegen.dsl.sql-api.service-interface.package` | Package for generated service interfaces | `zygarde.generated.service` |
+| `zygarde.codegen.dsl.sql-api.service-impl.package` | Package for generated service implementations | `zygarde.generated.service.impl` |
+
+### Output Directory Properties
+
+If an output directory is not provided, generated files are written to stdout.
+
+| Property | Description |
+| --- | --- |
+| `zygarde.codegen.dsl.sql-api.dto.write-to` | Output directory for generated DTOs |
+| `zygarde.codegen.dsl.sql-api.api-interface.write-to` | Output directory for generated API interfaces |
+| `zygarde.codegen.dsl.sql-api.feign-interface.write-to` | Output directory for generated Feign interfaces |
+| `zygarde.codegen.dsl.sql-api.controller.write-to` | Output directory for generated controllers |
+| `zygarde.codegen.dsl.sql-api.service-interface.write-to` | Output directory for generated service interfaces |
+| `zygarde.codegen.dsl.sql-api.service-impl.write-to` | Output directory for generated service implementations |
+
+### Complete Example
+
+```kotlin
+configure<JavaApplication> {
+  mainClass.set("zygarde.codegen.dsl.sqlapi.SqlApiDslCodegenMainKt")
+  applicationDefaultJvmArgs = listOf(
+    "-Dzygarde.codegen.dsl.sql-api.dto.package=example.sqlapi.dto",
+    "-Dzygarde.codegen.dsl.sql-api.api-interface.package=example.sqlapi.api",
+    "-Dzygarde.codegen.dsl.sql-api.controller.package=example.sqlapi.controller",
+    "-Dzygarde.codegen.dsl.sql-api.service-interface.package=example.sqlapi.service",
+    "-Dzygarde.codegen.dsl.sql-api.service-impl.package=example.sqlapi.service.impl",
+    "-Dzygarde.codegen.dsl.sql-api.dto.write-to=${project(":todo-dsl-generated-sql-api-dto").file("src/main/kotlin").absolutePath}",
+    "-Dzygarde.codegen.dsl.sql-api.api-interface.write-to=${project(":todo-dsl-generated-sql-api-interface").file("src/main/kotlin").absolutePath}",
+    "-Dzygarde.codegen.dsl.sql-api.feign-interface.write-to=${project(":todo-dsl-generated-sql-api-feign").file("src/main/kotlin").absolutePath}",
+    "-Dzygarde.codegen.dsl.sql-api.controller.write-to=${project(":todo-dsl-generated-sql-api-controller").file("src/main/kotlin").absolutePath}",
+    "-Dzygarde.codegen.dsl.sql-api.service-interface.write-to=${project(":todo-dsl-generated-sql-api-service-interface").file("src/main/kotlin").absolutePath}",
+    "-Dzygarde.codegen.dsl.sql-api.service-impl.write-to=${project(":todo-dsl-generated-sql-api-service-impl").file("src/main/kotlin").absolutePath}",
+  )
+}
+```
+
 ## Generation Scripts
 
 ### Shell Script
@@ -161,5 +213,6 @@ For multi-module projects, specify the module:
 ## See Also
 
 - [Model Mapping →](../guide/model-mapping.md) - Model mapping DSL guide
+- [SQL API DSL →](../guide/sql-api.md) - SQL-backed API generation guide
 - [Code Generation →](../guide/code-generation.md) - Code generation overview
 - [DSL Tutorial →](../tutorials/dsl-based.md) - Complete DSL example

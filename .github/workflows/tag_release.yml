@@ -1,6 +1,9 @@
 name: release
 
 on:
+  push:
+    tags:
+      - '*'
   release:
     types: [published]
 
@@ -22,7 +25,7 @@ jobs:
             zipStagingRepository \
             -Pversion="${RELEASE_VERSION}"
         env:
-          RELEASE_VERSION: ${{ github.event.release.tag_name }}
+          RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_SIGNING_PASSWORD: ${{ secrets.GPG_SIGNING_PASSWORD }}
       - name: Upload to Maven Central

@@ -179,3 +179,52 @@ class TodoApiServiceImpl(
   }
 }
 ```
+
+# SQL API Codegen
+
+The sample also includes SQL-backed API generation in `todo-codegen-dsl-sql-api`.
+
+Run:
+
+```
+./gradlew :todo-codegen-dsl-sql-api:run
+```
+
+Generated files are written to:
+
+* `todo-dsl-generated-sql-api-dto`
+* `todo-dsl-generated-sql-api-interface`
+* `todo-dsl-generated-sql-api-feign`
+* `todo-dsl-generated-sql-api-controller`
+* `todo-dsl-generated-sql-api-service-interface`
+* `todo-dsl-generated-sql-api-service-impl`
+
+SQL API query parameters can come from request DTOs, path variables, query parameters, or server-side context resolvers. Context parameters are useful for values that must not be supplied by the client, such as current user id or tenant id.
+
+```
+query("findCurrentTodo", "/current") {
+  sql(
+    """
+    select t.id as id, t.description as description
+    from todo t
+    where t.id = :currentTodoId
+    """.trimIndent()
+  )
+  contextParam<Int?>("currentTodoId", resolver = CurrentTodoIdResolver::class)
+  column<Int>("id")
+  column<String>("description")
+  request("FindCurrentTodoReq")
+  response("TodoReportDto")
+  returnsOneOrNull()
+}
+```
+
+The generated API only exposes client input:
+
+```
+fun findCurrentTodo(): TodoReportDto?
+```
+
+The generated service implementation resolves the value on the server and binds it into the SQL parameter map.
+
+See the full guide at [`docs/guide/sql-api.md`](../../docs/guide/sql-api.md).
