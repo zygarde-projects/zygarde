@@ -12,6 +12,8 @@ data class FileDto(
 @Component
 class FileDtoProvider : DataProvider<String, FileDto> {
   override fun load(keys: Collection<String>, context: DataProviderContext): Map<String, FileDto> {
-    return keys.associateWith { key -> FileDto(id = key, name = "File $key") }
+    val marker = context["fileNameMarker"] as? String
+    val markerSuffix = marker?.let { " [$it]" }.orEmpty()
+    return keys.associateWith { key -> FileDto(id = key, name = "File $key$markerSuffix") }
   }
 }

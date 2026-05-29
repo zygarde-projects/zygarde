@@ -1,36 +1,30 @@
 # GraphQL Implementation Status
 
-Last updated: 2026-05-17 (`typeFrom` / `inputFrom` model-mapping derivation round)
+Last updated: 2026-05-30 (generated provider-backed GraphQL batch resolver context hook)
 
 ## Current State
 
 - GraphQL feasibility and design notes live in `doc/graphql-support-investigation.md`.
 - `modules-web/zygarde-web-codegen` contains the `GraphQlApiGenerator` and GraphQL generation value objects, including query, mutation, subscription, object type, input, enum, scalar, union, nullable collection, raw SDL default-value, SDL descriptions, and `@deprecated` directives on every GraphQL position.
-- `modules-web/zygarde-graphql-codegen-dsl` contains the DSL entry point for query, mutation, subscription, type, input, enum, scalar, and union declarations, plus **`typeFrom` / `inputFrom` derivation of `type` / `input` declarations directly from model-mapping DTO metadata**.
+- `modules-web/zygarde-graphql-codegen-dsl` contains the DSL entry point for query, mutation, subscription, type, input, enum, scalar, and union declarations, plus **`typeFrom` / `inputFrom` derivation of `type` / `input` declarations directly from model-mapping DTO metadata** and `lazyProviders` support for provider-backed generated `@BatchMapping` methods.
 - `modules-model-mapping/zygarde-model-mapping-codegen-dsl` now exposes `DtoMetaResolver` / `ModelMappingMetadata` / `ResolvedDtoField` — the single source of truth for a DTO's resolved field shape, shared by the DTO class generator and the GraphQL deriver.
-- `samples/todo-multimodule-dsl` has a generated Todo GraphQL sample plus handwritten Book/Author GraphQL coverage for relation filtering and `@BatchMapping`.
+- `samples/todo-multimodule-dsl` has a generated Todo GraphQL sample, including a provider-backed generated `Todo.file` `@BatchMapping`, plus handwritten Book/Author GraphQL coverage for relation filtering.
 
 ## Changed In This Round
 
-Closed the long-standing gap "GraphQL types still have to be re-declared by hand in the DSL" — GraphQL `type` / `input` declarations can now be derived from model-mapping DTOs.
+Generated provider-backed `@BatchMapping` methods now resolve `DataProviderContext` through an optional `DataProviderContextResolver` bean before calling `DataProvider.load(...)`. If no resolver bean exists, generated code falls back to `DataProviderContext.EMPTY`.
 
-- **Shared metadata (model-mapping module)**:
-  - New `zygarde.codegen.dsl.meta` package: `ResolvedDtoField` (name, raw element type, nullability, collection flag, `dtoRef`, auto-id flag, comment), `ModelMappingMetadata` (per-`CodegenDto` resolved field index, with `EMPTY`), and `DtoMetaResolver` (resolves `DtoFieldMapping`s into the above).
-  - `DtoFieldMappingCodeGenerator.fieldType()` was refactored to delegate to `DtoMetaResolver.resolveFieldType` so the generated DTO class and its GraphQL type cannot drift. Pure extraction — existing DTO output is unchanged and all model-mapping tests still pass.
-- **GraphQL derivation (graphql DSL module)**:
-  - `GraphQlTypeMapper` — maps resolved Kotlin field types to GraphQL scalar names (built-ins mirror `defaultGraphQlType`); custom types registered via `mapScalar`.
-  - `GraphQlDtoDeriver` — derives a `type` / `input` definition plus every DTO and enum it transitively references; auto-id fields become `ID`; enum fields auto-emit `enum` declarations; already-declared (manual or previously-derived) types are reused, not re-emitted.
-  - `DslGraphQlSchema` gained `typeFrom(dto, name, description, exclude)`, `inputFrom(...)`, and `mapScalar(...)`.
-  - `GraphQlDslCodegen` gained a `modelMappingMetadata` property; `GraphQlDslCodegenMain` now scans `ModelMappingDslCodegen` subclasses on the classpath, resolves their metadata, and injects it before running each GraphQL codegen.
-  - `zygarde-graphql-codegen-dsl` now depends on `zygarde-model-mapping-codegen-dsl`.
-- **Tests** — `GraphQlDtoDerivationTest` (9 tests): type/input derivation, ids/nullability/descriptions, transitive type + enum derivation, `exclude`, reuse of manually-declared types, end-to-end SDL rendering, and the two fail-fast paths (unmappable field type, DTO absent from metadata).
-- **Sample** — `samples/todo-multimodule-dsl` `TodoGraphQlCodegen` now derives `Todo` / `TodoInput` via `typeFrom` / `inputFrom` (`TodoFilter` has no DTO and stays manual). `todo-codegen-dsl-graphql` gained dependencies on `todo-codegen-dsl-models` and `zygarde-model-mapping-codegen-dsl`. Regenerating changed only one line of `todoGraphQl.graphqls` — the auto-id `Todo.id` is now `ID!` instead of `Int!`; the generated controller / service interface are byte-identical, and `TodoGraphQlTest` / `BookGraphQlTest` still pass.
-- `doc/graphql-dsl-guide.md` updated with a `typeFrom` / `inputFrom` section, the dependency notes, the module table, the limitations section, and the file index.
+- **Core hook** — `zygarde.data.provider.DataProviderContextResolver` exposes `resolve(): DataProviderContext`.
+- **Generated GraphQL controller** — provider-backed batch mappings now look up `DataProviderContextResolver` with `DiServiceContext.ctx.getBeanProvider(...).ifAvailable`, use the resolved context when present, and retain the previous `EMPTY` behavior when absent.
+- **Sample** — `Todo.file` remains generated from `lazyProviders`; `TodoGraphQlTest` now verifies that the generated resolver calls `FileDtoProvider` with a test context marker.
+- **Docs** — `doc/graphql-dsl-guide.md` now describes `lazyProviders` batch resolver generation and clarifies that GraphQL Java `DataLoaderRegistry` support is still not generated.
 
 ## Validation
 
-- `./gradlew :zygarde-model-mapping-codegen-dsl:test :zygarde-graphql-codegen-dsl:test :zygarde-web-codegen:test :zygarde-graphql-codegen-dsl:ktlintCheck :zygarde-model-mapping-codegen-dsl:ktlintCheck` — all pass, including the 9 new derivation tests; existing model-mapping / GraphQL suites are unaffected.
-- detekt is not wired to these modules' sources (prior rounds reported `NO-SOURCE`), so it was not re-run this round.
+- `./gradlew :zygarde-core:test :zygarde-web-codegen:test :zygarde-graphql-codegen-dsl:test` — passes.
+- `./gradlew :todo-codegen-dsl-graphql:run` — passes and synchronizes the generated sample GraphQL controller.
+- `./gradlew :todo-src-main:test` — passes. The sample project is included at root as `:todo-src-main`, not under a `:samples` Gradle project path.
+- `./gradlew :zygarde-core:ktlintCheck :zygarde-web-codegen:ktlintCheck :zygarde-graphql-codegen-dsl:ktlintCheck :todo-src-core:ktlintCheck :todo-src-main:ktlintCheck :todo-dsl-generated-graphql-controller:ktlintCheck` — passes.
 
 ## Next Work
 
@@ -52,4 +46,4 @@ Closed the long-standing gap "GraphQL types still have to be re-declared by hand
 - Schema-only GraphQL DSL declarations remain useful for shared SDL fragments such as scalars, unions, and common object/input types.
 - `union` renders as `union Name = A | B` and, like `scalar`, produces no Kotlin controller/service artifacts; union/interface type resolution must still be wired manually via `RuntimeWiringConfigurer`.
 - GraphQL runtime support is still sample/codegen focused; no dedicated `zygarde-graphql` runtime module exists yet.
-- GraphQL `interface` types are not yet supported; error handling, authentication context injection, custom scalar registration, pagination shape, and generated DataLoader/batch resolver support remain open design and implementation areas.
+- GraphQL `interface` types are not yet supported. Provider-backed generated `@BatchMapping` is supported through `lazyProviders`, but GraphQL Java `DataLoaderRegistry` generation is not.

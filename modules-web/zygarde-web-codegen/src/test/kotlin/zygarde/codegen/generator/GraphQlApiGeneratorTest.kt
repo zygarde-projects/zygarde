@@ -1,10 +1,12 @@
 package zygarde.codegen.generator
 
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Test
 import zygarde.codegen.model.graphql.GraphQlApiToGenerateVo
@@ -12,6 +14,9 @@ import zygarde.codegen.model.graphql.GraphQlArgumentToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlEnumValueToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFieldToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlFunctionToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazyProviderToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazySourceFieldToGenerateVo
+import zygarde.codegen.model.graphql.GraphQlLazyTypeToGenerateVo
 import zygarde.codegen.model.graphql.GraphQlOperation
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionKind
 import zygarde.codegen.model.graphql.GraphQlTypeDefinitionToGenerateVo
@@ -450,6 +455,63 @@ class GraphQlApiGeneratorTest {
     serviceInterface shouldContain "public fun todosByOptionalIds(ids: Collection<Int?>?):"
     serviceInterface shouldContain "Collection<GraphQlGeneratorTestTodoDto>"
     result.schemas.single().content shouldContain "todosByOptionalIds(ids: [Int]): [Todo!]!"
+  }
+
+  @Test
+  fun `should generate batch mapping with optional data provider context resolver`() {
+    val productSourceType = ClassName("com.example.graphql.service", "ProductGraphQlSource")
+    val fileDtoType = ClassName("com.example", "FileDto")
+    val result = GraphQlApiGenerator(
+      listOf(
+        GraphQlApiToGenerateVo(
+          controllerPackage = "com.example.graphql",
+          serviceInterfacePackage = "com.example.graphql.service",
+          apiName = "ProductGraphQl",
+          functions = mutableListOf(
+            GraphQlFunctionToGenerateVo(
+              operation = GraphQlOperation.QUERY,
+              functionName = "products",
+              responseType = ClassName("com.example", "ProductDto"),
+              responseGraphQlType = "Product",
+              responseCollection = true,
+            )
+          ),
+          lazyTypes = mutableListOf(
+            GraphQlLazyTypeToGenerateVo(
+              graphQlTypeName = "Product",
+              sourceType = productSourceType,
+              sourceAssemblerType = ClassName("com.example.graphql.service", "ProductGraphQlSourceAssembler"),
+              modelType = ClassName("com.example", "Product"),
+              sourceFields = mutableListOf(
+                GraphQlLazySourceFieldToGenerateVo("id", Int::class.asTypeName(), "id"),
+                GraphQlLazySourceFieldToGenerateVo("fileId", String::class.asTypeName().copy(nullable = true), "fileId"),
+              ),
+              providers = mutableListOf(
+                GraphQlLazyProviderToGenerateVo(
+                  fieldName = "file",
+                  graphQlType = "File",
+                  nullable = true,
+                  providerType = ClassName("com.example", "FileProvider"),
+                  keyType = String::class.asTypeName(),
+                  valueType = fileDtoType,
+                  keySourceFieldName = "fileId",
+                  keySourceType = String::class.asTypeName(),
+                  keySourceNullable = true,
+                )
+              ),
+            )
+          ),
+        )
+      )
+    ).generateApis()
+
+    result.controllers.single().toString().also {
+      it shouldContain "getBeanProvider(DataProviderContextResolver::class.java)"
+      it shouldContain "ifAvailable?.resolve()"
+      it shouldContain "DataProviderContext.EMPTY"
+      it shouldContain "fileProvider.load(keys, dataProviderContext)"
+      it shouldNotContain "fileProvider.load(keys, DataProviderContext.EMPTY)"
+    }
   }
 
   @Test

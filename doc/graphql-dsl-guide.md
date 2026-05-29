@@ -247,7 +247,7 @@ projection DSL 只負責 GraphQL schema 與 operation type binding;實際 DTO cl
 
 使用 `argument<T>()` / `returns<T>()` 的自動型別解析時,請先宣告 `type<T>()` / `input<T>()` / `bindGraphQlType<T>()`,再宣告引用該型別的 operation。
 
-projection DSL 也可以明確宣告 nested relation field。這只會產生 SDL field,不會產生 `@BatchMapping` / `@SchemaMapping`,resolver 仍由 application 手寫:
+projection DSL 也可以明確宣告 nested relation field。這只會產生 SDL field,不會產生 `@BatchMapping` / `@SchemaMapping`,resolver 仍由 application 手寫。若欄位是 model-mapping provider field,可改用下方的 `lazyProviders` 產生 provider-backed `@BatchMapping`:
 
 ```kotlin
 schema("BookGraphQl") {
@@ -313,6 +313,44 @@ schema("BookGraphQl") {
 - `typeFrom` / `inputFrom` 的 DTO 不在 model-mapping metadata 內 → `... is not part of model-mapping metadata`。
 
 需要更細的客製(改欄位名、加額外欄位)時,仍可改用手動 `type { }` / `input { }`。
+
+### `lazyProviders` 與 generated batch resolver
+
+`typeFrom` 可搭配 model-mapping 的 provider metadata,把 DTO 上由 `provide(...)` 宣告的欄位延後到 GraphQL field resolver 載入:
+
+```kotlin
+schema("TodoGraphQl") {
+  type("File") {
+    field<String>("id")
+    field<String>("name")
+  }
+
+  typeFrom(TodoDtos.TodoDto, name = "Todo") {
+    lazyProviders {
+      provider("file") {
+        graphQlType("File")
+        nullable()
+      }
+    }
+  }
+}
+```
+
+啟用後,產生器會:
+
+- 產生 `TodoGraphQlSource` 與 assembler,讓 query / mutation 回傳 source object,保留 provider key 欄位(例如 `fileId`)但不把 key 寫進 SDL。
+- 在 controller 產生 Spring GraphQL `@BatchMapping(typeName = "Todo", field = "file")`。
+- 於 batch resolver 內取得 provider bean、收集 distinct keys,並呼叫 `provider.load(keys, dataProviderContext)`。
+
+`dataProviderContext` 會從可選的 `zygarde.data.provider.DataProviderContextResolver` bean 取得:
+
+```kotlin
+val dataProviderContext =
+  DiServiceContext.ctx.getBeanProvider(DataProviderContextResolver::class.java).ifAvailable?.resolve()
+    ?: DataProviderContext.EMPTY
+```
+
+沒有註冊 resolver bean 時,generated resolver 維持舊行為,使用 `DataProviderContext.EMPTY`。若應用需要 tenant、auth 或 request marker,可以自行註冊 request-scoped 或 thread-local backed 的 `DataProviderContextResolver`。
 
 ### 推導需要 model-mapping 在 classpath 上
 
@@ -540,10 +578,10 @@ mutation todo → fun mutationTodo(...)
 
 ## 目前限制與後續
 
-DSL 目前涵蓋 query / mutation / subscription、參數、型別定義(`type` / `input` / `enumType` / `scalar` / `union`)、預設值、operation / argument / 型別 / field / enum value 層級的 description,以及 operation field / argument / `type` / `input` field / `enum` value 的 `@deprecated` 標記。以下尚未由 DSL 支援,需要時請手寫 resolver:
+DSL 目前涵蓋 query / mutation / subscription、參數、型別定義(`type` / `input` / `enumType` / `scalar` / `union`)、預設值、operation / argument / 型別 / field / enum value 層級的 description、operation field / argument / `type` / `input` field / `enum` value 的 `@deprecated` 標記,以及 `lazyProviders` provider-backed generated `@BatchMapping`。以下尚未由 DSL 支援,需要時請手寫 resolver:
 
 - **`interface` 型別與 union / interface 的 `TypeResolver`** — DSL 可宣告 `union`,但 GraphQL `interface` 尚未支援;且兩者實際的型別解析都需自行以 `RuntimeWiringConfigurer` 註冊。
-- **巢狀 field resolver / `@SchemaMapping` / `@BatchMapping`** — 解決 N+1 的 DataLoader / batch resolver 仍須手寫(可參考 `samples/todo-multimodule-dsl` 內手寫的 `BookGraphQlController`)。
+- **一般巢狀 field resolver / `@SchemaMapping` / `@BatchMapping`** — `lazyProviders` 可為 model-mapping provider field 產生 provider-backed `@BatchMapping`;一般 `ref` / `refCollection` relation、`@SchemaMapping`,以及 GraphQL Java `DataLoaderRegistry` 仍須手寫(可參考 `samples/todo-multimodule-dsl` 內手寫的 `BookGraphQlController`)。
 - **subscription 回傳型別** — 產生器只輸出宣告的回傳型別。要串真正的 Spring GraphQL subscription,呼叫端需自行選用 reactive publisher 型別(例如以 `TypeName` 多載傳入 `Flux<T>`)。
 - **自訂 scalar coercing、錯誤處理、認證注入、分頁形狀** — 仍屬手寫 / 後續設計範圍,詳見 `doc/graphql-support-investigation.md`。
 - **由 model-mapping metadata 自動產生 SDL `type` / `input`** — 已由 `typeFrom` / `inputFrom` 支援(見上節)。尚未支援的:`interface` 推導、operation 回傳型別自動推導、推導時的欄位改名 / 補欄位(這些情況請改用手動 `type { }` / `input { }`)。

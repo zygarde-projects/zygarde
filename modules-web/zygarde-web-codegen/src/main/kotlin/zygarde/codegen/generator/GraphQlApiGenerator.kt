@@ -35,7 +35,9 @@ import zygarde.codegen.model.graphql.graphQlStringLiteral
 import zygarde.codegen.model.graphql.requireGraphQlDeprecationReason
 import zygarde.codegen.model.graphql.requireGraphQlDescription
 import zygarde.codegen.model.graphql.requireGraphQlName
+import zygarde.core.di.DiServiceContext
 import zygarde.data.provider.DataProviderContext
+import zygarde.data.provider.DataProviderContextResolver
 
 class GraphQlApiGenerator(
   private val apis: Collection<GraphQlApiToGenerateVo>
@@ -357,7 +359,13 @@ $fieldAssignments
 
     builder.addStatement("val %N = %M<%T>()", providerPropertyName, beanFunc, providerType)
     builder.addStatement("val keys = items.mapNotNull·{ it.%N }.distinct()", keySourceFieldName)
-    builder.addStatement("val values = %N.load(keys, %T.EMPTY)", providerPropertyName, DataProviderContext::class)
+    builder.addStatement(
+      "val dataProviderContext = %T.ctx.getBeanProvider(%T::class.java).ifAvailable?.resolve() ?: %T.EMPTY",
+      DiServiceContext::class,
+      DataProviderContextResolver::class,
+      DataProviderContext::class,
+    )
+    builder.addStatement("val values = %N.load(keys, dataProviderContext)", providerPropertyName)
     if (nullable) {
       builder.addStatement(
         """return items.mapNotNull·{ item ->

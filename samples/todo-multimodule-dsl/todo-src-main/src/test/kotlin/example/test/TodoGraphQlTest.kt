@@ -3,10 +3,14 @@ package example.test
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.test.autoconfigure.graphql.tester.AutoConfigureGraphQlTester
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Bean
 import org.springframework.graphql.test.tester.GraphQlTester
 import org.springframework.test.context.ActiveProfiles
+import zygarde.data.provider.DataProviderContext
+import zygarde.data.provider.DataProviderContextResolver
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureGraphQlTester
@@ -14,6 +18,16 @@ import org.springframework.test.context.ActiveProfiles
 class TodoGraphQlTest(
   @Autowired private val graphQlTester: GraphQlTester,
 ) {
+  @TestConfiguration
+  class DataProviderContextResolverTestConfig {
+    @Bean
+    fun dataProviderContextResolver(): DataProviderContextResolver =
+      object : DataProviderContextResolver {
+        override fun resolve(): DataProviderContext =
+          DataProviderContext(mapOf("fileNameMarker" to "graphql-test"))
+      }
+  }
+
   @Test
   fun `todo graphql crud and filter test`() {
     graphQlTester.document(
@@ -81,6 +95,10 @@ class TodoGraphQlTest(
         todosByIds(ids: [$secondId]) {
           id
           description
+          file {
+            id
+            name
+          }
         }
       }
       """.trimIndent()
@@ -89,6 +107,23 @@ class TodoGraphQlTest(
       .path("todosByIds[*].description")
       .entityList(String::class.java)
       .containsExactly("second graphql todo")
+
+    graphQlTester.document(
+      """
+      query {
+        todos(filter: { idsIn: [$secondId] }) {
+          file {
+            id
+            name
+          }
+        }
+      }
+      """.trimIndent()
+    )
+      .execute()
+      .path("todos[*].file.name")
+      .entityList(String::class.java)
+      .containsExactly("File todo-file [graphql-test]")
 
     graphQlTester.document(
       """

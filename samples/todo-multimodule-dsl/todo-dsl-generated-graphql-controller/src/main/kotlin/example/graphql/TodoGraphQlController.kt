@@ -15,8 +15,10 @@ import org.springframework.graphql.`data`.method.`annotation`.MutationMapping
 import org.springframework.graphql.`data`.method.`annotation`.QueryMapping
 import org.springframework.stereotype.Controller
 import zygarde.`data`.provider.DataProviderContext
+import zygarde.`data`.provider.DataProviderContextResolver
 import zygarde.codegen.`data`.dto.CreateTodoReq
 import zygarde.codegen.`data`.dto.UpdateTodoReq
+import zygarde.core.di.DiServiceContext
 import zygarde.core.di.DiServiceContext.bean
 
 @Controller
@@ -66,7 +68,10 @@ public class TodoGraphQlController {
   public fun todoFile(items: List<TodoGraphQlSource>): Map<TodoGraphQlSource, FileDto> {
     val fileDtoProvider = bean<FileDtoProvider>()
     val keys = items.mapNotNull { it.fileId }.distinct()
-    val values = fileDtoProvider.load(keys, DataProviderContext.EMPTY)
+    val dataProviderContext =
+        DiServiceContext.ctx.getBeanProvider(DataProviderContextResolver::class.java).ifAvailable?.resolve()
+        ?: DataProviderContext.EMPTY
+    val values = fileDtoProvider.load(keys, dataProviderContext)
     return items.mapNotNull { item ->
         val value = item.fileId?.let(values::get)
         value?.let { item to it }

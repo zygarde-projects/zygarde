@@ -341,7 +341,10 @@ class GraphQlDtoDerivationTest {
       it shouldContain "fun productFile("
       it shouldContain "typeName = \"Product\""
       it shouldContain "field = \"file\""
-      it shouldContain "fileProvider.load(keys, DataProviderContext.EMPTY)"
+      it shouldContain "getBeanProvider(DataProviderContextResolver::class.java)"
+      it shouldContain "ifAvailable?.resolve()"
+      it shouldContain "DataProviderContext.EMPTY"
+      it shouldContain "fileProvider.load(keys, dataProviderContext)"
     }
   }
 
