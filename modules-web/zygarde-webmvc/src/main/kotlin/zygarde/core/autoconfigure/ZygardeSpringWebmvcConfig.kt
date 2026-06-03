@@ -8,7 +8,10 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import zygarde.api.exception.ApiErrorResponseFactory
 import zygarde.api.exception.ApiExceptionHandler
+import zygarde.api.exception.ApiExceptionResolver
+import zygarde.api.exception.DefaultApiErrorResponseFactory
 import zygarde.api.exception.mapper.KotlinInvalidNullExceptionMapper
 import zygarde.api.tracing.ApiTracingFilter
 import zygarde.api.tracing.ApiTracingHandlerInterceptor
@@ -24,8 +27,12 @@ class ZygardeSpringWebmvcConfig : WebMvcConfigurer {
   fun kotlinInvalidNullExceptionMapper() = KotlinInvalidNullExceptionMapper()
 
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(ApiExceptionResolver::class)
   fun apiExceptionHandler(): ApiExceptionHandler = ApiExceptionHandler()
+
+  @Bean
+  @ConditionalOnMissingBean
+  fun apiErrorResponseFactory(): ApiErrorResponseFactory = DefaultApiErrorResponseFactory()
 
   @ConditionalOnMissingBean
   @Bean

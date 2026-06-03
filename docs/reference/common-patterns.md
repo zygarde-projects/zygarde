@@ -276,26 +276,15 @@ class BookAlreadyExistsException(isbn: String) :
 Map exceptions globally:
 
 ```kotlin
-@RestControllerAdvice
-class GlobalExceptionHandler : ApiExceptionHandler() {
-
-  override fun getExceptionMappers() = listOf(
-    NoSuchElementExceptionMapper(),
-    IllegalArgumentExceptionMapper(),
-    ConstraintViolationExceptionMapper()
-  )
-}
-
+@Component
 class NoSuchElementExceptionMapper :
-  ExceptionToBusinessExceptionMapper<NoSuchElementException> {
+  ExceptionToBusinessExceptionMapper<NoSuchElementException>() {
 
-  override val exceptionClass = NoSuchElementException::class.java
+  override fun supported(t: Throwable): Boolean = t is NoSuchElementException
 
-  override fun map(exception: NoSuchElementException) =
-    BusinessException(
-      message = exception.message ?: "Resource not found",
-      code = "NOT_FOUND"
-    )
+  override fun transform(t: NoSuchElementException): BusinessException {
+    return BusinessException(ApiErrorCode.NOT_FOUND, t.message ?: "Resource not found")
+  }
 }
 ```
 

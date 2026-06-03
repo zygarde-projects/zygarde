@@ -9,29 +9,31 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import jakarta.servlet.http.HttpServletRequest
 import zygarde.api.tracing.ApiTracingContext
 import zygarde.core.exception.ApiErrorCode
 import zygarde.core.exception.BusinessException
 import zygarde.core.exception.HttpErrorCode
 import zygarde.core.extension.general.fallbackWhenNull
 import zygarde.core.log.Loggable
-import zygarde.data.api.ApiErrorResponse
 import zygarde.json.toJsonString
-import jakarta.servlet.http.HttpServletRequest
 
 /**
  * @author leo
  */
 @ControllerAdvice
-class ApiExceptionHandler : Loggable {
+class ApiExceptionHandler : ApiExceptionResolver, Loggable {
   @Autowired
   private lateinit var messageSource: MessageSource
 
   @Autowired
   private lateinit var exceptionToBusinessExceptionMappers: List<ExceptionToBusinessExceptionMapper<*>>
 
+  @Autowired
+  private lateinit var apiErrorResponseFactory: ApiErrorResponseFactory
+
   @ExceptionHandler(MethodArgumentNotValidException::class)
-  fun handleValidationError(e: MethodArgumentNotValidException): ResponseEntity<ApiErrorResponse> {
+  fun handleValidationError(e: MethodArgumentNotValidException, req: HttpServletRequest): ResponseEntity<Any> {
     val locale = LocaleContextHolder.getLocale()
     val bindingResult = e.bindingResult
     val errorMessages = bindingResult.fieldErrors
@@ -50,22 +52,26 @@ class ApiExceptionHandler : Loggable {
       }
 
     return ResponseEntity(
-      ApiErrorResponse(
+      apiErrorResponseFactory.create(
         errorCode = ApiErrorCode.BAD_REQUEST,
-        messages = errorMessages
+        messages = errorMessages,
+        throwable = e,
+        request = req
       ),
       HttpStatus.BAD_REQUEST
     )
   }
 
   @ExceptionHandler(BusinessException::class)
-  fun handleBusinessException(e: BusinessException, req: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
+  fun handleBusinessException(e: BusinessException, req: HttpServletRequest): ResponseEntity<Any> {
     ApiTracingContext.getTracingData().exception = e
     logBusinessException(e)
     val code = e.code
-    val res = ApiErrorResponse(
+    val res = apiErrorResponseFactory.create(
       errorCode = code,
-      messages = listOfNotNull(e.message, e.cause?.message)
+      messages = listOfNotNull(e.message, e.cause?.message),
+      throwable = e,
+      request = req
     )
     return ResponseEntity(
       res,
@@ -74,7 +80,7 @@ class ApiExceptionHandler : Loggable {
   }
 
   @ExceptionHandler(Throwable::class)
-  fun handleThrowable(t: Throwable, req: HttpServletRequest): ResponseEntity<ApiErrorResponse> {
+  override fun handleThrowable(t: Throwable, req: HttpServletRequest): ResponseEntity<Any> {
     ApiTracingContext.getTracingData().exception = t
     val cause = t.cause
     return if (cause != null) {
@@ -83,9 +89,11 @@ class ApiExceptionHandler : Loggable {
       handleThrowableInternal(t, req) {
         logUnknownException(t, req)
         ResponseEntity(
-          ApiErrorResponse(
+          apiErrorResponseFactory.create(
             errorCode = ApiErrorCode.SERVER_ERROR,
-            messages = listOf(t.message ?: t.javaClass.simpleName)
+            messages = listOf(t.message ?: t.javaClass.simpleName),
+            throwable = t,
+            request = req
           ),
           HttpStatus.INTERNAL_SERVER_ERROR
         )
@@ -96,7 +104,7 @@ class ApiExceptionHandler : Loggable {
   protected fun handleThrowableInternal(
     t: Throwable,
     req: HttpServletRequest,
-    onNoMatch: (t: Throwable) -> ResponseEntity<ApiErrorResponse>
+    onNoMatch: (t: Throwable) -> ResponseEntity<Any>
   ) = when (t) {
     is BusinessException -> handleBusinessException(t, req)
     else -> {

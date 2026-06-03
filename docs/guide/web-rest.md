@@ -138,71 +138,67 @@ class InvalidISBNException(isbn: String) :
   BusinessException("Invalid ISBN: $isbn", code = "INVALID_ISBN")
 ```
 
-### Global Exception Handler
+### Global Exception Handling
 
-Zygarde provides `ApiExceptionHandler` for consistent error responses:
+Zygarde provides `ApiExceptionHandler` for consistent error responses. `BusinessException` is handled automatically, and application exceptions can be mapped by registering `ExceptionToBusinessExceptionMapper` beans:
 
 ```kotlin
-import zygarde.webmvc.exception.ApiExceptionHandler
-import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.stereotype.Component
+import zygarde.api.exception.ExceptionToBusinessExceptionMapper
+import zygarde.core.exception.ApiErrorCode
+import zygarde.core.exception.BusinessException
 
-@RestControllerAdvice
-class GlobalExceptionHandler : ApiExceptionHandler() {
+@Component
+class NoSuchElementExceptionMapper :
+  ExceptionToBusinessExceptionMapper<NoSuchElementException>() {
 
-  // BusinessException handling is automatic
+  override fun supported(t: Throwable): Boolean = t is NoSuchElementException
 
-  // Add custom exception mappings
-  override fun getExceptionMappers(): List<ExceptionToBusinessExceptionMapper<*>> {
-    return listOf(
-      IllegalArgumentExceptionMapper(),
-      NoSuchElementExceptionMapper()
+  override fun transform(t: NoSuchElementException): BusinessException {
+    return BusinessException(ApiErrorCode.NOT_FOUND, t.message ?: "Resource not found")
+  }
+}
+```
+
+### Custom Error Response
+
+The default body is `ApiErrorResponse(code, name, messages)`. To customize the response shape, provide an `ApiErrorResponseFactory` bean:
+
+```kotlin
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import zygarde.api.exception.ApiErrorResponseFactory
+
+data class AppErrorResponse(
+  val code: String,
+  val name: String,
+  val messages: List<String>,
+  val path: String?
+)
+
+@Configuration
+class AppErrorConfig {
+  @Bean
+  fun apiErrorResponseFactory() = ApiErrorResponseFactory { errorCode, messages, _, request ->
+    AppErrorResponse(
+      code = errorCode.code,
+      name = errorCode.name,
+      messages = messages,
+      path = request?.requestURI
     )
   }
 }
 ```
 
-### Custom Exception Mappers
-
-Map application exceptions to BusinessException:
-
-```kotlin
-import zygarde.core.exception.ExceptionToBusinessExceptionMapper
-import zygarde.core.exception.BusinessException
-
-class NoSuchElementExceptionMapper :
-  ExceptionToBusinessExceptionMapper<NoSuchElementException> {
-
-  override val exceptionClass = NoSuchElementException::class.java
-
-  override fun map(exception: NoSuchElementException) = BusinessException(
-    message = exception.message ?: "Resource not found",
-    code = "NOT_FOUND"
-  )
-}
-
-class IllegalArgumentExceptionMapper :
-  ExceptionToBusinessExceptionMapper<IllegalArgumentException> {
-
-  override val exceptionClass = IllegalArgumentException::class.java
-
-  override fun map(exception: IllegalArgumentException) = BusinessException(
-    message = exception.message ?: "Invalid argument",
-    code = "INVALID_ARGUMENT"
-  )
-}
-```
-
 ### Error Response Format
 
-Standard error response structure:
+Default error response structure:
 
 ```kotlin
 data class ApiErrorResponse(
   val code: String,
-  val message: String,
-  val timestamp: Long = System.currentTimeMillis(),
-  val path: String? = null,
-  val details: Map<String, Any>? = null
+  val name: String,
+  val messages: List<String>
 )
 ```
 
@@ -210,10 +206,9 @@ Example response:
 
 ```json
 {
-  "code": "BOOK_NOT_FOUND",
-  "message": "Book not found: 123",
-  "timestamp": 1704067200000,
-  "path": "/api/books/123"
+  "code": "404",
+  "name": "NOT_FOUND",
+  "messages": ["Book not found: 123"]
 }
 ```
 

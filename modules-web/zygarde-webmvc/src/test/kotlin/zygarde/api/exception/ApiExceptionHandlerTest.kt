@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import jakarta.servlet.FilterChain
+import jakarta.servlet.http.HttpServletRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.context.MessageSource
@@ -23,6 +24,7 @@ import zygarde.api.tracing.ApiTracingContext
 import zygarde.core.exception.ApiErrorCode
 import zygarde.core.exception.BusinessException
 import zygarde.core.exception.ErrorCode
+import zygarde.data.api.ApiErrorResponse
 import java.util.Locale
 
 class ApiExceptionHandlerTest {
@@ -41,6 +43,13 @@ class ApiExceptionHandlerTest {
     }
   }
 
+  private data class CustomErrorResponse(
+    val status: String,
+    val messages: List<String>,
+    val path: String?,
+    val exceptionType: String?
+  )
+
   @AfterEach
   fun tearDown() {
     LocaleContextHolder.resetLocaleContext()
@@ -49,13 +58,17 @@ class ApiExceptionHandlerTest {
 
   private fun handler(
     messageSource: MessageSource = mockk(relaxed = true),
-    mappers: List<ExceptionToBusinessExceptionMapper<*>> = emptyList()
+    mappers: List<ExceptionToBusinessExceptionMapper<*>> = emptyList(),
+    responseFactory: ApiErrorResponseFactory = DefaultApiErrorResponseFactory()
   ): ApiExceptionHandler {
     return ApiExceptionHandler().also {
       ReflectionTestUtils.setField(it, "messageSource", messageSource)
       ReflectionTestUtils.setField(it, "exceptionToBusinessExceptionMappers", mappers)
+      ReflectionTestUtils.setField(it, "apiErrorResponseFactory", responseFactory)
     }
   }
+
+  private fun Any?.asApiErrorResponse(): ApiErrorResponse = this as ApiErrorResponse
 
   @Suppress("UNUSED_PARAMETER")
   private fun validationTarget(req: String) {
@@ -79,11 +92,12 @@ class ApiExceptionHandlerTest {
     val method = javaClass.getDeclaredMethod("validationTarget", String::class.java)
     val exception = MethodArgumentNotValidException(MethodParameter(method, 0), bindingResult)
 
-    val response = handler(messageSource).handleValidationError(exception)
+    val response = handler(messageSource).handleValidationError(exception, MockHttpServletRequest("POST", "/validated"))
+    val body = response.body.asApiErrorResponse()
 
     response.statusCode shouldBe HttpStatus.BAD_REQUEST
-    response.body?.code shouldBe ApiErrorCode.BAD_REQUEST.code
-    response.body?.messages shouldContainExactly listOf(
+    body.code shouldBe ApiErrorCode.BAD_REQUEST.code
+    body.messages shouldContainExactly listOf(
       "translated message",
       "createReq.description must not be null"
     )
@@ -95,10 +109,11 @@ class ApiExceptionHandlerTest {
     val exception = BusinessException(ApiErrorCode.NOT_FOUND, cause)
 
     val response = handler().handleBusinessException(exception, MockHttpServletRequest("GET", "/missing"))
+    val body = response.body.asApiErrorResponse()
 
     response.statusCode shouldBe HttpStatus.NOT_FOUND
-    response.body?.code shouldBe ApiErrorCode.NOT_FOUND.code
-    response.body?.messages shouldContainExactly listOf("Not found", "root cause")
+    body.code shouldBe ApiErrorCode.NOT_FOUND.code
+    body.messages shouldContainExactly listOf("Not found", "root cause")
     ApiTracingContext.getTracingData().exception shouldBe exception
   }
 
@@ -107,10 +122,11 @@ class ApiExceptionHandlerTest {
     val exception = BusinessException(TestErrorCode.DOMAIN_ERROR)
 
     val response = handler().handleBusinessException(exception, MockHttpServletRequest("GET", "/domain"))
+    val body = response.body.asApiErrorResponse()
 
     response.statusCode shouldBe HttpStatus.EXPECTATION_FAILED
-    response.body?.code shouldBe TestErrorCode.DOMAIN_ERROR.code
-    response.body?.messages shouldContainExactly listOf("Domain error")
+    body.code shouldBe TestErrorCode.DOMAIN_ERROR.code
+    body.messages shouldContainExactly listOf("Domain error")
   }
 
   @Test
@@ -122,9 +138,9 @@ class ApiExceptionHandlerTest {
       .handleThrowable(RuntimeException("wrapper", BusinessException(ApiErrorCode.BAD_REQUEST, "bad request")), request)
 
     mapped.statusCode shouldBe HttpStatus.BAD_REQUEST
-    mapped.body?.messages shouldContainExactly listOf("mapped bad input")
+    mapped.body.asApiErrorResponse().messages shouldContainExactly listOf("mapped bad input")
     wrapped.statusCode shouldBe HttpStatus.BAD_REQUEST
-    wrapped.body?.messages shouldContainExactly listOf("bad request")
+    wrapped.body.asApiErrorResponse().messages shouldContainExactly listOf("bad request")
   }
 
   @Test
@@ -132,11 +148,43 @@ class ApiExceptionHandlerTest {
     val exception = IllegalStateException("boom")
 
     val response = handler().handleThrowable(exception, MockHttpServletRequest("GET", "/boom"))
+    val body = response.body.asApiErrorResponse()
 
     response.statusCode shouldBe HttpStatus.INTERNAL_SERVER_ERROR
-    response.body?.code shouldBe ApiErrorCode.SERVER_ERROR.code
-    response.body?.messages shouldContainExactly listOf("boom")
+    body.code shouldBe ApiErrorCode.SERVER_ERROR.code
+    body.messages shouldContainExactly listOf("boom")
     ApiTracingContext.getTracingData().exception shouldBe exception
+  }
+
+  @Test
+  fun `handleBusinessException should allow custom response body factory`() {
+    val request = MockHttpServletRequest("GET", "/custom")
+    val responseFactory = object : ApiErrorResponseFactory {
+      override fun create(
+        errorCode: ErrorCode,
+        messages: List<String>,
+        throwable: Throwable?,
+        request: HttpServletRequest?
+      ): Any {
+        return CustomErrorResponse(
+          status = errorCode.code,
+          messages = messages,
+          path = request?.requestURI,
+          exceptionType = throwable?.javaClass?.simpleName
+        )
+      }
+    }
+
+    val response = handler(responseFactory = responseFactory)
+      .handleBusinessException(BusinessException(ApiErrorCode.CONFLICT, "duplicated"), request)
+
+    response.statusCode shouldBe HttpStatus.CONFLICT
+    response.body shouldBe CustomErrorResponse(
+      status = "409",
+      messages = listOf("duplicated"),
+      path = "/custom",
+      exceptionType = "BusinessException"
+    )
   }
 
   @Test
