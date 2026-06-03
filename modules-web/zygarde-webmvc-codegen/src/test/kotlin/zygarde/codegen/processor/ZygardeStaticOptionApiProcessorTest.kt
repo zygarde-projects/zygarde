@@ -4,6 +4,7 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.jupiter.api.Test
@@ -29,9 +30,22 @@ class ZygardeStaticOptionApiProcessorTest {
     val generatedFileNames = result.generatedFiles.map { it.name }
     generatedFileNames shouldContain "StaticOptionApi.kt"
 
-    result.generatedFiles.filter { it.absolutePath.endsWith("kt") }.forEach {
-      println(it.absolutePath)
-      println(it.readText())
+    val generatedSources = result.generatedFiles
+      .filter { it.absolutePath.endsWith("kt") }
+      .associateBy { it.name }
+
+    generatedSources.getValue("StaticOptionDto.kt").readText().also {
+      it shouldContain "val barType"
+      it shouldContain "val fooType"
+    }
+    generatedSources.getValue("StaticOptionApi.kt").readText().also {
+      it shouldContain """value=["\${'$'}{zygarde.api.static-option-api.path}/barType"]"""
+      it shouldContain """value=["\${'$'}{zygarde.api.static-option-api.path}/foo-types"]"""
+      it shouldContain "fun getFooType()"
+    }
+    generatedSources.getValue("StaticOptionController.kt").readText().also {
+      it shouldContain """activeOverrides["BarType"]"""
+      it shouldContain """activeOverrides["foo-type"]"""
     }
   }
 }

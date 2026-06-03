@@ -71,6 +71,21 @@ class ZygardeStaticOptionApiKspProcessorTest {
 
     val dtoFile = compilation.kspSourcesDir.walkTopDown()
       .find { it.name == "StaticOptionDto.kt" }
-    dtoFile?.readText() shouldContain "testStatus"
+    val dtoSource = dtoFile?.readText().orEmpty()
+    dtoSource shouldContain "testStatus"
+    dtoSource shouldContain "todoPriority"
+
+    val apiFile = compilation.kspSourcesDir.walkTopDown()
+      .find { it.name == "StaticOptionApi.kt" }
+    val apiSource = apiFile?.readText().orEmpty()
+    apiSource shouldContain """value=["\${'$'}{zygarde.api.static-option-api.path}/testStatus"]"""
+    apiSource shouldContain """value=["\${'$'}{zygarde.api.static-option-api.path}/priorities"]"""
+    apiSource shouldContain "fun getTodoPriority()"
+
+    val controllerFile = compilation.kspSourcesDir.walkTopDown()
+      .find { it.name == "StaticOptionController.kt" }
+    val controllerSource = controllerFile?.readText().orEmpty()
+    controllerSource shouldContain """activeOverrides["TestStatus"]"""
+    controllerSource shouldContain """activeOverrides["todo-priority"]"""
   }
 }

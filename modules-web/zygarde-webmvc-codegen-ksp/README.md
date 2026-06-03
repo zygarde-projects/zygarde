@@ -72,6 +72,24 @@ enum class UserRole(override val label: String) : OptionEnum {
 }
 ```
 
+`@StaticOptionApi` also accepts optional stable contract fields:
+
+```kotlin
+@StaticOptionApi(
+    comment = "Todo Priority",
+    key = "todo-priority",
+    path = "priorities"
+)
+enum class PriorityLevel(override val label: String) : OptionEnum {
+    LOW("Low"),
+    HIGH("High")
+}
+```
+
+- `key`: used for generated DTO/function names and `zygarde.api.static-option-api.active.<key>` overrides.
+- `path`: used for the individual option endpoint path segment.
+- When omitted, generation keeps the legacy behavior, such as `TodoStatus` -> `/todoStatus` and active key `TodoStatus`.
+
 ### Generated Code
 
 The processor generates:
