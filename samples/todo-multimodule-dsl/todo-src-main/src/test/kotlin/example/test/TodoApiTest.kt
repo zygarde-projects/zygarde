@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import zygarde.codegen.data.dto.CreateTodoReq
+import zygarde.codegen.data.dto.SearchTodoReq
 import zygarde.codegen.data.dto.UpdateTodoReq
+import zygarde.data.api.PagingRequest
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
@@ -31,6 +33,18 @@ class TodoApiTest {
     }
 
     todoApi.getTodoList().size shouldBe 1
+
+    todoApi.searchTodos(
+      SearchTodoReq().apply {
+        paging = PagingRequest(page = 1, pageSize = 1)
+      }
+    ).also {
+      it.atPage shouldBe 1
+      it.totalPages shouldBe 1
+      it.totalCount shouldBe 1
+      it.items.size shouldBe 1
+      it.items[0].`file`?.name shouldBe "File todo-file"
+    }
 
     todoApi.deleteTodo(todo.id)
 

@@ -14,7 +14,9 @@ import org.springframework.web.bind.`annotation`.PostMapping
 import org.springframework.web.bind.`annotation`.PutMapping
 import org.springframework.web.bind.`annotation`.RequestBody
 import org.springframework.web.bind.`annotation`.RestController
+import zygarde.`data`.api.PageDto
 import zygarde.codegen.`data`.dto.CreateTodoReq
+import zygarde.codegen.`data`.dto.SearchTodoReq
 import zygarde.codegen.`data`.dto.TodoDto
 import zygarde.codegen.`data`.dto.UpdateTodoReq
 import zygarde.core.di.DiServiceContext.bean
@@ -27,6 +29,14 @@ public class TodoApiController : TodoApi {
   override fun getTodoList(): Collection<TodoDto> {
     val service = bean<TodoApiService>()
     val result = service.getTodoList()
+    return result
+  }
+
+  @PostMapping(value=["/api/todo/search"])
+  @Operation(summary="searchTodos")
+  override fun searchTodos(@RequestBody @Valid req: SearchTodoReq): PageDto<TodoDto> {
+    val service = bean<TodoApiService>()
+    val result = service.searchTodos(req)
     return result
   }
 

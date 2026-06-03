@@ -3,6 +3,7 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
+  implementation(project(":zygarde-core"))
   api(project(":todo-src-core"))
   implementation(project(":zygarde-model-mapping"))
   implementation("jakarta.validation:jakarta.validation-api")

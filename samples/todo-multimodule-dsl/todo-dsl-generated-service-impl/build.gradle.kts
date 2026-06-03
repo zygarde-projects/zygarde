@@ -4,6 +4,7 @@ apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
+  implementation(project(":zygarde-core"))
   implementation(project(":zygarde-jpa"))
   implementation(project(":todo-src-core"))
   implementation(project(":todo-dsl-generated-dto"))

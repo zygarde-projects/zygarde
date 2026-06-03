@@ -2,6 +2,7 @@ package example
 
 import example.codegen.data.dao.TodoDao
 import zygarde.codegen.data.dto.CreateTodoReq
+import zygarde.codegen.data.dto.SearchTodoReq
 import zygarde.codegen.data.dto.TodoDto
 import zygarde.codegen.data.dto.UpdateTodoReq
 import zygarde.codegen.dsl.webmvc.DslApiFunction
@@ -16,6 +17,8 @@ class TodoApiCodegen : WebMvcDslCodegen() {
 
       get("getTodoList", "") {
         resCollection<TodoDto>()
+      }
+      postPage<SearchTodoReq, TodoDto>("searchTodos", "search") {
       }
       get("getTodo", "{todoId}") {
         todoIdPathVariable()
@@ -39,6 +42,7 @@ class TodoApiCodegen : WebMvcDslCodegen() {
         dtoBuilder<TodoDto>("TodoDtoBuilder")
         applyExtensions("TodoApplyValueExtensions")
         list("getTodoList")
+        page<SearchTodoReq>("searchTodos")
         get("getTodo", idParam = "todoId")
         create<CreateTodoReq>("createTodo")
         update<UpdateTodoReq>("updateTodo", idParam = "todoId")

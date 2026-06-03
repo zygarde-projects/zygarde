@@ -1,5 +1,6 @@
 package zygarde.codegen.model
 
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
 
 data class CrudOperationToGenerateVo(
@@ -7,4 +8,7 @@ data class CrudOperationToGenerateVo(
   val functionName: String,
   val idParam: String? = null,
   val requestType: TypeName? = null,
+  val daoMethod: String? = null,
+  val notFound: CrudNotFoundToGenerateVo? = null,
+  val hookType: ClassName? = null,
 )

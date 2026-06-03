@@ -1,5 +1,7 @@
 package zygarde.codegen.dsl.webmvc
 
+import com.squareup.kotlinpoet.asTypeName
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -7,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.CrudOperationKind
+import zygarde.core.exception.ApiErrorCode
 
 class DslApiTest {
   data class TestRequest(val name: String)
@@ -16,6 +19,10 @@ class DslApiTest {
   class TestEntity
 
   interface TestDao
+
+  class TestCreateHook
+
+  class TestPageHook
 
   private fun createConfig() = WebMvcDslCodegenConfig(
     apiInterfacePackage = "com.test.api",
@@ -461,5 +468,82 @@ class DslApiTest {
     crudServiceImpl.applyExtensionsType?.canonicalName shouldBe "zygarde.codegen.model.extensions.TestApplyValueExtensions"
     crudServiceImpl.operations.single().kind shouldBe CrudOperationKind.LIST
     crudServiceImpl.operations.single().functionName shouldBe "getTestList"
+  }
+
+  @Test
+  fun `should declare enhanced CRUD service impl metadata`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // when
+    api.crudServiceImpl<TestEntity, Int>("TestService") {
+      dao<TestDao>("testDao")
+      dtoBuilder<TestResponse>("TestResponseBuilder")
+      transactional("testTx")
+      notFound<ApiErrorCode>("NOT_FOUND")
+      softDeleteTimestamp("deletedAt")
+      page<TestRequest>("searchTests") {
+        daoMethod("searchPage")
+        hook<TestPageHook>()
+        notFound<ApiErrorCode>("BAD_REQUEST")
+      }
+      create<TestRequest>("createTest") {
+        hook<TestCreateHook>()
+      }
+    }
+
+    // then
+    val crudServiceImpl = api.toApiToGenerateVo().crudServiceImpls.single()
+    crudServiceImpl.transactional?.transactionManager shouldBe "testTx"
+    crudServiceImpl.notFound?.errorCodeName shouldBe "NOT_FOUND"
+    crudServiceImpl.softDeleteTimestamp?.fieldName shouldBe "deletedAt"
+
+    val page = crudServiceImpl.operations.first { it.kind == CrudOperationKind.PAGE }
+    page.functionName shouldBe "searchTests"
+    page.requestType shouldBe TestRequest::class.asTypeName()
+    page.daoMethod shouldBe "searchPage"
+    page.hookType?.canonicalName shouldBe "zygarde.codegen.dsl.webmvc.DslApiTest.TestPageHook"
+    page.notFound?.errorCodeName shouldBe "BAD_REQUEST"
+
+    val create = crudServiceImpl.operations.first { it.kind == CrudOperationKind.CREATE }
+    create.hookType?.canonicalName shouldBe "zygarde.codegen.dsl.webmvc.DslApiTest.TestCreateHook"
+  }
+
+  @Test
+  fun `should fail fast for duplicate CRUD operation hook`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // expect
+    shouldThrow<IllegalArgumentException> {
+      api.crudServiceImpl<TestEntity, Int>("TestService") {
+        dao<TestDao>("testDao")
+        dtoBuilder<TestResponse>("TestResponseBuilder")
+        create<TestRequest>("createTest") {
+          hook<TestCreateHook>()
+          hook<TestCreateHook>()
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `should fail fast for unsupported CRUD operation hook`() {
+    // given
+    val config = createConfig()
+    val api = DslApi(config, "TestApi", "/api/test")
+
+    // expect
+    shouldThrow<IllegalArgumentException> {
+      api.crudServiceImpl<TestEntity, Int>("TestService") {
+        dao<TestDao>("testDao")
+        dtoBuilder<TestResponse>("TestResponseBuilder")
+        list("getTestList") {
+          hook<TestCreateHook>()
+        }
+      }
+    }
   }
 }

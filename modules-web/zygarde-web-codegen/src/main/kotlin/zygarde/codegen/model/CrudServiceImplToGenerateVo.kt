@@ -16,5 +16,21 @@ data class CrudServiceImplToGenerateVo(
   ),
   val applyExtensionsType: ClassName? = null,
   val patchExtensionsType: ClassName? = null,
+  val transactional: CrudTransactionalToGenerateVo? = null,
+  val notFound: CrudNotFoundToGenerateVo? = null,
+  val softDeleteTimestamp: CrudSoftDeleteTimestampToGenerateVo? = null,
   val operations: List<CrudOperationToGenerateVo> = emptyList(),
+)
+
+data class CrudTransactionalToGenerateVo(
+  val transactionManager: String? = null,
+)
+
+data class CrudNotFoundToGenerateVo(
+  val errorCodeType: ClassName,
+  val errorCodeName: String,
+)
+
+data class CrudSoftDeleteTimestampToGenerateVo(
+  val fieldName: String,
 )

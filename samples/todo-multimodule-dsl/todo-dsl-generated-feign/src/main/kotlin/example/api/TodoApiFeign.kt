@@ -9,7 +9,9 @@ import org.springframework.web.bind.`annotation`.PathVariable
 import org.springframework.web.bind.`annotation`.PostMapping
 import org.springframework.web.bind.`annotation`.PutMapping
 import org.springframework.web.bind.`annotation`.RequestBody
+import zygarde.`data`.api.PageDto
 import zygarde.codegen.`data`.dto.CreateTodoReq
+import zygarde.codegen.`data`.dto.SearchTodoReq
 import zygarde.codegen.`data`.dto.TodoDto
 import zygarde.codegen.`data`.dto.UpdateTodoReq
 
@@ -17,6 +19,9 @@ import zygarde.codegen.`data`.dto.UpdateTodoReq
 public interface TodoApiFeign : TodoApi {
   @GetMapping(value=["/api/todo"])
   override fun getTodoList(): Collection<TodoDto>
+
+  @PostMapping(value=["/api/todo/search"])
+  override fun searchTodos(@RequestBody req: SearchTodoReq): PageDto<TodoDto>
 
   @GetMapping(value=["/api/todo/{todoId}"])
   override fun getTodo(@PathVariable(value="todoId") todoId: Int): TodoDto

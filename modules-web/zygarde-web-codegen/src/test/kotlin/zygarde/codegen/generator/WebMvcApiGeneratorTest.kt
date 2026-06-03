@@ -1,6 +1,7 @@
 package zygarde.codegen.generator
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -12,18 +13,32 @@ import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.RequestBodyContentType
 import zygarde.codegen.model.ApiFunctionToGenerateVo
 import zygarde.codegen.model.ApiToGenerateVo
+import zygarde.codegen.model.CrudNotFoundToGenerateVo
 import zygarde.codegen.model.CrudOperationKind
 import zygarde.codegen.model.CrudOperationToGenerateVo
 import zygarde.codegen.model.CrudServiceImplToGenerateVo
+import zygarde.codegen.model.CrudSoftDeleteTimestampToGenerateVo
+import zygarde.codegen.model.CrudTransactionalToGenerateVo
+import zygarde.data.api.PageDto
 
 class WebMvcApiGeneratorTest {
   data class CreateTodoReq(val description: String)
 
   data class UpdateTodoReq(val description: String)
 
+  data class SearchTodoReq(val keyword: String?)
+
   data class TodoPatchReq(val description: String?)
 
   data class TodoDto(val id: Int, val description: String)
+
+  class TodoCreateHook
+
+  class TodoUpdateHook
+
+  class TodoDeleteHook
+
+  class TodoPageHook
 
   @Test
   fun `test api generate`() {
@@ -90,11 +105,106 @@ class WebMvcApiGeneratorTest {
     serviceImpl shouldContain "private val todoDao: TodoDao"
     serviceImpl shouldContain "private val todoDtoAssembler: TodoDtoAssembler"
     serviceImpl shouldContain "todoDtoAssembler.buildAll(todoDao.findAll())"
-    serviceImpl shouldContain "todoDtoAssembler.build(todoDao.getById(todoId))"
-    serviceImpl shouldContain "todoDtoAssembler.build(Todo().applyFrom(req).let(todoDao::saveAndFlush))"
-    serviceImpl shouldContain "todoDtoAssembler.build(todoDao.getById(todoId).applyFrom(req).let(todoDao::saveAndFlush))"
-    serviceImpl shouldContain "todoDao.deleteById(todoId)"
-    serviceImpl shouldContain "todoDtoAssembler.build(todoDao.getById(todoId).applyPatch(req).let(todoDao::saveAndFlush))"
+    serviceImpl shouldContain "todoDtoAssembler.build(todoDao.findById(todoId).orElseThrow { BusinessException(ApiErrorCode.NOT_FOUND) })"
+    serviceImpl shouldContain "val entity = Todo().applyFrom(req)"
+    serviceImpl shouldContain "val saved = todoDao.saveAndFlush(entity)"
+    serviceImpl shouldContain "todoDao.findById(todoId).orElseThrow { BusinessException(ApiErrorCode.NOT_FOUND) }.applyFrom(req)"
+    serviceImpl shouldContain "todoDao.delete(entity)"
+    serviceImpl shouldContain ".applyPatch(req).let(todoDao::saveAndFlush)"
+  }
+
+  @Test
+  fun `should generate CRUD page service impl with batch assembler`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(
+        crudApi(
+          functions = mutableListOf(pageFunction()),
+          operations = listOf(CrudOperationToGenerateVo(CrudOperationKind.PAGE, "searchTodos", requestType = SearchTodoReq::class.asTypeName()))
+        )
+      )
+    ).generateApis()
+
+    val serviceImpl = generateApis.serviceImpls.single().toString()
+
+    serviceImpl shouldContain "toSpringDataPageRequest"
+    serviceImpl shouldContain "override fun searchTodos(req: WebMvcApiGeneratorTest.SearchTodoReq):"
+    serviceImpl shouldContain "PageDto<WebMvcApiGeneratorTest.TodoDto>"
+    serviceImpl shouldContain "val page = todoDao.findAll(req.toSpringDataPageRequest())"
+    serviceImpl shouldContain "val items = todoDtoAssembler.buildAll(page.content).toList()"
+    serviceImpl shouldContain "return PageDto(page.number + 1, page.totalPages, items, page.totalElements)"
+  }
+
+  @Test
+  fun `should generate enhanced CRUD service impl features`() {
+    val generateApis = WebMvcApiGenerator(
+      listOf(
+        crudApi(
+          functions = mutableListOf(
+            pageFunction(),
+            crudFunctions().first { it.functionName == "createTodo" },
+            crudFunctions().first { it.functionName == "updateTodo" },
+            crudFunctions().first { it.functionName == "deleteTodo" },
+          ),
+          operations = listOf(
+            CrudOperationToGenerateVo(
+              CrudOperationKind.PAGE,
+              "searchTodos",
+              requestType = SearchTodoReq::class.asTypeName(),
+              daoMethod = "searchPage",
+              hookType = TodoPageHook::class.asClassName(),
+            ),
+            CrudOperationToGenerateVo(
+              CrudOperationKind.CREATE,
+              "createTodo",
+              requestType = CreateTodoReq::class.asTypeName(),
+              hookType = TodoCreateHook::class.asClassName(),
+            ),
+            CrudOperationToGenerateVo(
+              CrudOperationKind.UPDATE,
+              "updateTodo",
+              "todoId",
+              UpdateTodoReq::class.asTypeName(),
+              daoMethod = "findByIdAndDeletedAtIsNull",
+              hookType = TodoUpdateHook::class.asClassName(),
+            ),
+            CrudOperationToGenerateVo(
+              CrudOperationKind.DELETE,
+              "deleteTodo",
+              "todoId",
+              daoMethod = "findByIdAndDeletedAtIsNull",
+              hookType = TodoDeleteHook::class.asClassName(),
+            ),
+          ),
+          crudService = defaultCrudService(
+            operations = emptyList()
+          ).copy(
+            transactional = CrudTransactionalToGenerateVo("appTx"),
+            notFound = CrudNotFoundToGenerateVo(ClassName("com.example.error", "TodoErrorCode"), "TODO_NOT_FOUND"),
+            softDeleteTimestamp = CrudSoftDeleteTimestampToGenerateVo("deletedAt"),
+          )
+        )
+      )
+    ).generateApis()
+
+    val serviceImpl = generateApis.serviceImpls.single().toString()
+
+    serviceImpl shouldContain "import java.time.LocalDateTime"
+    serviceImpl shouldContain "Transactional"
+    serviceImpl shouldContain "private val todoCreateHook: WebMvcApiGeneratorTest.TodoCreateHook"
+    serviceImpl shouldContain "private val todoUpdateHook: WebMvcApiGeneratorTest.TodoUpdateHook"
+    serviceImpl shouldContain "private val todoDeleteHook: WebMvcApiGeneratorTest.TodoDeleteHook"
+    serviceImpl shouldContain "@Transactional(transactionManager = \"appTx\")"
+    serviceImpl shouldContain "todoPageHook.beforePage(req)"
+    serviceImpl shouldContain "val page = todoDao.searchPage(req)"
+    serviceImpl shouldContain "todoCreateHook.beforeCreate(entity, req)"
+    serviceImpl shouldContain "todoCreateHook.afterCreate(saved, req)"
+    serviceImpl shouldContain "todoUpdateHook.beforeUpdate(entity, todoId, req)"
+    serviceImpl shouldContain "todoUpdateHook.afterUpdate(saved, todoId, req)"
+    serviceImpl shouldContain "todoDao.findByIdAndDeletedAtIsNull(todoId).orElseThrow { BusinessException(TodoErrorCode.TODO_NOT_FOUND) }"
+    serviceImpl shouldContain "todoDeleteHook.beforeDelete(entity, todoId)"
+    serviceImpl shouldContain "entity.deletedAt = LocalDateTime.now()"
+    serviceImpl shouldContain "val saved = todoDao.saveAndFlush(entity)"
+    serviceImpl shouldContain "todoDeleteHook.afterDelete(saved, todoId)"
   }
 
   @Test
@@ -414,6 +524,7 @@ class WebMvcApiGeneratorTest {
     apiName: String = "TodoApi",
     functions: MutableList<ApiFunctionToGenerateVo> = crudFunctions(),
     operations: List<CrudOperationToGenerateVo> = crudOperations(),
+    crudService: CrudServiceImplToGenerateVo = defaultCrudService(operations),
   ): ApiToGenerateVo {
     return ApiToGenerateVo(
       apiInterfacePackage = "com.example.api",
@@ -423,19 +534,35 @@ class WebMvcApiGeneratorTest {
       basePath = "/api/todo",
       functions = functions,
       serviceImplPackage = "com.example.service.impl",
-      crudServiceImpls = listOf(
-        CrudServiceImplToGenerateVo(
-          serviceName = "TodoService",
-          entityType = ClassName("com.example.model", "Todo"),
-          idType = Int::class.asTypeName(),
-          daoType = ClassName("com.example.dao", "TodoDao"),
-          daoPropertyName = "todoDao",
-          dtoBuilderType = ClassName("com.example.extensions", "TodoDtoBuilder"),
-          applyExtensionsType = ClassName("com.example.extensions", "TodoApplyValueExtensions"),
-          patchExtensionsType = ClassName("com.example.extensions", "TodoPatchExtensions"),
-          operations = operations,
-        )
-      )
+      crudServiceImpls = listOf(crudService.copy(operations = operations))
+    )
+  }
+
+  private fun defaultCrudService(
+    operations: List<CrudOperationToGenerateVo> = crudOperations(),
+  ): CrudServiceImplToGenerateVo {
+    return CrudServiceImplToGenerateVo(
+      serviceName = "TodoService",
+      entityType = ClassName("com.example.model", "Todo"),
+      idType = Int::class.asTypeName(),
+      daoType = ClassName("com.example.dao", "TodoDao"),
+      daoPropertyName = "todoDao",
+      dtoBuilderType = ClassName("com.example.extensions", "TodoDtoBuilder"),
+      applyExtensionsType = ClassName("com.example.extensions", "TodoApplyValueExtensions"),
+      patchExtensionsType = ClassName("com.example.extensions", "TodoPatchExtensions"),
+      operations = operations,
+    )
+  }
+
+  private fun pageFunction(): ApiFunctionToGenerateVo {
+    return ApiFunctionToGenerateVo(
+      method = RequestMethod.GET,
+      functionName = "searchTodos",
+      path = "search",
+      requestType = SearchTodoReq::class.asTypeName(),
+      responseType = PageDto::class.asTypeName(),
+      responseTypeGenericArguments = listOf(TodoDto::class.asTypeName()),
+      serviceName = "TodoService",
     )
   }
 
