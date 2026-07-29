@@ -133,6 +133,7 @@ class EnhancedSearchTest {
   fun `should ignore search condition`() {
     bookDao.search { stringField("name") inList null }.size shouldBe 1000
     bookDao.search { stringField("name") inList emptyList() }.size shouldBe 1000
+    bookDao.search { stringField("name") inListStrict null }.size shouldBe 1000
     bookDao.search { stringField("name") notInList null }.size shouldBe 1000
     bookDao.search { stringField("name") notInList emptyList() }.size shouldBe 1000
     bookDao.search { stringField("name") eq null }.size shouldBe 1000
@@ -143,6 +144,13 @@ class EnhancedSearchTest {
     bookDao.search { field<Author>("author").comparableField<String>("name") inList emptyList() }.size shouldBe 1000
     bookDao.search { field<Author>("author").field<LocalDate>("registerDate") eq null }.size shouldBe 1000
     bookDao.search { rangeOverlap({ field(Book::minPrice) }, { field(Book::maxPrice) }, SearchIntRangeOverlap(0, 1000)) }.size shouldBe 1000
+  }
+
+  @Order(350)
+  @Test
+  fun `inListStrict should match nothing for an empty collection`() {
+    bookDao.search { stringField("name") inListStrict emptyList() }.size shouldBe 0
+    bookDao.search { stringField("name") inListStrict listOf("zygarde") }.size shouldBe 20
   }
 
   @Order(400)

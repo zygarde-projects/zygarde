@@ -15,11 +15,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added SQL API documentation covering query, command, pagination, parameter sources, context resolvers, and code generation properties.
 - Comprehensive documentation site with MkDocs Material
 - Automated documentation deployment via GitHub Actions
+- Scoped query fields now use `ScopeFilter`: `All` explicitly skips a predicate, while `Of(values)` applies one.
+- Scoped query properties support `IN`, `NOT_IN`, `IS_NULL`, and `IS_NOT_NULL` through `@get:ScopeOp`.
+- `inListStrict` preserves the existing null behavior while making an empty collection match nothing.
+- Missing-scope DAO calls now resolve to error-deprecated placeholders with an entity-specific migration hint.
 
 ### Changed
 - SQL API generated contracts now keep context parameters out of request DTOs, API interfaces, Feign interfaces, controllers, and service interfaces.
 - SQL API validation now accepts context parameters in main SQL and paged count SQL while still rejecting unused declarations.
 - Improved documentation structure and organization
+- **Generated ScopedQueries API and ABI:** membership properties changed from `Collection<T>` to `ScopeFilter<T>`.
+  This changes the primary constructor, property getters, data-class `componentN`, `copy`, and their JVM signatures;
+  regenerate scopes and recompile all consumers together. Existing scalar and collection constructor calls remain
+  source-compatible when their first membership field is supplied. If every membership field is optional,
+  compatibility constructors require that first field to avoid overload ambiguity. Replace an intentional empty-list
+  bypass with `ScopeFilter.All`; `ScopeFilter.Of(emptyList())` and compatibility constructors receiving an empty
+  collection now match nothing. Nullable membership properties are non-null `ScopeFilter<T>` values defaulting to
+  `ScopeFilter.All`; compatibility calls using a literal `null` resolve without constructor ambiguity and retain the
+  previous skip-predicate behavior.
+- Adding `inListStrict` expands the public `ConditionAction` API. It has a default implementation so direct
+  implementors remain source-compatible, but consumers and custom implementations should still be recompiled together.
 
 ### Fixed
 - Various documentation improvements and corrections

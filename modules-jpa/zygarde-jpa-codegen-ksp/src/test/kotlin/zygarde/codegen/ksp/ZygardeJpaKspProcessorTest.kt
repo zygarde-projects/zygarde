@@ -56,6 +56,7 @@ class ZygardeJpaKspProcessorTest {
     simpleBookDaoExtensions shouldNotContain "JsonNode"
     simpleBookDaoExtensions shouldNotContain "objectMapper"
     simpleBookDaoExtensions shouldNotContain "patch.has("
+    simpleBookDaoExtensions shouldNotContain "ScopeFilter"
   }
 
   @Test
@@ -131,6 +132,8 @@ class ZygardeJpaKspProcessorTest {
     extContent shouldContain "fun ScopedOrderDao.searchCount("
     extContent shouldContain "fun <PATCH> ScopedOrderDao.patchOne("
     extContent shouldContain "searchOneOrThrow(scope, errorCode, searchContent)"
+    extContent shouldContain "level = DeprecationLevel.ERROR"
+    extContent shouldContain "請以第一參數傳入 ScopedOrderScope"
   }
 
   @Test
@@ -232,6 +235,34 @@ class ZygardeJpaKspProcessorTest {
   }
 
   @Test
+  fun `ScopeOp should generate selected predicates and Boolean null checks`() {
+    val compilation = KotlinCompilation().apply {
+      sources = listOf(
+        ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
+      ).map { SourceFile.fromPath(it) }
+      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      inheritClassPath = true
+      messageOutputStream = System.out
+    }
+    val result = compilation.compile()
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+
+    val scopeContent = compilation.kspSourcesDir.walkTopDown()
+      .first { it.name == "AdvancedScopedOrderScope.kt" }.readText()
+    scopeContent shouldContain "val status: ScopeFilter<String> = ScopeFilter.All"
+    scopeContent shouldContain "status: Collection<String>?,"
+    scopeContent shouldContain "deletedAt: Boolean? = null"
+    scopeContent shouldContain "linkedId: Boolean? = null"
+
+    val extContent = compilation.kspSourcesDir.walkTopDown()
+      .first { it.name == "AdvancedScopedOrderDaoExtensions.kt" }.readText()
+    extContent shouldContain "field<String>(\"status\") notInList scopeValues"
+    extContent shouldContain "scopeValues.any { it.toString() == \"ARCHIVED\" }"
+    extContent shouldContain "field<String>(\"deletedAt\").isNull()"
+    extContent shouldContain "field<Long>(\"linkedId\").isNotNull()"
+  }
+
+  @Test
   fun `boolean scope property should be included in scope data class`() {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
@@ -263,7 +294,7 @@ class ZygardeJpaKspProcessorTest {
   }
 
   @Test
-  fun `scope data class should wrap field type with Collection and provide convenience constructor`() {
+  fun `scope data class should use ScopeFilter and preserve collection and single-value constructors`() {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
@@ -283,15 +314,90 @@ class ZygardeJpaKspProcessorTest {
 
     val scopeContent = generatedFiles.first { it.name == "RegionalProductScope.kt" }.readText()
     scopeContent shouldContain "data class RegionalProductScope"
-    // Primary constructor should use Collection<Long>
+    // Primary constructor distinguishes All from Of(values).
+    scopeContent shouldContain "val regionId: ScopeFilter<Long>"
+    // Compatibility constructor should continue accepting Collection<Long>.
     scopeContent shouldContain "Collection<Long>"
     // Convenience constructor should accept single Long value
-    scopeContent shouldContain "listOf(regionId)"
+    scopeContent shouldContain "ScopeFilter.Of(listOf(regionId))"
 
     // Extension functions should use scope
     val extContent = generatedFiles.first { it.name == "RegionalProductDaoExtensions.kt" }.readText()
     extContent shouldContain "scope: RegionalProductScope"
-    extContent shouldContain "field<Long>(\"regionId\") inList scope.regionId"
+    extContent shouldContain "ScopeFilter.All -> Unit"
+    extContent shouldContain "val scopeValues = scopeFilter.values"
+    extContent shouldContain "field<Long>(\"regionId\") inList scopeValues"
+  }
+
+  @Test
+  fun `nullable scope constructors should resolve null without ambiguity`() {
+    val fixture = ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
+    val compilation = KotlinCompilation().apply {
+      sources = listOf(SourceFile.fromPath(fixture))
+      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      inheritClassPath = true
+    }
+    val generated = compilation.compile()
+    generated.exitCode shouldBe KotlinCompilation.ExitCode.OK
+
+    val result = KotlinCompilation().apply {
+      sources = listOf(SourceFile.fromPath(fixture)) +
+        compilation.kspSourcesDir.walkTopDown()
+          .filter { it.name == "ScopedOrderScope.kt" || it.name == "AdvancedScopedOrderScope.kt" }
+          .map(SourceFile::fromPath)
+          .toList() +
+        SourceFile.kotlin(
+          "ScopeConstructorUsage.kt",
+          """
+          package codegen.jpa
+
+          import zygarde.data.jpa.search.ScopeFilter
+          import zygarde.generated.data.dao.AdvancedScopedOrderScope
+          import zygarde.generated.data.dao.ScopedOrderScope
+
+          fun scopeConstructors() {
+            ScopedOrderScope()
+            ScopedOrderScope(platformSource = null)
+            ScopedOrderScope(null)
+            ScopedOrderScope(platformSource = ScopeFilter.All)
+            ScopedOrderScope(platformSource = emptyList())
+            ScopedOrderScope(platformSource = "HOTCAKE")
+            AdvancedScopedOrderScope()
+            AdvancedScopedOrderScope(status = null)
+            AdvancedScopedOrderScope(deletedAt = true)
+          }
+          """.trimIndent(),
+        )
+      inheritClassPath = true
+    }.compile()
+
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+    result.messages shouldNotContain "Overload resolution ambiguity"
+  }
+
+  @Test
+  fun `scope data class should avoid constructors with the same erased JVM signature`() {
+    val compilation = KotlinCompilation().apply {
+      sources = listOf(
+        ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
+      ).map { SourceFile.fromPath(it) }
+      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      inheritClassPath = true
+      messageOutputStream = System.out
+    }
+    val result = compilation.compile()
+    result.exitCode shouldBe KotlinCompilation.ExitCode.OK
+
+    val scopeContent = compilation.kspSourcesDir.walkTopDown()
+      .first { it.name == "FilterValueEntityScope.kt" }.readText()
+    scopeContent shouldContain "val filter: ScopeFilter<ScopeFilter<String>>"
+    scopeContent shouldContain "filter: Collection<ScopeFilter<String>>"
+    scopeContent shouldNotContain "constructor(filter: ScopeFilter<String>)"
+
+    val collectionScopeContent = compilation.kspSourcesDir.walkTopDown()
+      .first { it.name == "CollectionValueEntityScope.kt" }.readText()
+    collectionScopeContent shouldNotContain "constructor(values: Collection<String>)"
+    collectionScopeContent shouldNotContain "constructor(values: java.util.Collection<String>)"
   }
 
   @Test
@@ -346,7 +452,7 @@ class ZygardeJpaKspProcessorTest {
 
     val extContent = generatedFiles.first { it.name == "OwnedDocumentDaoExtensions.kt" }.readText()
     extContent shouldContain "scope: OwnedDocumentScope"
-    extContent shouldContain "field<Long>(\"ownerId\") inList scope.ownerId"
+    extContent shouldContain "field<Long>(\"ownerId\") inList scopeValues"
   }
 
   @Test
@@ -393,6 +499,11 @@ class ZygardeJpaKspProcessorTest {
 
     extContent shouldContain "fun ScopedOrderDao.remove("
     extContent shouldContain "scope: ScopedOrderScope"
+    val removeFunctions = extContent.split("fun ScopedOrderDao.remove(").drop(1)
+    removeFunctions.size shouldBe 2
+    removeFunctions.forEach { removeFunction ->
+      removeFunction shouldContain "): Long"
+    }
     // remove signature takes scope first
     val removeHead = extContent
       .substringAfter("fun ScopedOrderDao.remove(")
@@ -402,6 +513,71 @@ class ZygardeJpaKspProcessorTest {
     val removeBody = extContent.substringAfter("fun ScopedOrderDao.remove(")
     removeBody shouldContain "originalSearchContent"
     removeBody shouldContain "delete(SearchSpecBuilder.buildSpec(searchContent))"
+  }
+
+  @Test
+  fun `missing scope should report an actionable compiler error`() {
+    val fixture = ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
+    val compilation = KotlinCompilation().apply {
+      sources = listOf(SourceFile.fromPath(fixture))
+      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      inheritClassPath = true
+      kspArgs[ZygardeJpaKspOptions.DAO_INHERIT] = "zygarde.data.jpa.dao.ZygardeEnhancedDao"
+      kspArgs[ZygardeJpaKspOptions.DAO_COMBINE] = "false"
+    }
+    val generated = compilation.compile()
+    generated.exitCode shouldBe KotlinCompilation.ExitCode.OK
+
+    val requiredGeneratedFiles = setOf(
+      "ScopedOrderDao.kt",
+      "ScopedOrderScope.kt",
+      "ScopedOrderDaoExtensions.kt",
+      "AdvancedScopedOrderScope.kt",
+    )
+    val result = KotlinCompilation().apply {
+      sources = listOf(SourceFile.fromPath(fixture)) +
+        compilation.kspSourcesDir.walkTopDown()
+          .filter { it.name in requiredGeneratedFiles }
+          .map(SourceFile::fromPath)
+          .toList() +
+        SourceFile.kotlin(
+          "MissingScopeUsage.kt",
+          """
+          package codegen.jpa
+
+          import zygarde.generated.data.dao.ScopedOrderDao
+          import zygarde.generated.data.dao.AdvancedScopedOrderScope
+          import zygarde.core.exception.CommonErrorCode
+          import zygarde.data.api.PagingAndSortingRequest
+          import zygarde.generated.data.dao.remove
+          import zygarde.generated.data.dao.search
+          import zygarde.generated.data.dao.searchCount
+          import zygarde.generated.data.dao.searchOne
+          import zygarde.generated.data.dao.searchOneOrThrow
+          import zygarde.generated.data.dao.searchPage
+
+          fun missingScope(dao: ScopedOrderDao) {
+            AdvancedScopedOrderScope()
+            AdvancedScopedOrderScope(deletedAt = true)
+            dao.search { field<String>("platformSource") eq "HOTCAKE" }
+            dao.search(sorts = null) { field<String>("platformSource") eq "HOTCAKE" }
+            dao.search(searchContent = { field<String>("platformSource") eq "HOTCAKE" }, limit = 1)
+            dao.searchCount { field<String>("platformSource") eq "HOTCAKE" }
+            dao.searchOne { field<String>("platformSource") eq "HOTCAKE" }
+            dao.searchOneOrThrow(CommonErrorCode.ERROR) { field<String>("platformSource") eq "HOTCAKE" }
+            dao.searchPage(PagingAndSortingRequest()) { field<String>("platformSource") eq "HOTCAKE" }
+            dao.remove { field<String>("platformSource") eq "HOTCAKE" }
+          }
+          """.trimIndent(),
+        )
+      inheritClassPath = true
+    }.compile()
+
+    result.exitCode shouldBe KotlinCompilation.ExitCode.COMPILATION_ERROR
+    result.messages shouldContain "請以第一參數傳入 ScopedOrderScope"
+    result.messages shouldContain "ScopedOrderScope(platformSource = ScopeFilter.All)"
+    result.messages shouldNotContain "Overload resolution ambiguity"
+    result.messages shouldNotContain "Unresolved reference: field"
   }
 
   @Test

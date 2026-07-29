@@ -58,6 +58,15 @@ bookDao.search {
 }
 ```
 
+`inList` treats both `null` and an empty collection as “do not add a predicate”. Use
+`inListStrict` when an empty user-supplied collection must match nothing:
+
+```kotlin
+bookDao.search {
+  status() inListStrict selectedStatuses // null skips; empty matches nothing
+}
+```
+
 ## String Operations
 
 ### Contains

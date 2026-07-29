@@ -38,6 +38,15 @@ interface ConditionAction<RootEntityType, EntityType, FieldType> {
 
   infix fun inList(values: Collection<FieldType>?): EnhancedSearch<RootEntityType>
 
+  /** Like [inList], except that an empty collection matches nothing. A null value is still ignored. */
+  infix fun inListStrict(values: Collection<FieldType>?): EnhancedSearch<RootEntityType> =
+    if (values?.isEmpty() == true) {
+      isNull()
+      isNotNull()
+    } else {
+      inList(values)
+    }
+
   infix fun notInList(values: Collection<FieldType>?): EnhancedSearch<RootEntityType>
 
   infix fun eq(anotherAction: ConditionAction<*, *, FieldType>)

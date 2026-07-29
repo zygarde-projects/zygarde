@@ -1,6 +1,9 @@
 package example
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.codegen.AdditionalDtoProp
@@ -9,15 +12,20 @@ import zygarde.codegen.ApiPathVariable
 import zygarde.codegen.ApiProp
 import zygarde.codegen.Dto
 import zygarde.codegen.GenApi
+import zygarde.codegen.NullEquivalent
 import zygarde.codegen.RequestDto
+import zygarde.codegen.ScopeMarker
+import zygarde.codegen.ScopeOp
+import zygarde.codegen.ScopeOperator
 import zygarde.codegen.StaticOptionApi
 import zygarde.codegen.ZyApi
 import zygarde.codegen.ZyModel
 import zygarde.codegen.value.AutoIntIdValueProvider
-import zygarde.generated.data.dao.search
 import zygarde.data.jpa.entity.AutoIntIdEntity
+import zygarde.data.jpa.entity.AutoLongIdEntity
 import zygarde.data.option.OptionEnum
 import zygarde.generated.data.dao.TodoDao
+import zygarde.generated.data.dao.search
 import zygarde.generated.data.dto.CreateToDoReq
 import zygarde.generated.data.dto.TodoDto
 import zygarde.generated.data.dto.UpdateToDoReq
@@ -31,6 +39,28 @@ import jakarta.persistence.Entity
 const val createToDoReq = "CreateToDoReq"
 const val updateToDoReq = "UpdateToDoReq"
 const val todoDto = "TodoDto"
+
+@SpringBootApplication
+@EntityScan("example")
+@EnableJpaRepositories("zygarde.generated.data.dao")
+class TodoLegacyApplication
+
+@ScopeMarker
+interface LegacyScoped {
+  val tenantId: String
+
+  @get:NullEquivalent("NULL-CODE")
+  @get:ScopeOp(ScopeOperator.NOT_IN)
+  val excludedCode: String?
+}
+
+@ZyModel
+@Entity
+class LegacyScopedRecord(
+  var label: String = "",
+  override var tenantId: String = "",
+  override var excludedCode: String? = null,
+) : AutoLongIdEntity(), LegacyScoped
 
 @ZyModel
 @Entity
