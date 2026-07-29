@@ -1,6 +1,6 @@
 # ScopedQueries 使用教學
 
-這份說明整理了 `@ScopeMarker`、`@NullEquivalent` 與 codegen 生成 scoped DAO API 的使用方式，適合提供給下游專案或團隊成員快速上手。
+這份說明整理了 `@ScopeMarker`、`@ScopeOp`、`@NullEquivalent`、`ScopeFilter` 與 codegen 生成 scoped DAO API 的使用方式，適合提供給下游專案或團隊成員快速上手。
 
 > 本文對應目前主幹 (`v2`) 的實作；舊版 `scoped-queries-slack-guide.md` 描述的 fluent `dao.xxxScoped(scope)` 設計已被棄用，請以本文為準。
 
@@ -59,7 +59,31 @@ interface TenantScoped {
 
 一個 Entity 可以實作多個 `@ScopeMarker` interface，它們的 property 會被合併到同一個 `{Entity}Scope` 裡。
 
-### 2. `@NullEquivalent`
+### 2. `@ScopeOp`
+
+`@get:ScopeOp` 用來選擇 scope property 產生的 predicate；未標註時預設為 `IN`。
+
+```kotlin
+@ScopeMarker
+interface OrderScoped {
+  val status: OrderStatus
+
+  @get:ScopeOp(ScopeOperator.NOT_IN)
+  val excludedStatus: OrderStatus
+
+  @get:ScopeOp(ScopeOperator.IS_NOT_NULL)
+  val demandLinked: Boolean
+}
+```
+
+| Operator | Generated scope value | `true`／values 的效果 | `false`／`null` 的效果 |
+| --- | --- | --- | --- |
+| `IN` | `ScopeFilter<T>` | 欄位值包含在集合內 | `All` 或 optional `null` 略過 |
+| `NOT_IN` | `ScopeFilter<T>` | 排除集合中的欄位值 | `All` 或 optional `null` 略過 |
+| `IS_NULL` | `Boolean` | `IS NULL` | 略過 |
+| `IS_NOT_NULL` | `Boolean` | `IS NOT NULL` | 略過 |
+
+### 3. `@NullEquivalent`
 
 `@NullEquivalent("SENTINEL")` 標在 scope interface 的 property getter 上，代表「這個值等同於 NULL，查詢時要額外 OR IS NULL」。
 
@@ -84,30 +108,43 @@ visibility IN (...) OR visibility IS NULL
 
 value class、data class、或自定義 `toString()` 的型別會安靜地錯過 sentinel，不會觸發 `OR IS NULL`。
 
-### 3. Generated `{Entity}Scope` data class
+`@NullEquivalent` 只影響 `IN` 和 `NOT_IN`。搭配 `NOT_IN` 時：
+
+- 排除集合包含 sentinel：生成 `NOT IN (...) AND IS NOT NULL`，SQL NULL 也被排除。
+- 排除集合不含 sentinel：生成 `NOT IN (...) OR IS NULL`，SQL NULL 保持包含。
+
+### 4. Generated `{Entity}Scope` data class
 
 只要 Entity 實作任何有 property 的 `@ScopeMarker` interface，codegen 就會在 DAO 所在 package 產出一個 `{Entity}Scope` data class：
 
 ```kotlin
 // Generated: NoteScope.kt
 public data class NoteScope(
-  public val tenantId: Collection<String>,
-  public val visibility: Collection<String>? = null,
+  public val tenantId: ScopeFilter<String>,
+  public val visibility: ScopeFilter<String> = ScopeFilter.All,
 ) {
+  public constructor(tenantId: Collection<String>, visibility: Collection<String>? = null) : this(
+    tenantId = ScopeFilter.Of(tenantId),
+    visibility = visibility?.let { ScopeFilter.Of(it) } ?: ScopeFilter.All,
+  )
+
   public constructor(tenantId: String, visibility: String? = null) : this(
-    tenantId = listOf(tenantId),
-    visibility = visibility?.let { listOf(it) },
+    tenantId = ScopeFilter.Of(listOf(tenantId)),
+    visibility = visibility?.let { ScopeFilter.Of(listOf(it)) } ?: ScopeFilter.All,
   )
 }
 ```
 
 重點：
 
-- 每個 scope 欄位都是 `Collection<T>`，支援多值 `IN` 查詢
-- 可為 null 的欄位會變成 `Collection<T>?` 並預設 `null`（= 不加條件）
-- 自動附上「單值」便利 constructor
+- Membership 欄位使用 `ScopeFilter<T>`，明確區分「略過」與「使用集合篩選」
+- `ScopeFilter.All` 明確略過該欄位的 predicate
+- `ScopeFilter.Of(values)` 使用集合篩選；空集合刻意 match nothing
+- Entity property 可為 null 時，對應 membership scope 欄位預設 `ScopeFilter.All`，代表略過該欄位；`IS_NULL`／`IS_NOT_NULL` 的 Boolean 欄位仍以 `null` 略過
+- 仍附上接受 `Collection<T>` 與單一 `T` 的 compatibility constructors
+- nullable membership 的 literal `null` 會明確解析到 collection compatibility constructor，並轉成 `ScopeFilter.All`；`Scope()`、`Scope(field = null)` 與 `Scope(null)` 都不會產生 overload ambiguity
 
-### 4. Generated scoped DAO extensions
+### 5. Generated scoped DAO extensions
 
 同時會產出一份 `{Entity}DaoExtensions.kt`，提供以下 **top-level extension functions**：
 
@@ -124,7 +161,7 @@ fun NoteDao.searchPage(scope: NoteScope, req: PagingAndSortingRequest, searchCon
 fun NoteDao.remove(scope: NoteScope, searchContent: EnhancedSearch<Note>.() -> Unit = {}): Int
 ```
 
-注意：**沒有**不帶 scope 的 `search(...)` overload — 這就是「強制」的本質。
+不帶 scope 的同名函式只會生成 `DeprecationLevel.ERROR` placeholder，用來讓 compiler 顯示具體的 scope 類別與 `ScopeFilter.All` 修法；其函式內容也會直接 `error(...)`，不會執行 unscoped query。
 
 ## 一般使用流程
 
@@ -204,7 +241,12 @@ noteDao.search(
 noteDao.search { title() like "%$keyword%" }
 ```
 
-會編譯失敗 — generator 沒有產出不帶 scope 的 overload。
+會編譯失敗，並收到類似以下的指引：
+
+```text
+此實體已啟用 ScopedQueries：請以第一參數傳入 NoteScope
+（全放行請顯式傳 NoteScope(tenantId = ScopeFilter.All)）
+```
 
 **傳錯 scope 類別不能編譯：**
 
@@ -222,29 +264,34 @@ productDao.search(ProductScope(...))  // ProductScope 根本不存在
 
 如果 `Product` 沒實作任何 `@ScopeMarker` interface，`ProductScope` 不會被生成，直接 unresolved reference。
 
-### 框架無法保證的情況
+### 安全邊界與框架無法保證的情況
 
-`JpaSpecificationExecutor<T>` 的原生 `findAll(spec)` 仍然可呼叫。如果團隊要完全封掉繞路寫法，請在 code review 或 detekt 自定規則中補一層規範。
+ScopedQueries 的 compiler 保證只涵蓋 generated `search`／`searchOne`／`searchCount`／`searchPage`／`remove` extensions。
+DAO 仍繼承的 Spring Data API（例如 `JpaSpecificationExecutor<T>.findAll(spec)`、`findOne(spec)`）可以直接呼叫，
+`ScopeFilter.All` 也能刻意略過 predicate。因此 ScopedQueries **不是 authorization 或資料隔離的安全邊界**。
+
+這項限制是刻意保留的架構邊界：generator 不會移除 Spring Data API，也不會改寫 `ZygardeEnhancedDao` 的
+`select`／`selectOne`。若 scope 涉及租戶隔離或存取控制，請另外以 service/repository facade 限制 DAO 暴露面，
+並依團隊需求用 code review 或 detekt 自定規則阻止直接呼叫原生 API；不要只依賴 generated extension signature。
 
 ## 執行時重要細節
 
-### 空 Collection 等於「不加條件」
+### Scope 的空 Collection 會 match nothing
 
-Zygarde 的 `ConditionActionImpl.inList` 對空集合會 **silently skip**，不會產出 `WHERE field IN ()`：
+Scope compatibility constructor 會把 collection 包成 `ScopeFilter.Of(values)`。空集合因此是明確的「沒有任何允許值」，結果為零筆：
 
 ```kotlin
 noteDao.search(NoteScope(tenantId = emptyList()))
-// → 回傳所有 Note，而非 0 筆
+// → 0 筆
 ```
 
-如果呼叫端需要「空集合就回傳 0 筆」的語意，必須自行在呼叫前檢查：
+需要刻意略過某個 scope predicate 時，必須顯式使用 `ScopeFilter.All`：
 
 ```kotlin
-if (tenantIds.isEmpty()) return emptyList()
-noteDao.search(NoteScope(tenantId = tenantIds))
+noteDao.search(NoteScope(tenantId = ScopeFilter.All))
 ```
 
-這個行為是 DSL 層的既有約定，scope 沿用同一個 inList，所以也繼承這個陷阱。測試 `NoteScopedQueryTest` 有一個 case 把這個不變量 lock 住。
+一般 search DSL 的既有 `inList(emptyList())` 仍會略過條件，沒有改變。若一般 DSL 的空集合也應 match nothing，請改用 `inListStrict(values)`；兩者傳入 `null` 時都會略過條件。
 
 ### `@NullEquivalent` 必須是 String 或 default-toString Enum
 
@@ -275,7 +322,7 @@ interface CurrencyScoped {
 
 Sample 專案：
 
-- `samples/todo-legacy` — KAPT 範例
+- `samples/todo-legacy` — KAPT 範例 + `@DataJpaTest`／H2 scoped runtime smoke test
 - `samples/todo-ksp` — KSP 範例 + `@DataJpaTest` 整合測試（`NoteScopedQueryTest`）
 
 同一份 marker interface + entity 在兩邊的生成結果是等價的；專案可以只選其中一邊接入。
@@ -298,7 +345,8 @@ object NoteScopes {
 }
 ```
 
-- 呼叫端必須先檢查空集合再傳進 scope，避免誤判為 no-filter
+- 不要以空集合表示全放行；scope 必須使用 `ScopeFilter.All` 明確表達
+- 一般 DSL 對使用者輸入集合需要「空集合＝零筆」時使用 `inListStrict`
 - `@NullEquivalent` 欄位一律用 `String` 或 default-toString `Enum`
 
 ## 最推薦的實作範例
@@ -350,7 +398,9 @@ noteDao.searchOneOrThrow(NoteScope(tenantId = "t1"), NoteError.NOT_FOUND) {
 
 - 把 scope 條件從查詢細節抽離成共用資料結構
 - 用 codegen 產生一致的 scoped API，不需手刻
-- 利用「只生成帶 scope 的 overload」讓 compiler 直接擋下漏傳 scope 的寫法
+- 利用 scoped overload 與 error-deprecated placeholder，讓 compiler 直接擋下漏傳 scope 並提供修法
+- 用 `ScopeFilter.All`／`Of` 區分顯式全放行、正常集合與空集合
+- 以 `ScopeOp` 表達 `IN`、`NOT_IN`、`IS_NULL`、`IS_NOT_NULL`
 - `@NullEquivalent` 處理 sentinel ↔ NULL 的常見模式
 
 如果你的專案有類似：

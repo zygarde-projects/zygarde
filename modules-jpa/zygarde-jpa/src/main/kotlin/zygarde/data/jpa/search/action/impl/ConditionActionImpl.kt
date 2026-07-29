@@ -101,6 +101,13 @@ open class ConditionActionImpl<RootEntityType, EntityType, FieldType>(
       }
     }
 
+  override fun inListStrict(values: Collection<FieldType>?): EnhancedSearch<RootEntityType> =
+    if (values?.isEmpty() == true) {
+      enhancedSearch.apply { predicates.add(cb.disjunction()) }
+    } else {
+      inList(values)
+    }
+
   override fun notInList(values: Collection<FieldType>?): EnhancedSearch<RootEntityType> =
     applyNonNullAction(values?.takeIf { it.isNotEmpty() }) { path, v ->
       if (v.size > 500) {

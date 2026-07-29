@@ -14,8 +14,11 @@ import zygarde.core.exception.BusinessException
 import zygarde.data.api.PagingAndSortingRequest
 import zygarde.data.api.PagingRequest
 import zygarde.data.api.SortField
+import zygarde.data.jpa.search.ScopeFilter
 import zygarde.samples.todo.generated.dao.NoteDao
 import zygarde.samples.todo.generated.dao.NoteScope
+import zygarde.samples.todo.generated.dao.ScopedTaskDao
+import zygarde.samples.todo.generated.dao.ScopedTaskScope
 import zygarde.samples.todo.generated.dao.search
 import zygarde.samples.todo.generated.dao.searchCount
 import zygarde.samples.todo.generated.dao.searchOne
@@ -37,9 +40,13 @@ class NoteScopedQueryTest {
   @Autowired
   lateinit var noteDao: NoteDao
 
+  @Autowired
+  lateinit var scopedTaskDao: ScopedTaskDao
+
   @BeforeEach
   fun setUp() {
     noteDao.deleteAll()
+    scopedTaskDao.deleteAll()
     noteDao.saveAll(
       listOf(
         Note(title = "t1-public", tenantId = "t1", visibility = "PUBLIC"),
@@ -47,6 +54,14 @@ class NoteScopedQueryTest {
         Note(title = "t1-null", tenantId = "t1", visibility = null),
         Note(title = "t2-public", tenantId = "t2", visibility = "PUBLIC"),
         Note(title = "t2-null", tenantId = "t2", visibility = null),
+      )
+    )
+    scopedTaskDao.saveAll(
+      listOf(
+        ScopedTask(name = "active", status = ScopedTaskStatus.ACTIVE, excludedCode = "ACTIVE-CODE", linkedId = 1),
+        ScopedTask(name = "cancelled", status = ScopedTaskStatus.CANCELLED, excludedCode = "CANCELLED-CODE", deletedAt = "deleted"),
+        ScopedTask(name = "archived", status = ScopedTaskStatus.ARCHIVED, excludedCode = "ARCHIVED-CODE", linkedId = 2),
+        ScopedTask(name = "null-status", status = null, excludedCode = null, deletedAt = "deleted"),
       )
     )
   }
@@ -65,12 +80,15 @@ class NoteScopedQueryTest {
   }
 
   @Test
-  fun `empty collection on a scope field is treated as no-filter`() {
-    // Guardrail against a subtle gotcha: inList silently drops empty collections
-    // (see ConditionActionImpl.inList), so an empty scope collection returns ALL
-    // records for that field rather than zero. Callers expecting strict matching
-    // must pre-check emptiness themselves.
+  fun `empty collection on a scope field matches nothing`() {
     val results = noteDao.search(NoteScope(tenantId = emptyList()))
+    results shouldHaveSize 0
+  }
+
+  @Test
+  fun `ScopeFilter All explicitly skips a required scope predicate`() {
+    val results = noteDao.search(NoteScope(tenantId = ScopeFilter.All))
+
     results shouldHaveSize 5
   }
 
@@ -142,5 +160,70 @@ class NoteScopedQueryTest {
     }
 
     results.map { it.title } shouldContainExactlyInAnyOrder listOf("t1-public", "t1-private")
+  }
+
+  @Test
+  fun `NOT_IN excludes enum values and preserves null when sentinel is not excluded`() {
+    val results = scopedTaskDao.search(ScopedTaskScope(status = listOf(ScopedTaskStatus.CANCELLED)))
+
+    results.map { it.name } shouldContainExactlyInAnyOrder listOf("active", "archived", "null-status")
+  }
+
+  @Test
+  fun `NOT_IN with an empty scoped value set matches nothing`() {
+    scopedTaskDao.search(ScopedTaskScope(status = emptyList())) shouldHaveSize 0
+  }
+
+  @Test
+  fun `NOT_IN excludes null when NullEquivalent sentinel is excluded`() {
+    val results = scopedTaskDao.search(ScopedTaskScope(status = listOf(ScopedTaskStatus.ARCHIVED)))
+
+    results.map { it.name } shouldContainExactlyInAnyOrder listOf("active", "cancelled")
+  }
+
+  @Test
+  fun `NOT_IN supports enum complement without omitting future enum values`() {
+    val excluded = ScopedTaskStatus.entries - ScopedTaskStatus.ACTIVE
+    val results = scopedTaskDao.search(ScopedTaskScope(status = excluded))
+
+    results.map { it.name } shouldContainExactlyInAnyOrder listOf("active")
+  }
+
+  @Test
+  fun `IS_NULL and IS_NOT_NULL apply only when enabled`() {
+    scopedTaskDao.search(ScopedTaskScope(deletedAt = true))
+      .map { it.name } shouldContainExactlyInAnyOrder listOf("active", "archived")
+    scopedTaskDao.search(ScopedTaskScope(linkedId = true))
+      .map { it.name } shouldContainExactlyInAnyOrder listOf("active", "archived")
+    scopedTaskDao.search(ScopedTaskScope(deletedAt = false, linkedId = false)) shouldHaveSize 4
+  }
+
+  @Test
+  fun `IN keeps matches when values cross the 500-value chunk boundary`() {
+    val tenantIds = (0 until 500).map { "missing-$it" } + "t1"
+
+    noteDao.search(NoteScope(tenantId = tenantIds))
+      .map { it.title } shouldContainExactlyInAnyOrder listOf("t1-public", "t1-private", "t1-null")
+  }
+
+  @Test
+  fun `IN finds NullEquivalent sentinel across the 500-value chunk boundary`() {
+    val visibilities = (0 until 500).map { "missing-$it" } + "PUBLIC"
+
+    noteDao.search(
+      NoteScope(
+        tenantId = ScopeFilter.Of(listOf("t1")),
+        visibility = ScopeFilter.Of(visibilities),
+      )
+    )
+      .map { it.title } shouldContainExactlyInAnyOrder listOf("t1-public", "t1-null")
+  }
+
+  @Test
+  fun `NOT_IN combines chunks with AND and handles a sentinel in the final chunk`() {
+    val excludedCodes = (0 until 500).map { "missing-$it" } + "ARCHIVED-CODE"
+
+    scopedTaskDao.search(ScopedTaskScope(status = null, excludedCode = excludedCodes))
+      .map { it.name } shouldContainExactlyInAnyOrder listOf("active", "cancelled")
   }
 }

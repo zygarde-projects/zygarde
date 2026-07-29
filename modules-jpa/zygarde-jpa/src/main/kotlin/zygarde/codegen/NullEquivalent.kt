@@ -23,6 +23,6 @@ package zygarde.codegen
  *
  * @param value the sentinel value that triggers OR IS NULL behavior
  */
-@Target(AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_GETTER)
+@Target(AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.BINARY)
 annotation class NullEquivalent(val value: String)
