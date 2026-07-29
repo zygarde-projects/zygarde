@@ -151,10 +151,19 @@ class DslSqlQuery(
   }
 
   fun toSqlQueryToGenerateVo(): SqlQueryToGenerateVo {
+    return toSqlQueryToGenerateVo(apiName = null, sqlValidationRules = emptyList())
+  }
+
+  internal fun toSqlQueryToGenerateVo(
+    apiName: String?,
+    sqlValidationRules: List<SqlValidationRule>,
+  ): SqlQueryToGenerateVo {
     val sql = requireNotNull(sqlLiteral) { "SQL is required for query '$functionName'" }
-    val metadata = SqlSelectParser.parse(sql)
+    val parsedSql = SqlSelectParser.parseForValidation(sql)
+    val metadata = parsedSql.metadata
     val page = page
-    val countMetadata = page?.let { SqlSelectParser.parse(it.countSql) }
+    val parsedCountSql = page?.let { SqlSelectParser.parseForValidation(it.countSql) }
+    val countMetadata = parsedCountSql?.metadata
     if (resultShape == SqlQueryResultShape.PAGE) {
       requireNotNull(page) { "Page SQL configuration is required for query '$functionName'" }
       require(metadata.parameterNames.contains(page.offsetParamName)) {
@@ -213,6 +222,20 @@ class DslSqlQuery(
     }
     require(columns.isNotEmpty()) {
       "SQL query '$functionName' must declare at least one output column or use SELECT expressions with AS aliases"
+    }
+    if (apiName != null && sqlValidationRules.isNotEmpty()) {
+      validateSqlStatements(
+        apiName = apiName,
+        declarationKind = "query",
+        functionName = functionName,
+        rules = sqlValidationRules,
+        statements = buildList {
+          add(SqlStatementToValidate("main SQL", sql, parsedSql.statement))
+          if (page != null && parsedCountSql != null) {
+            add(SqlStatementToValidate("count SQL", page.countSql, parsedCountSql.statement))
+          }
+        },
+      )
     }
 
     return SqlQueryToGenerateVo(

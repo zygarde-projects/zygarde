@@ -5,11 +5,21 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import net.sf.jsqlparser.statement.Statement
 import org.junit.jupiter.api.Test
 import org.springframework.web.bind.annotation.RequestMethod
 import zygarde.sql.api.SqlApiContextParamResolver
 
 class SqlApiDslCodegenTest : SqlApiDslCodegen() {
+  private val validatedStatements: MutableList<Statement> = mutableListOf()
+
+  override val sqlValidationRules = listOf(
+    SqlValidationRule { _, statement ->
+      validatedStatements.add(statement)
+      emptyList()
+    },
+  )
+
   override fun codegen() {
     sqlApi("TodoReportApi", "/api/todo-report") {
       query("searchTodos", "/search") {
@@ -27,6 +37,13 @@ class SqlApiDslCodegenTest : SqlApiDslCodegen() {
         response("TodoReportDto")
       }
     }
+  }
+
+  @Test
+  fun `should apply codegen validation rules to declared SQL`() {
+    codegen()
+
+    validatedStatements.shouldHaveSize(1)
   }
 
   @Test

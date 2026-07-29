@@ -133,8 +133,16 @@ class DslSqlCommand(
   }
 
   fun toSqlCommandToGenerateVo(): SqlCommandToGenerateVo {
+    return toSqlCommandToGenerateVo(apiName = null, sqlValidationRules = emptyList())
+  }
+
+  internal fun toSqlCommandToGenerateVo(
+    apiName: String?,
+    sqlValidationRules: List<SqlValidationRule>,
+  ): SqlCommandToGenerateVo {
     val sql = requireNotNull(sqlLiteral) { "SQL is required for command '$functionName'" }
-    val metadata = SqlCommandParser.parse(sql)
+    val parsedSql = SqlCommandParser.parseForValidation(sql)
+    val metadata = parsedSql.metadata
     val generatedKey = generatedKey
     if (resultShape == SqlCommandResultShape.GENERATED_KEY) {
       requireNotNull(generatedKey) { "Generated key configuration is required for command '$functionName'" }
@@ -152,6 +160,15 @@ class DslSqlCommand(
     }
     validateBodyParams(params)
     validatePathParams(params)
+    if (apiName != null && sqlValidationRules.isNotEmpty()) {
+      validateSqlStatements(
+        apiName = apiName,
+        declarationKind = "command",
+        functionName = functionName,
+        rules = sqlValidationRules,
+        statements = listOf(SqlStatementToValidate("command SQL", sql, parsedSql.statement)),
+      )
+    }
 
     return SqlCommandToGenerateVo(
       functionName = functionName,

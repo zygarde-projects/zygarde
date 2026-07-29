@@ -416,6 +416,36 @@ The DSL validates common mismatches before writing generated files:
 - Paged query count SQL must select the configured count column.
 - Main SQL and count SQL share the same declared parameter set, including context parameters.
 
+### Custom AST validation
+
+Codegen projects can register validation rules for project-specific SQL policies. Each rule receives the original SQL and
+the JSqlParser 5.0 `Statement` after built-in metadata extraction. Rules apply to main query SQL, page count SQL, and
+`INSERT`, `UPDATE`, and `DELETE` commands.
+
+```kotlin
+class TodoSqlApiCodegen : SqlApiDslCodegen() {
+  override val sqlValidationRules = listOf(
+    SqlValidationRule { _, statement ->
+      if (statement is Delete && statement.where == null) {
+        listOf("DELETE statements must declare a WHERE clause")
+      } else {
+        emptyList()
+      }
+    },
+  )
+
+  override fun codegen() {
+    // SQL API declarations
+  }
+}
+```
+
+Rules run synchronously in declaration order and findings are reported together with the API, function, and SQL role.
+The JSqlParser AST is mutable, but validation rules must treat it as read-only. Rules inspecting nested CTEs, set
+operations, or expression subqueries are responsible for traversing those nodes, typically with JSqlParser visitors.
+The original SQL should be used for comment-based exemption markers because comments and named parameters are not
+guaranteed to round-trip through the parsed AST.
+
 ## See Also
 
 - [Web & REST APIs](web-rest.md)

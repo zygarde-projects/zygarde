@@ -19,27 +19,34 @@ enum class SqlCommandKind {
 
 object SqlCommandParser {
   fun parse(sql: String): SqlCommandMetadata {
-    val parsedSql = NamedParameterSql.parse(sql)
-    val kind = parseKind(parsedSql.sql)
+    return parseForValidation(sql).metadata
+  }
 
-    return SqlCommandMetadata(
-      parameterNames = parsedSql.parameterNames.distinct(),
-      kind = kind,
+  internal fun parseForValidation(sql: String): ParsedSql<SqlCommandMetadata> {
+    val parsedSql = NamedParameterSql.parse(sql)
+    val statement = parseStatement(parsedSql.sql)
+    val kind = when (statement) {
+      is Insert -> SqlCommandKind.INSERT
+      is Update -> SqlCommandKind.UPDATE
+      is Delete -> SqlCommandKind.DELETE
+      else -> throw IllegalArgumentException("SQL API command only supports INSERT, UPDATE, and DELETE statements")
+    }
+
+    return ParsedSql(
+      metadata = SqlCommandMetadata(
+        parameterNames = parsedSql.parameterNames.distinct(),
+        kind = kind,
+      ),
+      statement = statement,
     )
   }
 
-  private fun parseKind(sql: String): SqlCommandKind {
-    return try {
-      when (CCJSqlParserUtil.parse(sql)) {
-        is Insert -> SqlCommandKind.INSERT
-        is Update -> SqlCommandKind.UPDATE
-        is Delete -> SqlCommandKind.DELETE
-        else -> throw IllegalArgumentException("SQL API command only supports INSERT, UPDATE, and DELETE statements")
-      }
+  private fun parseStatement(sql: String) =
+    try {
+      CCJSqlParserUtil.parse(sql)
     } catch (e: IllegalArgumentException) {
       throw e
     } catch (e: Exception) {
       throw IllegalArgumentException("Failed to parse SQL command: ${e.message}", e)
     }
-  }
 }
