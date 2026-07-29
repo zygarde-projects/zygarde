@@ -9,7 +9,7 @@ dependencies {
   implementation(project(":zygarde-webmvc"))
   implementation("io.github.classgraph:classgraph")
   implementation("com.squareup:kotlinpoet")
-  implementation("com.github.jsqlparser:jsqlparser:5.0")
+  api("com.github.jsqlparser:jsqlparser:5.0")
   implementation("org.springframework.boot:spring-boot-starter-web")
 
   testImplementation(platform(project(":zygarde-bom-codegen-test")))

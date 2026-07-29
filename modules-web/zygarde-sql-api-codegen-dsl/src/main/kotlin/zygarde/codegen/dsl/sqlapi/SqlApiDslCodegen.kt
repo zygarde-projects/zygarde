@@ -11,10 +11,13 @@ abstract class SqlApiDslCodegen {
 
   val apisToGenerate: MutableList<SqlApiToGenerateVo> = mutableListOf()
 
+  protected open val sqlValidationRules: List<SqlValidationRule>
+    get() = emptyList()
+
   abstract fun codegen()
 
   protected fun sqlApi(apiName: String, basePath: String, dsl: DslSqlApi.() -> Unit) {
-    val dslApi = DslSqlApi(config, apiName, basePath).also(dsl)
+    val dslApi = DslSqlApi(config, apiName, basePath, sqlValidationRules.toList()).also(dsl)
     apisToGenerate.add(dslApi.toSqlApiToGenerateVo())
   }
 }

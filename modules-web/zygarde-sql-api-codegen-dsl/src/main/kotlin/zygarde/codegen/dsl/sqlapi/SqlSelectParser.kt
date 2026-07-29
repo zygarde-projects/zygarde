@@ -15,22 +15,39 @@ object SqlSelectParser {
   private val kotlinPropertyNameRegex = Regex("""[A-Za-z_][A-Za-z0-9_]*""")
 
   fun parse(sql: String): SqlSelectMetadata {
-    val parameterNames = NamedParameterSql.parse(sql).parameterNames.distinct()
-    val columnAliases = parseOutputColumns(sql)
+    return parseForValidation(sql).metadata
+  }
 
-    return SqlSelectMetadata(
-      parameterNames = parameterNames,
-      columnAliases = columnAliases,
+  internal fun parseForValidation(sql: String): ParsedSql<SqlSelectMetadata> {
+    val parameterNames = NamedParameterSql.parse(sql).parameterNames.distinct()
+    val statement = parseStatement(sql)
+    val columnAliases = parseOutputColumns(statement)
+
+    return ParsedSql(
+      metadata = SqlSelectMetadata(
+        parameterNames = parameterNames,
+        columnAliases = columnAliases,
+      ),
+      statement = statement,
     )
   }
 
-  private fun parseOutputColumns(sql: String): List<String> {
+  private fun parseStatement(sql: String): PlainSelect {
     return try {
       val statement = CCJSqlParserUtil.parse(normalizeSql(sql))
       if (statement !is PlainSelect) {
         throw IllegalArgumentException("SQL API only supports SELECT statements")
       }
+      statement
+    } catch (e: IllegalArgumentException) {
+      throw e
+    } catch (e: Exception) {
+      throw IllegalArgumentException("Failed to parse SQL output columns: ${e.message}", e)
+    }
+  }
 
+  private fun parseOutputColumns(statement: PlainSelect): List<String> {
+    return try {
       val columnAliases = statement.selectItems.map { selectItem ->
         val selectField = selectItem.toString()
         if (selectField == "*" || selectField.endsWith(".*")) {

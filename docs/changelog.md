@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added SQL API codegen validation rules with access to the parsed JSqlParser AST for queries, page count queries, and commands.
+
 ## [3.1.0] - 2026-05-29
 
 ### Added

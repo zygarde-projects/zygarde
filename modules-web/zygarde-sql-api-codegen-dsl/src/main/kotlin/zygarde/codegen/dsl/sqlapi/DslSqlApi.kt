@@ -5,10 +5,20 @@ class DslSqlApi(
   private val apiName: String,
   private val basePath: String,
 ) {
+  private var sqlValidationRules: List<SqlValidationRule> = emptyList()
   private val queries: MutableList<SqlQueryToGenerateVo> = mutableListOf()
   private val commands: MutableList<SqlCommandToGenerateVo> = mutableListOf()
   private var database: SqlApiDatabaseToGenerateVo = SqlApiDatabaseToGenerateVo()
   private var transactionPolicy: SqlApiTransactionPolicy? = null
+
+  internal constructor(
+    config: SqlApiDslCodegenConfig,
+    apiName: String,
+    basePath: String,
+    sqlValidationRules: List<SqlValidationRule>,
+  ) : this(config, apiName, basePath) {
+    this.sqlValidationRules = sqlValidationRules
+  }
 
   fun database(dsl: DslSqlDatabase.() -> Unit) {
     database = DslSqlDatabase().also(dsl).toSqlApiDatabaseToGenerateVo()
@@ -27,11 +37,11 @@ class DslSqlApi(
   }
 
   fun query(functionName: String, path: String, dsl: DslSqlQuery.() -> Unit) {
-    queries.add(DslSqlQuery(functionName, path).also(dsl).toSqlQueryToGenerateVo())
+    queries.add(DslSqlQuery(functionName, path).also(dsl).toSqlQueryToGenerateVo(apiName, sqlValidationRules))
   }
 
   fun command(functionName: String, path: String, dsl: DslSqlCommand.() -> Unit) {
-    commands.add(DslSqlCommand(functionName, path).also(dsl).toSqlCommandToGenerateVo())
+    commands.add(DslSqlCommand(functionName, path).also(dsl).toSqlCommandToGenerateVo(apiName, sqlValidationRules))
   }
 
   fun toSqlApiToGenerateVo(): SqlApiToGenerateVo {
