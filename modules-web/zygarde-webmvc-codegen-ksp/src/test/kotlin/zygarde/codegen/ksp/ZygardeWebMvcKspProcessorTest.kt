@@ -87,5 +87,6 @@ class ZygardeStaticOptionApiKspProcessorTest {
     val controllerSource = controllerFile?.readText().orEmpty()
     controllerSource shouldContain """activeOverrides["TestStatus"]"""
     controllerSource shouldContain """activeOverrides["todo-priority"]"""
+    controllerSource shouldContain "fillStaticOptions0(dto)"
   }
 }
