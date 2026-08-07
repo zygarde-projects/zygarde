@@ -121,11 +121,16 @@ arg("zygarde.codegen.dao.combine", "true")
 Generated code (when true):
 ```kotlin
 @Component
-class Dao(
-  val book: BookDao,
-  val author: AuthorDao,
-  val category: CategoryDao
-)
+class Dao {
+  @Autowired
+  lateinit var book: BookDao
+
+  @Autowired
+  lateinit var author: AuthorDao
+
+  @Autowired
+  lateinit var category: CategoryDao
+}
 ```
 
 Usage:

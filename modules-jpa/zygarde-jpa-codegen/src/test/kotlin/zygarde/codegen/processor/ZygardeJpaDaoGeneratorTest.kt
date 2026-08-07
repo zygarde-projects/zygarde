@@ -40,6 +40,12 @@ class ZygardeJpaDaoGeneratorTest {
     generatedFileNames shouldContain "SimpleBookDaoExtensions.kt"
     generatedFileNames shouldContain "AutoIntIdBookDaoExtensions.kt"
     generatedFileNames shouldContain "AutoLongIdBookDaoExtensions.kt"
+    // combined Dao must use field injection — a generated constructor hits the JVM 255-param
+    // ceiling once the schema grows to ~250 DAOs
+    val combinedDao = result.generatedFiles.find { it.name == "Dao.kt" }!!.readText()
+    combinedDao shouldContain "lateinit var simpleBookDao: SimpleBookDao"
+    combinedDao shouldContain "@Autowired"
+    combinedDao shouldNotContain "public class Dao("
     val simpleBookDaoExtensions = result.generatedFiles.find { it.name == "SimpleBookDaoExtensions.kt" }!!.readText()
     simpleBookDaoExtensions shouldContain "fun SimpleBookDao.search("
     simpleBookDaoExtensions shouldContain "fun SimpleBookDao.searchOne("

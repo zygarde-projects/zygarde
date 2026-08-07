@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
@@ -129,8 +130,10 @@ class ZygardeJpaDaoGenerator(
     }
 
     if (processingEnv.options.getOrDefault(DAO_COMBINE, "true") == "true") {
+      // Field injection instead of constructor injection: JVM caps method parameters at 255
+      // slots and the reflective instantiation path trips a few slots earlier, so schemas
+      // with ~250 DAOs could no longer boot with a generated constructor.
       val classBuilder = TypeSpec.classBuilder("Dao").addAnnotation(Component::class)
-      val constructorBuilder = FunSpec.constructorBuilder()
 
       elements.sortedBy { it.typeName().toString() }.forEach {
         val daoFieldName = "${it.fieldName()}$daoSuffix"
@@ -138,23 +141,15 @@ class ZygardeJpaDaoGenerator(
         classBuilder.addProperty(
           PropertySpec
             .builder(daoFieldName, daoClass)
-            .initializer(daoFieldName)
+            .mutable()
+            .addModifiers(KModifier.LATEINIT)
             .addAnnotation(Autowired::class)
-            .build()
-        )
-        constructorBuilder.addParameter(
-          ParameterSpec
-            .builder(daoFieldName, daoClass)
             .build()
         )
       }
 
       FileSpec.builder(daoPackage, "Dao")
-        .addType(
-          classBuilder
-            .primaryConstructor(constructorBuilder.build())
-            .build()
-        )
+        .addType(classBuilder.build())
         .build()
         .writeTo(folderToGenerate)
     }
