@@ -64,7 +64,10 @@ fun EnhancedSearch<Todo>.completed(): ComparableConditionAction<Todo, Todo, Bool
 3. **Dao.kt** - Combined DAO class (optional)
 ```kotlin
 @Component
-class Dao(@Autowired val todoDao: TodoDao)
+class Dao {
+  @Autowired
+  lateinit var todoDao: TodoDao
+}
 ```
 
 ## KSP Options

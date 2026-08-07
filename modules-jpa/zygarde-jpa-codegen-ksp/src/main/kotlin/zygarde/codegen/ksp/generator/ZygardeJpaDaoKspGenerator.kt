@@ -128,8 +128,10 @@ class ZygardeJpaDaoKspGenerator(
     }
 
     if (options.getOrDefault(DAO_COMBINE, "true") == "true") {
+      // Field injection instead of constructor injection: JVM caps method parameters at 255
+      // slots and the reflective instantiation path trips a few slots earlier, so schemas
+      // with ~250 DAOs could no longer boot with a generated constructor.
       val classBuilder = TypeSpec.classBuilder("Dao").addAnnotation(Component::class)
-      val constructorBuilder = FunSpec.constructorBuilder()
 
       elements.sortedBy { it.asType(emptyList()).toTypeName().toString() }.forEach {
         val entityName = it.simpleName.asString()
@@ -139,23 +141,15 @@ class ZygardeJpaDaoKspGenerator(
         classBuilder.addProperty(
           PropertySpec
             .builder(daoFieldName, daoClass)
-            .initializer(daoFieldName)
+            .mutable()
+            .addModifiers(KModifier.LATEINIT)
             .addAnnotation(Autowired::class)
-            .build()
-        )
-        constructorBuilder.addParameter(
-          ParameterSpec
-            .builder(daoFieldName, daoClass)
             .build()
         )
       }
 
       FileSpec.builder(daoPackage, "Dao")
-        .addType(
-          classBuilder
-            .primaryConstructor(constructorBuilder.build())
-            .build()
-        )
+        .addType(classBuilder.build())
         .build()
         .writeTo(codeGenerator, aggregating = false)
     }
