@@ -18,6 +18,9 @@ dependencies {
 
 tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = true
+tasks.getByName("bootDistTar").enabled = false
+tasks.getByName("bootDistZip").enabled = false
+tasks.getByName("bootStartScripts").enabled = false
 
 configure<JavaApplication> {
   mainClass.set("zygarde.codegen.dsl.sqlapi.SqlApiDslCodegenMainKt")

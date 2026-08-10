@@ -7,26 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-08-10
+
 ### Added
 - Added SQL API codegen validation rules with access to the parsed JSqlParser AST for queries, page count queries, and commands.
-
-## [3.1.0] - 2026-05-29
-
-### Added
-- Added SQL API DSL support for server-side context parameters through `SqlApiContextParamResolver`.
-- Added generated SQL API service implementation binding for context parameters resolved by Spring bean type or bean name.
-- Added SQL API documentation covering query, command, pagination, parameter sources, context resolvers, and code generation properties.
-- Comprehensive documentation site with MkDocs Material
-- Automated documentation deployment via GitHub Actions
 - Scoped query fields now use `ScopeFilter`: `All` explicitly skips a predicate, while `Of(values)` applies one.
 - Scoped query properties support `IN`, `NOT_IN`, `IS_NULL`, and `IS_NOT_NULL` through `@get:ScopeOp`.
 - `inListStrict` preserves the existing null behavior while making an empty collection match nothing.
 - Missing-scope DAO calls now resolve to error-deprecated placeholders with an entity-specific migration hint.
 
 ### Changed
-- SQL API generated contracts now keep context parameters out of request DTOs, API interfaces, Feign interfaces, controllers, and service interfaces.
-- SQL API validation now accepts context parameters in main SQL and paged count SQL while still rejecting unused declarations.
-- Improved documentation structure and organization
 - **Generated ScopedQueries API and ABI:** membership properties changed from `Collection<T>` to `ScopeFilter<T>`.
   This changes the primary constructor, property getters, data-class `componentN`, `copy`, and their JVM signatures;
   regenerate scopes and recompile all consumers together. Existing scalar and collection constructor calls remain
@@ -38,6 +28,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   previous skip-predicate behavior.
 - Adding `inListStrict` expands the public `ConditionAction` API. It has a default implementation so direct
   implementors remain source-compatible, but consumers and custom implementations should still be recompiled together.
+- JSqlParser is now an API dependency of SQL API codegen because custom validation rules receive its `Statement` AST.
+- The generated combined `Dao` uses mutable `@Autowired lateinit` fields instead of constructor parameters. Normal
+  Spring-injected call sites are unchanged, but consumers that manually construct `Dao` must migrate.
+- Generated `StaticOptionDto` is now a mutable plain class populated by the generated controller instead of a data class
+  with self-populating constructor defaults. Its OpenAPI and JSON field shape is unchanged, but constructor arguments,
+  `copy`, destructuring, and value-based data-class equality are no longer available.
+
+### Fixed
+- Prevented combined DAO generation from exceeding the JVM constructor parameter limit in projects with roughly 250 DAOs.
+- Prevented static option generation from exceeding the JVM 64 KB method-size limit with roughly 150 or more annotated enums.
+- Disabled unused Spring Boot distribution tasks for SQL API codegen so clean repository builds have explicit task dependencies.
+
+## [3.1.0] - 2026-05-29
+
+### Added
+- Added SQL API DSL support for server-side context parameters through `SqlApiContextParamResolver`.
+- Added generated SQL API service implementation binding for context parameters resolved by Spring bean type or bean name.
+- Added SQL API documentation covering query, command, pagination, parameter sources, context resolvers, and code generation properties.
+- Comprehensive documentation site with MkDocs Material
+- Automated documentation deployment via GitHub Actions
+
+### Changed
+- SQL API generated contracts now keep context parameters out of request DTOs, API interfaces, Feign interfaces, controllers, and service interfaces.
+- SQL API validation now accepts context parameters in main SQL and paged count SQL while still rejecting unused declarations.
+- Improved documentation structure and organization
 
 ### Fixed
 - Various documentation improvements and corrections
@@ -130,6 +145,7 @@ Use this template for future releases:
 
 ## Version History
 
+- **3.2.0** (2026-08-10) - Scoped query hardening, SQL AST validation, and JVM-limit-safe code generation
 - **3.1.0** (2026-05-29) - SQL API context parameter resolvers
 - **1.0.0** (2024-01-01) - Initial release
 
@@ -137,6 +153,7 @@ Use this template for future releases:
 
 For upgrade instructions and migration guides, see the [documentation](https://zygarde-projects.github.io/zygarde/).
 
-[Unreleased]: https://github.com/zygarde-projects/zygarde/compare/3.1.0...HEAD
+[Unreleased]: https://github.com/zygarde-projects/zygarde/compare/3.2.0...HEAD
+[3.2.0]: https://github.com/zygarde-projects/zygarde/compare/3.1.2...3.2.0
 [3.1.0]: https://github.com/zygarde-projects/zygarde/compare/3.0.3...3.1.0
 [1.0.0]: https://github.com/zygarde-projects/zygarde/releases/tag/v1.0.0
