@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-08-10
+
+### Added
+- Added model-mapping codegen DSL support for declaring request-specific sortable fields.
+- Added type-safe nested relation paths such as `sortableField(Book::author, Author::age)` for ManyToOne sorting.
+- Generated request-specific OpenAPI enums for `sorts[].field` while preserving `SortField.field` as a runtime string.
+
 ## [3.2.0] - 2026-08-10
 
 ### Added
@@ -145,6 +152,7 @@ Use this template for future releases:
 
 ## Version History
 
+- **3.2.1** (2026-08-10) - Request-specific sortable-field enums and type-safe relation sort paths
 - **3.2.0** (2026-08-10) - Scoped query hardening, SQL AST validation, and JVM-limit-safe code generation
 - **3.1.0** (2026-05-29) - SQL API context parameter resolvers
 - **1.0.0** (2024-01-01) - Initial release
@@ -153,7 +161,8 @@ Use this template for future releases:
 
 For upgrade instructions and migration guides, see the [documentation](https://zygarde-projects.github.io/zygarde/).
 
-[Unreleased]: https://github.com/zygarde-projects/zygarde/compare/3.2.0...HEAD
+[Unreleased]: https://github.com/zygarde-projects/zygarde/compare/3.2.1...HEAD
+[3.2.1]: https://github.com/zygarde-projects/zygarde/compare/3.2.0...3.2.1
 [3.2.0]: https://github.com/zygarde-projects/zygarde/compare/3.1.2...3.2.0
 [3.1.0]: https://github.com/zygarde-projects/zygarde/compare/3.0.3...3.1.0
 [1.0.0]: https://github.com/zygarde-projects/zygarde/releases/tag/v1.0.0
