@@ -7,6 +7,7 @@ dependencies {
   api(project(":zygarde-jackson"))
   api(project(":zygarde-web"))
   testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.17")
   testImplementation(project(":zygarde-test"))
   kapt("org.springframework.boot:spring-boot-configuration-processor")
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

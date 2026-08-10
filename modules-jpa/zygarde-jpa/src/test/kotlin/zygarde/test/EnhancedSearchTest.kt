@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
 import zygarde.core.exception.BusinessException
 import zygarde.core.exception.ErrorCode
 import zygarde.data.api.PagingAndSortingRequest
@@ -369,6 +370,24 @@ class EnhancedSearchTest {
     ) {}
 
     page1.first() shouldBe page2.first()
+  }
+
+  @Order(1650)
+  @Test
+  @Transactional
+  fun `should sort by ManyToOne field path`() {
+    val page = bookDao.searchPage(
+      PagingAndSortingRequest().also {
+        it.paging = PagingRequest(page = 1, pageSize = 1000)
+        it.sorts = listOf(
+          SortField(SortDirection.ASC, "author.name"),
+          SortField(SortDirection.ASC, "id"),
+        )
+      }
+    ) {}
+
+    val authorNames = page.content.map { requireNotNull(it.author).name }
+    authorNames shouldBe authorNames.sorted()
   }
 
   @Order(1700)

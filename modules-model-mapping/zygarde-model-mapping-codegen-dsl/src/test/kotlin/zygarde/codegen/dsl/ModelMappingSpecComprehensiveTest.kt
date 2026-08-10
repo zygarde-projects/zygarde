@@ -4,9 +4,11 @@ import com.squareup.kotlinpoet.asClassName
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.assertions.throwables.shouldThrow
 import jakarta.validation.constraints.NotBlank
 import org.junit.jupiter.api.Test
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
+import zygarde.codegen.dsl.model.internal.DtoSortableFieldPath
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDtoSimple
@@ -23,7 +25,7 @@ class ModelMappingSpecComprehensiveTest {
     var validated: String
   )
 
-  data class RefEntity(val id: Int?)
+  data class RefEntity(val id: Int?, val name: String = "")
 
   enum class TestDtos : CodegenDtoSimple {
     TestDto,
@@ -132,5 +134,42 @@ class ModelMappingSpecComprehensiveTest {
       it.dtoRef shouldBe TestDtos.RefDto
       it.refCollection shouldBe true
     }
+  }
+
+  @Test
+  fun `should record simple and to-one sortable field paths`() {
+    val mappings = mutableListOf<DtoFieldMapping>()
+    val sortableFields = mutableListOf<DtoSortableFieldPath>()
+    val spec = ModelMappingSpec(TestDtos.ReqDto, mappings, sortableFields)
+
+    spec.sortableFields(TestEntity::id, TestEntity::name, TestEntity::id)
+    spec.sortableField(TestEntity::owner, RefEntity::name)
+
+    sortableFields.map { it.path } shouldBe listOf("id", "name", "owner.name")
+    sortableFields.map { it.rootModelClass }.distinct() shouldHaveSize 1
+  }
+
+  @Test
+  fun `should reject sortable fields from different root models`() {
+    val sortableFields = mutableListOf<DtoSortableFieldPath>()
+    val spec = ModelMappingSpec(TestDtos.ReqDto, mutableListOf(), sortableFields)
+
+    spec.sortableFields(TestEntity::id)
+
+    shouldThrow<IllegalArgumentException> {
+      spec.sortableFields(RefEntity::id)
+    }.message shouldBe
+      "Sortable fields for DTO 'ReqDto' must share the same root model: expected zygarde.codegen.dsl.ModelMappingSpecComprehensiveTest.TestEntity " +
+      "but was zygarde.codegen.dsl.ModelMappingSpecComprehensiveTest.RefEntity."
+  }
+
+  @Test
+  fun `should reject collection-valued sortable field`() {
+    val spec = ModelMappingSpec(TestDtos.ReqDto, mutableListOf(), mutableListOf())
+
+    shouldThrow<IllegalArgumentException> {
+      spec.sortableFields(TestEntity::refs)
+    }.message shouldBe
+      "Sortable field 'refs' must not be collection-valued, but was kotlin.collections.List."
   }
 }

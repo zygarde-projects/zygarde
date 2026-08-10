@@ -2,6 +2,7 @@ package example
 
 import zygarde.codegen.dsl.ModelMappingCodegenSpec
 import zygarde.codegen.meta.CodegenDtoSimple
+import zygarde.data.api.PagingAndSortingRequest
 
 class TodoModelDslCodegen : ModelMappingCodegenSpec({
   TodoDtos.TodoDto {
@@ -19,6 +20,10 @@ class TodoModelDslCodegen : ModelMappingCodegenSpec({
 
   TodoDtos.UpdateTodoReq {
     applyTo(Todo::description)
+  }
+
+  TodoDtos.SearchTodoReq {
+    sortableFields(Todo::id, Todo::description)
   }
 
   TodoDtos.TodoDetailDto {
@@ -40,6 +45,9 @@ class TodoModelDslCodegen : ModelMappingCodegenSpec({
     TodoDto,
     CreateTodoReq,
     UpdateTodoReq,
+    SearchTodoReq {
+      override fun superClass() = PagingAndSortingRequest::class
+    },
     TodoDetailDto,
   }
 }

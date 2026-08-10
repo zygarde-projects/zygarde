@@ -43,9 +43,10 @@ fun main() {
   modelMappingCodegenList.forEach { it.execute() }
 
   val dtoFieldMappings = modelMappingCodegenList.flatMap { it.dtoFieldMappings }
+  val dtoSortableFieldPaths = modelMappingCodegenList.flatMap { it.dtoSortableFieldPaths }
   val sealedInterfaces = modelMappingCodegenList.flatMap { it.sealedInterfaces }
 
-  val result = DtoFieldMappingCodeGenerator(dtoFieldMappings, sealedInterfaces)
+  val result = DtoFieldMappingCodeGenerator(dtoFieldMappings, sealedInterfaces, dtoSortableFieldPaths)
     .generateFileSpec()
 
   result.dtoFileSpecs.writeSpecToFileOrSysOut("zygarde.codegen.dsl.dto.write-to")

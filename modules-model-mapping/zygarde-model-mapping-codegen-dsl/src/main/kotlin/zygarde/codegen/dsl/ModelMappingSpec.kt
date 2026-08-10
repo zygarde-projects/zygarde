@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.dsl.extensions.asModelMetaField
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
+import zygarde.codegen.dsl.model.internal.DtoSortableFieldPath
 import zygarde.codegen.dsl.model.type.ForceNull
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.meta.CodegenDto
@@ -14,12 +15,21 @@ import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.codegen.value.ValueProvider
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
+import kotlin.reflect.KType
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.javaField
 
 open class ModelMappingSpec(
   val dto: CodegenDto,
-  val dtoFieldMappings: MutableList<DtoFieldMapping>
+  val dtoFieldMappings: MutableList<DtoFieldMapping>,
+  val dtoSortableFieldPaths: MutableList<DtoSortableFieldPath>,
 ) {
+  constructor(
+    dto: CodegenDto,
+    dtoFieldMappings: MutableList<DtoFieldMapping>,
+  ) : this(dto, dtoFieldMappings, mutableListOf())
+
   fun from(vararg props: KProperty1<*, *>, dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -> Unit) = { }) {
     props.forEach { p ->
       DtoFieldMapping.ModelToDtoFieldMappingVo(modelField = p.asModelMetaField(), dto = dto)
@@ -197,6 +207,44 @@ open class ModelMappingSpec(
           .also(dsl)
           .also { it.compound = true }
       )
+    }
+  }
+
+  fun sortableFields(vararg props: KProperty1<*, *>) {
+    props.forEach { addSortableFieldPath(listOf(it)) }
+  }
+
+  fun <ROOT, RELATION : Any, VALUE> sortableField(
+    relation: KProperty1<ROOT, RELATION?>,
+    field: KProperty1<RELATION, VALUE>,
+  ) {
+    addSortableFieldPath(listOf(relation, field))
+  }
+
+  fun <ROOT, RELATION1 : Any, RELATION2 : Any, VALUE> sortableField(
+    relation1: KProperty1<ROOT, RELATION1?>,
+    relation2: KProperty1<RELATION1, RELATION2?>,
+    field: KProperty1<RELATION2, VALUE>,
+  ) {
+    addSortableFieldPath(listOf(relation1, relation2, field))
+  }
+
+  private fun addSortableFieldPath(props: List<KProperty1<*, *>>) {
+    props.forEach { requireSortableFieldType(it.returnType, it.name) }
+    val path = DtoSortableFieldPath(dto, props.map { it.asModelMetaField() })
+    val existingRoot = dtoSortableFieldPaths.firstOrNull { it.dto == dto }?.rootModelClass
+    require(existingRoot == null || existingRoot == path.rootModelClass) {
+      "Sortable fields for DTO '${dto.name}' must share the same root model: expected $existingRoot but was ${path.rootModelClass}."
+    }
+    if (dtoSortableFieldPaths.none { it.dto == dto && it.path == path.path }) {
+      dtoSortableFieldPaths.add(path)
+    }
+  }
+
+  private fun requireSortableFieldType(type: KType, fieldName: String) {
+    val fieldClass = type.jvmErasure
+    require(!fieldClass.isSubclassOf(Collection::class) && !fieldClass.isSubclassOf(Map::class)) {
+      "Sortable field '$fieldName' must not be collection-valued, but was ${fieldClass.qualifiedName}."
     }
   }
 

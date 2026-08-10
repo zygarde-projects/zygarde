@@ -469,6 +469,22 @@ class EmployeeModelSpec : ModelMappingCodegenSpec({
 - **`superClass()` override** - Makes a DTO extend a base class (e.g., `PagingAndSortingRequest` for search requests).
 - **Extra fields as class properties** - Define properties on the spec class itself, then reference them with `fromExtra()`.
 
+### Document sortable fields for search requests
+
+For a generated DTO that extends `PagingAndSortingRequest`, declare the fields exposed by Swagger in the DTO mapping:
+
+```kotlin
+Models.SearchEmployeeReq {
+  fieldNullable(Employee::name)
+  sortableFields(Employee::id, Employee::name)
+  sortableField(Employee::department, Department::name)
+}
+```
+
+The generated OpenAPI request schema exposes `id`, `name`, and `department.name` as the allowed values for `sorts[].field`.
+The runtime type remains `String`; this metadata documents the supported fields without changing request deserialization.
+Nested paths must traverse to-one values. Collection relations such as `OneToMany` are rejected because they do not define an unambiguous root-entity order.
+
 ### Mapping Entity Fields to DTOs
 
 ```kotlin

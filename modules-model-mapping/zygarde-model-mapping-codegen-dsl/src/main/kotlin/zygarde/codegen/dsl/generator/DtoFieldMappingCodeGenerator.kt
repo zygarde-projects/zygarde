@@ -21,18 +21,31 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import zygarde.codegen.dsl.meta.DtoMetaResolver
 import zygarde.codegen.dsl.model.internal.DtoFieldMapping
+import zygarde.codegen.dsl.model.internal.DtoSortableFieldPath
 import zygarde.codegen.dsl.model.type.ValueProviderParameterType
 import zygarde.codegen.generator.shared.addSchemaRequiredMode
 import zygarde.codegen.meta.CodegenSealedInterface
 import zygarde.core.annotation.Comment
+import zygarde.data.api.OpenApiSortableFields
+import zygarde.data.api.PagingAndSortingRequest
 import java.io.Serializable
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 
 class DtoFieldMappingCodeGenerator(
   val dtoFieldMappings: Collection<DtoFieldMapping>,
-  val sealedInterfaces: Collection<CodegenSealedInterface> = emptyList(),
+  val sealedInterfaces: Collection<CodegenSealedInterface>,
+  val dtoSortableFieldPaths: Collection<DtoSortableFieldPath>,
 ) {
+  constructor(
+    dtoFieldMappings: Collection<DtoFieldMapping>,
+  ) : this(dtoFieldMappings, emptyList(), emptyList())
+
+  constructor(
+    dtoFieldMappings: Collection<DtoFieldMapping>,
+    sealedInterfaces: Collection<CodegenSealedInterface>,
+  ) : this(dtoFieldMappings, sealedInterfaces, emptyList())
+
   val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")
   val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")
   private val mergePatchFieldClass = ClassName("zygarde.json.patch", "MergePatchField")
@@ -47,9 +60,13 @@ class DtoFieldMappingCodeGenerator(
   val dtoToSealedInterfaces: Map<String, List<CodegenSealedInterface>> = sealedInterfaces
     .flatMap { sealed -> sealed.subtypes.map { it.dto.name to sealed } }
     .groupBy({ it.first }, { it.second })
+  private val sortableFieldPathsByDto = dtoSortableFieldPaths
+    .groupBy { it.dto }
+    .mapValues { (_, paths) -> paths.distinctBy { it.path } }
 
   fun generateFileSpec(): DtoFieldMappingGenerateResult {
     validatePatchReqDtos()
+    validateSortableFieldDtos()
     return DtoFieldMappingGenerateResult(
       dtoFileSpecs = listOf(
         generateDtos(),
@@ -65,6 +82,19 @@ class DtoFieldMappingCodeGenerator(
         generateCompoundDtoBuilder(),
       ).flatten()
     )
+  }
+
+  private fun validateSortableFieldDtos() {
+    sortableFieldPathsByDto.forEach { (dto, paths) ->
+      val superClass = dto.superClass()
+      require(superClass != null && PagingAndSortingRequest::class.java.isAssignableFrom(superClass.java)) {
+        "DTO '${dto.name}' declares sortable fields but does not extend PagingAndSortingRequest."
+      }
+      val rootModelClasses = paths.map { it.rootModelClass }.distinct()
+      require(rootModelClasses.size == 1) {
+        "Sortable fields for DTO '${dto.name}' must share the same root model, but found: ${rootModelClasses.joinToString()}."
+      }
+    }
   }
 
   private fun validatePatchReqDtos() {
@@ -168,15 +198,36 @@ $callDtoStatements
   }
 
   private fun generateDtos(): List<FileSpec> {
-    return dtoFieldMappings.groupBy { it.dto }.map { e ->
-      val dto = e.key
-      val mappings = e.value
+    val mappingsByDto = dtoFieldMappings.groupBy { it.dto }
+    val dtos = linkedSetOf<zygarde.codegen.meta.CodegenDto>().also {
+      it.addAll(mappingsByDto.keys)
+      it.addAll(sortableFieldPathsByDto.keys)
+    }
+    return dtos.map { dto ->
+      val mappings = mappingsByDto[dto].orEmpty()
       val dtoClassName = ClassName(dtoPackageName, dto.name)
       val dtoFileBuilder = FileSpec.builder(dtoClassName.packageName, dtoClassName.simpleName)
+      val fieldNameToInterfacePropertyMap = dto.superClass()?.takeIf { it.java.isInterface }?.memberProperties?.associateBy { it.name } ?: emptyMap()
+      val fieldNameToMappingMap = mappings.associateBy { it.modelField.fieldName }
       val dtoClassBuilder = TypeSpec.classBuilder(dtoClassName)
-        .addModifiers(KModifier.DATA)
         .addAnnotation(Schema::class)
         .addSuperinterface(Serializable::class)
+      if (fieldNameToInterfacePropertyMap.isNotEmpty() || fieldNameToMappingMap.isNotEmpty()) {
+        dtoClassBuilder.addModifiers(KModifier.DATA)
+      }
+      sortableFieldPathsByDto[dto]?.let { paths ->
+        val values = CodeBlock.builder().apply {
+          paths.forEachIndexed { index, path ->
+            if (index > 0) add(", ")
+            add("%S", path.path)
+          }
+        }.build()
+        dtoClassBuilder.addAnnotation(
+          AnnotationSpec.builder(OpenApiSortableFields::class)
+            .addMember("value = [%L]", values)
+            .build()
+        )
+      }
       dto.superClass()?.also { superClass ->
         if (superClass.java.isInterface) {
           dtoClassBuilder.addSuperinterface(superClass)
@@ -216,8 +267,6 @@ $callDtoStatements
       }
 
       val dtoConstructorBuilder = FunSpec.constructorBuilder()
-      val fieldNameToInterfacePropertyMap = dto.superClass()?.takeIf { it.java.isInterface }?.memberProperties?.associateBy { it.name } ?: emptyMap()
-      val fieldNameToMappingMap = mappings.associateBy { it.modelField.fieldName }
 
       listOf(fieldNameToInterfacePropertyMap.keys, fieldNameToMappingMap.keys).flatten().toSet().forEach { fieldName ->
         val memberFromSuperInterface = fieldNameToInterfacePropertyMap[fieldName]
@@ -327,9 +376,9 @@ $callDtoStatements
   }
 
   private fun generateObjectSubtypes(): List<FileSpec> {
-    val dtosWithMappings = dtoFieldMappings.map { it.dto.name }.toSet()
+    val generatedDtoNames = (dtoFieldMappings.map { it.dto.name } + dtoSortableFieldPaths.map { it.dto.name }).toSet()
     return dtoToSealedInterfaces
-      .filterKeys { it !in dtosWithMappings }
+      .filterKeys { it !in generatedDtoNames }
       .map { (dtoName, sealedList) ->
         val dtoClassName = ClassName(dtoPackageName, dtoName)
         val fileBuilder = FileSpec.builder(dtoPackageName, dtoName)

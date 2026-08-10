@@ -13,6 +13,7 @@ import zygarde.api.exception.ApiExceptionHandler
 import zygarde.api.exception.ApiExceptionResolver
 import zygarde.api.exception.DefaultApiErrorResponseFactory
 import zygarde.api.exception.mapper.KotlinInvalidNullExceptionMapper
+import zygarde.api.openapi.SortableFieldsOperationCustomizer
 import zygarde.api.tracing.ApiTracingFilter
 import zygarde.api.tracing.ApiTracingHandlerInterceptor
 import zygarde.json.JacksonCommon
@@ -21,6 +22,10 @@ import zygarde.json.JacksonCommon
 class ZygardeSpringWebmvcConfig : WebMvcConfigurer {
   @Bean
   fun apiTracingHandlerInterceptor() = ApiTracingHandlerInterceptor()
+
+  @Bean
+  @ConditionalOnMissingBean
+  fun sortableFieldsOperationCustomizer() = SortableFieldsOperationCustomizer()
 
   @ConditionalOnMissingBean
   @Bean

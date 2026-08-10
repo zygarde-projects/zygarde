@@ -15,7 +15,13 @@ abstract class ModelMappingCodegenSpec(buildMapping: ModelMappingCodegenSpec.() 
   operator fun CodegenDto.invoke(mapping: ModelMappingSpec.() -> Unit = {}) {
     val groupInvoking = groupInvokingDto.get()
     if (groupInvoking == null || groupInvoking == this) {
-      mapping.invoke(ModelMappingSpec(dto = this, dtoFieldMappings = super.dtoFieldMappings))
+      mapping.invoke(
+        ModelMappingSpec(
+          dto = this,
+          dtoFieldMappings = super.dtoFieldMappings,
+          dtoSortableFieldPaths = super.dtoSortableFieldPaths,
+        )
+      )
     }
   }
 
