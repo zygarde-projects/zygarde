@@ -3,12 +3,16 @@ package zygarde.api.exception
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.slf4j.Logger
+import org.springframework.boot.logging.LogLevel
 import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
@@ -185,6 +189,85 @@ class ApiExceptionHandlerTest {
       path = "/custom",
       exceptionType = "BusinessException"
     )
+  }
+
+  private class MockLoggerHandler(override val LOGGER: Logger) : ApiExceptionHandler()
+
+  private fun mockLoggerHandler(
+    logger: Logger,
+    level: LogLevel? = null,
+    includeStackTrace: Boolean? = null,
+  ): ApiExceptionHandler {
+    return MockLoggerHandler(logger).also {
+      ReflectionTestUtils.setField(it, "messageSource", mockk<MessageSource>(relaxed = true))
+      ReflectionTestUtils.setField(it, "exceptionToBusinessExceptionMappers", emptyList<ExceptionToBusinessExceptionMapper<*>>())
+      ReflectionTestUtils.setField(it, "apiErrorResponseFactory", DefaultApiErrorResponseFactory())
+      level?.let { l -> ReflectionTestUtils.setField(it, "businessExceptionLogLevel", l) }
+      includeStackTrace?.let { s -> ReflectionTestUtils.setField(it, "businessExceptionLogIncludeStackTrace", s) }
+    }
+  }
+
+  @Test
+  fun `logBusinessException should log at INFO with stack trace by default`() {
+    // given
+    val logger = mockk<Logger>(relaxed = true)
+    val exception = BusinessException(TestErrorCode.DOMAIN_ERROR)
+
+    // when
+    mockLoggerHandler(logger).handleBusinessException(exception, MockHttpServletRequest("GET", "/domain"))
+
+    // then
+    verify(exactly = 1) { logger.info(any<String>(), exception) }
+    confirmVerified(logger)
+  }
+
+  @Test
+  fun `logBusinessException should skip logging when level is OFF`() {
+    // given
+    val logger = mockk<Logger>(relaxed = true)
+
+    // when
+    mockLoggerHandler(logger, level = LogLevel.OFF)
+      .handleBusinessException(BusinessException(TestErrorCode.DOMAIN_ERROR), MockHttpServletRequest("GET", "/domain"))
+
+    // then
+    confirmVerified(logger)
+  }
+
+  @Test
+  fun `logBusinessException should honor configured level and drop throwable when stack trace is disabled`() {
+    // given
+    val logger = mockk<Logger>(relaxed = true)
+
+    // when
+    mockLoggerHandler(logger, level = LogLevel.DEBUG, includeStackTrace = false)
+      .handleBusinessException(BusinessException(TestErrorCode.DOMAIN_ERROR), MockHttpServletRequest("GET", "/domain"))
+
+    // then
+    verify(exactly = 1) { logger.debug(any<String>(), null as Throwable?) }
+    confirmVerified(logger)
+  }
+
+  @Test
+  fun `logBusinessException should be overridable by subclasses`() {
+    // given
+    val logged = mutableListOf<BusinessException>()
+    val handler = object : ApiExceptionHandler() {
+      override fun logBusinessException(e: BusinessException) {
+        logged.add(e)
+      }
+    }.also {
+      ReflectionTestUtils.setField(it, "messageSource", mockk<MessageSource>(relaxed = true))
+      ReflectionTestUtils.setField(it, "exceptionToBusinessExceptionMappers", emptyList<ExceptionToBusinessExceptionMapper<*>>())
+      ReflectionTestUtils.setField(it, "apiErrorResponseFactory", DefaultApiErrorResponseFactory())
+    }
+    val exception = BusinessException(TestErrorCode.DOMAIN_ERROR)
+
+    // when
+    handler.handleBusinessException(exception, MockHttpServletRequest("GET", "/domain"))
+
+    // then
+    logged shouldContainExactly listOf(exception)
   }
 
   @Test

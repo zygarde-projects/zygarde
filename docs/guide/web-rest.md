@@ -160,6 +160,40 @@ class NoSuchElementExceptionMapper :
 }
 ```
 
+### Business Exception Logging
+
+By default `ApiExceptionHandler` logs every handled `BusinessException` at `INFO` with the full stack trace.
+Since business exceptions are usually expected flow-control responses rather than bugs, this can be tuned with
+properties (no code required):
+
+```yaml
+zygarde:
+  api:
+    business-exception-log:
+      level: INFO             # TRACE / DEBUG / INFO / WARN / ERROR / OFF (default: INFO)
+      include-stack-trace: false  # log the message only, drop the stack trace (default: true)
+```
+
+For full control, `logBusinessException` is `protected open` — subclass the handler and register it as the
+`ApiExceptionResolver` bean (the default handler backs off via `@ConditionalOnMissingBean`):
+
+```kotlin
+@ControllerAdvice
+class AppApiExceptionHandler : ApiExceptionHandler() {
+  override fun logBusinessException(e: BusinessException) {
+    LOGGER.info("{} {}", e.code, e.message)
+  }
+}
+```
+
+To avoid paying the cost of capturing a stack trace at all, create the exception with
+`BusinessException.noStackTrace(...)`, or subclass `BusinessException` using its protected
+full-control constructor with `writableStackTrace = false`:
+
+```kotlin
+throw BusinessException.noStackTrace(ApiErrorCode.CONFLICT, "already bound to group {}", groupId)
+```
+
 ### Custom Error Response
 
 The default body is `ApiErrorResponse(code, name, messages)`. To customize the response shape, provide an `ApiErrorResponseFactory` bean:

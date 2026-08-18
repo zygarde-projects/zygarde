@@ -1,6 +1,8 @@
 package zygarde.api.exception
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.logging.LogLevel
 import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
@@ -31,6 +33,12 @@ class ApiExceptionHandler : ApiExceptionResolver, Loggable {
 
   @Autowired
   private lateinit var apiErrorResponseFactory: ApiErrorResponseFactory
+
+  @Value("\${zygarde.api.business-exception-log.level:INFO}")
+  protected var businessExceptionLogLevel: LogLevel = LogLevel.INFO
+
+  @Value("\${zygarde.api.business-exception-log.include-stack-trace:true}")
+  protected var businessExceptionLogIncludeStackTrace: Boolean = true
 
   @ExceptionHandler(MethodArgumentNotValidException::class)
   fun handleValidationError(e: MethodArgumentNotValidException, req: HttpServletRequest): ResponseEntity<Any> {
@@ -127,13 +135,25 @@ class ApiExceptionHandler : ApiExceptionResolver, Loggable {
     LOGGER.error(messages.joinToString(" ,"), t)
   }
 
-  private fun logBusinessException(e: BusinessException) {
+  protected open fun logBusinessException(e: BusinessException) {
+    val level = businessExceptionLogLevel
+    if (level == LogLevel.OFF) return
+    val message = businessExceptionLogMessage(e)
+    val throwable: Throwable? = e.takeIf { businessExceptionLogIncludeStackTrace }
+    when (level) {
+      LogLevel.TRACE -> LOGGER.trace(message, throwable)
+      LogLevel.DEBUG -> LOGGER.debug(message, throwable)
+      LogLevel.INFO -> LOGGER.info(message, throwable)
+      LogLevel.WARN -> LOGGER.warn(message, throwable)
+      LogLevel.ERROR, LogLevel.FATAL -> LOGGER.error(message, throwable)
+      LogLevel.OFF -> Unit
+    }
+  }
+
+  protected open fun businessExceptionLogMessage(e: BusinessException): String {
     val tracingData = ApiTracingContext.getTracingData()
-    LOGGER.info(
-      """${tracingData.apiId} ${e.code} ${e.message}
+    return """${tracingData.apiId} ${e.code} ${e.message}
 ${tracingData.data.toJsonString()}
-      """.trimMargin(),
-      e
-    )
+      """.trimMargin()
   }
 }

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `ApiExceptionHandler` business exception logging is now configurable via `zygarde.api.business-exception-log.level`
+  (`TRACE`/`DEBUG`/`INFO`/`WARN`/`ERROR`/`OFF`, default `INFO`) and `zygarde.api.business-exception-log.include-stack-trace`
+  (default `true`). Defaults preserve the previous behavior (INFO with full stack trace).
+- `logBusinessException` and `businessExceptionLogMessage` in `ApiExceptionHandler` are now `protected open`
+  so subclasses can fully customize business exception logging.
+- `BusinessException` is now `open` and provides `BusinessException.noStackTrace(...)` factories plus a protected
+  full-control constructor (`writableStackTrace = false`) to create exceptions without capturing a stack trace.
+
 ## [3.2.1] - 2026-08-10
 
 ### Added
