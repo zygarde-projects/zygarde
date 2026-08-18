@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-08-18
+
 ### Added
 - `ApiExceptionHandler` business exception logging is now configurable via `zygarde.api.business-exception-log.level`
   (`TRACE`/`DEBUG`/`INFO`/`WARN`/`ERROR`/`OFF`, default `INFO`) and `zygarde.api.business-exception-log.include-stack-trace`
