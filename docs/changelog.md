@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `logUnknownException` in `ApiExceptionHandler` is now `protected open` so subclasses can customize
+  unknown exception logging as well.
+
 ## [3.3.0] - 2026-08-18
 
 ### Added

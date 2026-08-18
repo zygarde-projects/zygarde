@@ -125,7 +125,7 @@ class ApiExceptionHandler : ApiExceptionResolver, Loggable {
     }
   }
 
-  private fun logUnknownException(t: Throwable, req: HttpServletRequest) {
+  protected open fun logUnknownException(t: Throwable, req: HttpServletRequest) {
     val tracingData = ApiTracingContext.getTracingData()
     val messages = listOfNotNull(
       "uri='${req.requestURI}",

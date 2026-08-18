@@ -271,6 +271,28 @@ class ApiExceptionHandlerTest {
   }
 
   @Test
+  fun `logUnknownException should be overridable by subclasses`() {
+    // given
+    val logged = mutableListOf<Throwable>()
+    val handler = object : ApiExceptionHandler() {
+      override fun logUnknownException(t: Throwable, req: HttpServletRequest) {
+        logged.add(t)
+      }
+    }.also {
+      ReflectionTestUtils.setField(it, "messageSource", mockk<MessageSource>(relaxed = true))
+      ReflectionTestUtils.setField(it, "exceptionToBusinessExceptionMappers", emptyList<ExceptionToBusinessExceptionMapper<*>>())
+      ReflectionTestUtils.setField(it, "apiErrorResponseFactory", DefaultApiErrorResponseFactory())
+    }
+    val exception = IllegalStateException("boom")
+
+    // when
+    handler.handleThrowable(exception, MockHttpServletRequest("GET", "/boom"))
+
+    // then
+    logged shouldContainExactly listOf(exception)
+  }
+
+  @Test
   fun `ApiExceptionFilter should write handler response as JSON`() {
     val filter = ApiExceptionFilter(handler(), ObjectMapper())
     val request = MockHttpServletRequest("GET", "/filtered")
