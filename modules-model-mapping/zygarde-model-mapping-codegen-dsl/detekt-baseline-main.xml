@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeConcreteClass:ModelFieldDsl.kt:ModelFieldDsl$ModelFieldDsl</ID>
+    <ID>AbstractClassCanBeConcreteClass:ModelMappingCodegenSpec.kt:ModelMappingCodegenSpec$ModelMappingCodegenSpec</ID>
+    <ID>AbstractClassCanBeConcreteClass:ModelMappingDslCodegen.kt:ModelMappingDslCodegen$ModelMappingDslCodegen</ID>
+    <ID>CyclomaticComplexMethod:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$fun generateSearchExtensionFunction( entityTypeName: TypeName, dtoPackageName: String, searchPackageName: String, dtoName: String, dtoFieldDescriptions: List&lt;DtoFieldDescriptionVo&gt; ): FunSpec</ID>
+    <ID>CyclomaticComplexMethod:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun generateDtoAssemblers(): List&lt;FileSpec&gt;</ID>
+    <ID>CyclomaticComplexMethod:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun generateDtos(): List&lt;FileSpec&gt;</ID>
+    <ID>CyclomaticComplexMethod:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun generateMapToDtoExtension(): List&lt;FileSpec&gt;</ID>
+    <ID>HasPlatformType:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$val dtoPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.dto-package", "zygarde.codegen.data.dto")</ID>
+    <ID>HasPlatformType:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")</ID>
+    <ID>LargeClass:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator</ID>
+    <ID>LongMethod:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$fun buildDtoClassesAndExtensions( entityTypeName: TypeName, dtoPackageName: String, searchPackageName: String, dtoExtensionName: String, allDescriptions: List&lt;DtoFieldDescriptionVo&gt;, dtoInheritMap: Map&lt;String, TypeName&gt; ): Pair&lt;Map&lt;String, TypeSpec&gt;, FileSpec.Builder&gt;</ID>
+    <ID>LongMethod:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun generateCompoundDtoBuilder(): List&lt;FileSpec&gt;</ID>
+    <ID>LongMethod:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun generateDtoAssemblers(): List&lt;FileSpec&gt;</ID>
+    <ID>LongMethod:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun generateDtos(): List&lt;FileSpec&gt;</ID>
+    <ID>LongMethod:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun generateMapToDtoExtension(): List&lt;FileSpec&gt;</ID>
+    <ID>LongParameterList:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$( entityTypeName: TypeName, dtoPackageName: String, searchPackageName: String, dtoExtensionName: String, allDescriptions: List&lt;DtoFieldDescriptionVo&gt;, dtoInheritMap: Map&lt;String, TypeName&gt; )</ID>
+    <ID>LongParameterList:DtoFieldMapping.kt:DtoFieldMapping$( open var modelField: ModelMetaField, open var dto: CodegenDto, open var comment: String? = null, open var dtoRef: CodegenDto? = null, open var dtoRefClass: ClassName? = null, open var refCollection: Boolean = false, open var forceNull: ForceNull = ForceNull.NONE, open var validations: MutableList&lt;DtoFieldValidation&gt; = mutableListOf(), open var compound: Boolean = false, open var additionalAnnotations: List&lt;AnnotationSpec&gt; = emptyList(), )</ID>
+    <ID>MaxLineLength:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$SearchType.LIST_CONTAINS_ANY -&gt; functionBuilder.addStatement("%M() containsAny req.$fieldName", fieldExtensionMember)</ID>
+    <ID>MaxLineLength:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$functionBuilder.addStatement(indent + "req.${fieldDescriptionVo.dtoFieldName}?.let{ this.${fieldDescriptionVo.entityFieldName} = it }")</ID>
+    <ID>MaxLineLength:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$functionBuilder.addStatement(indent + "this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}")</ID>
+    <ID>MaxLineLength:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$indent + "this.${fieldDescriptionVo.entityFieldName} = req.${fieldDescriptionVo.dtoFieldName}$q.let{ %T().getValue(it) }"</ID>
+    <ID>MaxLineLength:DtoApplyToModelDsl.kt:DtoApplyToModelDsl$modelField = ModelMetaField(modelClass.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true)</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$"Sortable fields for DTO '${dto.name}' must share the same root model, but found: ${rootModelClasses.joinToString()}."</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$"\"Data provider ${provider.simpleName} did not return value for field '${modelField.fieldName}' and key '\$key'\") } "</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$.</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$throw IllegalArgumentException("Patch request DTO '${dto.name}' cannot mix patchReq mappings with from/field/applyTo mappings.")</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$val comment = mapping?.comment ?: mapping?.modelField?.comment ?: memberFromSuperInterface?.findAnnotation&lt;Comment&gt;()?.comment</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$val fieldNameToInterfacePropertyMap = dto.superClass()?.takeIf { it.java.isInterface }?.memberProperties?.associateBy { it.name } ?: emptyMap()</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$val missingNullKeyMessage = "Data provider ${provider.simpleName} did not return value for field '${modelField.fieldName}' and key 'null'"</ID>
+    <ID>MaxLineLength:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$val modelExtensionPackageName = System.getProperty("zygarde.codegen.dsl.model-mapping.extension-package", "zygarde.codegen.model.extensions")</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.DecimalMax$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.DecimalMin$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.Future$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.FutureOrPresent$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.Negative$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.NegativeOrZero$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.NotBlank$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.NotEmpty$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.NotNull$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.PastOrPresent$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.Positive$override</ID>
+    <ID>MaxLineLength:DtoFieldValidation.kt:DtoFieldValidation.PositiveOrZero$override</ID>
+    <ID>MaxLineLength:DtoMetaResolver.kt:DtoMetaResolver$valueProviderParameterType = modelToDto?.valueProviderParameterType ?: zygarde.codegen.dsl.model.type.ValueProviderParameterType.FIELD</ID>
+    <ID>MaxLineLength:ModelMappingSpec.kt:ModelMappingSpec$"Sortable fields for DTO '${dto.name}' must share the same root model: expected $existingRoot but was ${path.rootModelClass}."</ID>
+    <ID>MaxLineLength:ModelToDtoDsl.kt:ModelToDtoDsl$modelField = ModelMetaField(modelClass.asTypeName(), fieldName, Any::class.asClassName(), nullable, extra = true)</ID>
+    <ID>MaxLineLength:ModelToDtoDsl.kt:ModelToDtoDsl$modelField = ModelMetaField(modelClass.asTypeName(), fieldName, Any::class.asTypeName(), nullable, extra = true)</ID>
+    <ID>NoNameShadowing:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator${ it.dto }</ID>
+    <ID>ReturnCount:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$private fun buildSchemaAnnotation( mapping: DtoFieldMapping?, fieldType: TypeName, comment: String, ): AnnotationSpec</ID>
+    <ID>SafeCast:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$if (it is DtoFieldMapping.ModelApplyFromDtoFieldMappingVo) it else null</ID>
+    <ID>SafeCast:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$if (it is DtoFieldMapping.ModelToDtoFieldMappingVo) it else null</ID>
+    <ID>SafeCast:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$if (it is DtoFieldMapping.PatchReqFieldMapping) it else null</ID>
+    <ID>SpreadOperator:ApiPropSharedGenerator.kt:ApiPropSharedGenerator$( """return %T( ${dtoFieldSetterStatements.joinToString(",\r\n")} ) """.trimMargin(), *codeBlockArgs.toTypedArray() )</ID>
+    <ID>SpreadOperator:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$( """return %T( $callDtoStatements )""", *callDtoArgs.toTypedArray() )</ID>
+    <ID>SpreadOperator:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$( """return %T( ${dtoFieldSetterStatements.joinToString(",\r\n")} ) """.trimMargin(), *codeBlockArgs.toTypedArray() )</ID>
+    <ID>SpreadOperator:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$( """return modelList.map·{ model -&gt; %T( ${dtoFieldSetterStatements.joinToString(",\r\n")} ) }""", *codeBlockArgs.toTypedArray(), )</ID>
+    <ID>TooManyFunctions:DtoFieldMapping.kt:DtoFieldMapping</ID>
+    <ID>TooManyFunctions:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator</ID>
+    <ID>TooManyFunctions:ModelMappingSpec.kt:ModelMappingSpec</ID>
+    <ID>UnusedParameter:ModelMappingSpec.kt:ModelMappingSpec$dsl: (DtoFieldMapping.ModelToDtoFieldMappingVo.() -&gt; Unit) = {}</ID>
+    <ID>UseOrEmpty:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$dto.superClass()?.takeIf { it.java.isInterface }?.memberProperties?.associateBy { it.name } ?: emptyMap()</ID>
+    <ID>UseRequire:DtoFieldMappingCodeGenerator.kt:DtoFieldMappingCodeGenerator$throw IllegalArgumentException("Patch request DTO '${dto.name}' cannot mix patchReq mappings with from/field/applyTo mappings.")</ID>
+    <ID>UselessCallOnNotNull:DtoMetaResolver.kt:DtoMetaResolver$it.isNullOrBlank()</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:ApiErrorCode.kt:ApiErrorCode.BAD_REQUEST$400</ID>
+    <ID>MagicNumber:ApiErrorCode.kt:ApiErrorCode.CONFLICT$409</ID>
+    <ID>MagicNumber:ApiErrorCode.kt:ApiErrorCode.NOT_FOUND$404</ID>
+    <ID>MagicNumber:ApiErrorCode.kt:ApiErrorCode.SERVER_ERROR$500</ID>
+    <ID>MagicNumber:ApiErrorCode.kt:ApiErrorCode.UNAUTHORIZED$401</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -142,14 +142,14 @@ A typical root `build.gradle.kts` defines shared configuration:
 
 ```kotlin
 plugins {
-  id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
-  id("org.springframework.boot") version "2.7.18"
-  id("io.spring.dependency-management") version "1.1.3"
-  kotlin("jvm") version "1.9.25"
-  kotlin("plugin.spring") version "1.9.25" apply false
-  kotlin("plugin.jpa") version "1.9.25" apply false
-  kotlin("plugin.allopen") version "1.9.25" apply false
-  kotlin("kapt") version "1.9.25" apply false
+  id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+  id("org.springframework.boot") version "4.0.8"
+  id("io.spring.dependency-management") version "1.1.7"
+  kotlin("jvm") version "2.2.20"
+  kotlin("plugin.spring") version "2.2.20" apply false
+  kotlin("plugin.jpa") version "2.2.20" apply false
+  kotlin("plugin.allopen") version "2.2.20" apply false
+  kotlin("kapt") version "2.2.20" apply false
 }
 
 allprojects {
@@ -172,6 +172,10 @@ subprojects {
   apply(plugin = "kotlin-allopen")
   apply(plugin = "org.springframework.boot")
   apply(plugin = "io.spring.dependency-management")
+
+  configure<JavaPluginExtension> {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(24))
+  }
 
   dependencies {
     api(platform(project(":bom")))
@@ -268,9 +272,9 @@ Entities must be `open` for Hibernate proxying. Configure the `allOpen` plugin i
 ```kotlin
 // In the entity module's build.gradle.kts
 allOpen {
-  annotation("javax.persistence.Entity")
-  annotation("javax.persistence.MappedSuperclass")
-  annotation("javax.persistence.Embeddable")
+  annotation("jakarta.persistence.Entity")
+  annotation("jakarta.persistence.MappedSuperclass")
+  annotation("jakarta.persistence.Embeddable")
 }
 ```
 
@@ -943,9 +947,9 @@ Missing `allOpen` configuration causes Hibernate proxy issues. Always include al
 
 ```kotlin
 allOpen {
-  annotation("javax.persistence.Entity")
-  annotation("javax.persistence.MappedSuperclass")
-  annotation("javax.persistence.Embeddable")
+  annotation("jakarta.persistence.Entity")
+  annotation("jakarta.persistence.MappedSuperclass")
+  annotation("jakarta.persistence.Embeddable")
 }
 ```
 

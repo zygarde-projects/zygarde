@@ -1,6 +1,6 @@
 package zygarde.api.exception
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.mockk.confirmVerified
@@ -294,7 +294,8 @@ class ApiExceptionHandlerTest {
 
   @Test
   fun `ApiExceptionFilter should write handler response as JSON`() {
-    val filter = ApiExceptionFilter(handler(), ObjectMapper())
+    val objectMapper = ObjectMapper()
+    val filter = ApiExceptionFilter(handler(), objectMapper)
     val request = MockHttpServletRequest("GET", "/filtered")
     val response = MockHttpServletResponse()
     val chain = FilterChain { _, _ ->
@@ -305,6 +306,7 @@ class ApiExceptionHandlerTest {
 
     response.status shouldBe HttpStatus.UNAUTHORIZED.value()
     response.contentType shouldBe "application/json;charset=UTF-8"
-    response.contentAsString shouldBe """{"code":"401","name":"UNAUTHORIZED","messages":["Unauthorized"]}"""
+    objectMapper.readTree(response.contentAsString) shouldBe
+      objectMapper.readTree("""{"code":"401","name":"UNAUTHORIZED","messages":["Unauthorized"]}""")
   }
 }

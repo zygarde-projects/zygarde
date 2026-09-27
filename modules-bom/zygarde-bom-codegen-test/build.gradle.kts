@@ -2,6 +2,6 @@ apply(plugin = "java-platform")
 
 dependencies {
   constraints {
-    "api"("com.github.tschuchortdev:kotlin-compile-testing:1.6.0")
+    "api"("dev.zacsweers.kctfork:core:0.10.1")
   }
 }

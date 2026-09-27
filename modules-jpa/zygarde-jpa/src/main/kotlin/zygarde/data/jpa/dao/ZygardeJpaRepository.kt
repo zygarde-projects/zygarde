@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
-open class ZygardeJpaRepository<T, ID>(
+open class ZygardeJpaRepository<T : Any, ID : Any>(
   entityInformation: JpaEntityInformation<T, ID>,
   val entityManager: EntityManager
 ) : SimpleJpaRepository<T, ID>(entityInformation, entityManager), ZygardeEnhancedDao<T, ID> {

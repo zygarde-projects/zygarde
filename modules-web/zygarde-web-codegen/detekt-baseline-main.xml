@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:GraphQlApiGenerator.kt:GraphQlApiGenerator$private fun validateUniqueGraphQlDeclarations()</ID>
+    <ID>CyclomaticComplexMethod:WebMvcApiGenerator.kt:WebMvcApiGenerator$private fun ApiToGenerateVo.generate()</ID>
+    <ID>LongMethod:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$private fun ApiToGenerateVo.generateCrudServiceImpl(crudService: CrudServiceImplToGenerateVo): FileSpec</ID>
+    <ID>LongMethod:GraphQlApiGenerator.kt:GraphQlApiGenerator$private fun GraphQlApiToGenerateVo.generate()</ID>
+    <ID>LongMethod:GraphQlApiGenerator.kt:GraphQlApiGenerator$private fun validateUniqueGraphQlDeclarations()</ID>
+    <ID>LongMethod:StaticOptionApiGeneratorSupport.kt:StaticOptionApiGeneratorSupport$fun generateStaticOptionController(elements: Collection&lt;StaticOptionApiMeta&gt;): FileSpec</ID>
+    <ID>LongMethod:WebMvcApiGenerator.kt:WebMvcApiGenerator$private fun ApiToGenerateVo.generate()</ID>
+    <ID>MagicNumber:GraphQlSchemaLiteral.kt:0x20</ID>
+    <ID>MagicNumber:GraphQlSchemaLiteral.kt:16</ID>
+    <ID>MagicNumber:GraphQlSchemaLiteral.kt:4</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$"CRUD service impl '$serviceName' declares hooks with duplicate property names: ${duplicatedPropertyNames.joinToString()}."</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$"CRUD service impl '$serviceName' references function '${operation.functionName}', but no matching service interface function exists."</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$"CRUD service impl '${crudService.serviceName}' does not support authentication detail function '${operation.functionName}' in v1."</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$"CRUD service impl '${crudService.serviceName}' does not support postProcessing function '${operation.functionName}' in v1."</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$functionBuilder.addStatement("return %T(page.number + 1, page.totalPages, items, page.totalElements)", PageDto::class)</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$functionBuilder.addStatement("val entity = %L.applyFrom(%N)", crudService.findEntity(operation), function.requestName)</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$functionBuilder.addStatement("val items = %N.buildAll(page.content).toList()", crudService.dtoAssemblerPropertyName())</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$functionBuilder.addStatement("val page = %N.%N(%N)", crudService.daoPropertyName, operation.daoMethod, function.requestName)</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$if</ID>
+    <ID>MaxLineLength:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$operation.kind in listOf(CrudOperationKind.PAGE, CrudOperationKind.CREATE, CrudOperationKind.UPDATE, CrudOperationKind.DELETE)</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$"GraphQL ${function.operation.name.lowercase()} field '${function.functionName}' argument '$duplicateName' is already declared"</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$"GraphQL ${typeDefinition.kind.schemaKeyword()} '${typeDefinition.name}' field '$duplicateName' is already declared"</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$"return service.${serviceFunctionName.toKotlinReferenceName()}(${paramsToCallServiceInterface.joinToString(", ")})"</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$GraphQlValueProviderParameterType.FIELD -&gt; "%T().getValue(model.${valueProviderParameterField.toKotlinReferenceName()})"</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$appendOperationType(functions.filter { it.operation == GraphQlOperation.MUTATION }, "Mutation", emittedOperationTypes)</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$appendOperationType(functions.filter { it.operation == GraphQlOperation.SUBSCRIPTION }, "Subscription", emittedOperationTypes)</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$controllerBuilder.addFunction(provider.toBatchMappingFunction(lazyType, provider.toBatchMappingFunctionName(lazyType)))</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$private</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$requireGraphQlDeprecationReason(field.deprecationReason, "GraphQL ${kind.schemaKeyword()} '$name' field '${field.name}'")</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$throw IllegalArgumentException("GraphQL ${operation.name.lowercase()} field '$duplicateName' is already declared")</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$throw IllegalArgumentException("GraphQL enum '${typeDefinition.name}' value '$duplicateName' is already declared")</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$val missingKeyMessagePrefix = "Data provider ${providerType.simpleName} did not return value for field '$fieldName' and key '"</ID>
+    <ID>MaxLineLength:GraphQlApiGenerator.kt:GraphQlApiGenerator$val missingNullKeyMessage = "Data provider ${providerType.simpleName} did not return value for field '$fieldName' and key 'null'"</ID>
+    <ID>MaxLineLength:WebMvcApiGenerator.kt:WebMvcApiGenerator$.</ID>
+    <ID>MaxLineLength:WebMvcApiGenerator.kt:WebMvcApiGenerator$PropertySpec.builder(serviceFunctionThreadLocalName, ThreadLocal::class.asTypeName().parameterizedBy(postProcessingParamType))</ID>
+    <ID>ReturnCount:GraphQlApiGenerator.kt:GraphQlApiGenerator$private fun List&lt;GraphQlArgumentToGenerateVo&gt;.toSchemaArguments(fieldIndent: String): String</ID>
+    <ID>SpreadOperator:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$(*function.requestTypeGenericArguments.toTypedArray())</ID>
+    <ID>SpreadOperator:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$(*function.responseTypeGenericArguments.toTypedArray())</ID>
+    <ID>SpreadOperator:GraphQlApiGenerator.kt:GraphQlApiGenerator$( """return models.map·{ model -&gt; %T( $fieldAssignments ) }""", *sourceArgs.toTypedArray(), )</ID>
+    <ID>SpreadOperator:WebMvcApiGenerator.kt:WebMvcApiGenerator$( "${resultDeclare}service.$serviceFunctionName(${paramsToCallServiceInterface.joinToString(",")})", *argsToCallServiceInterface.toTypedArray() )</ID>
+    <ID>SpreadOperator:WebMvcApiGenerator.kt:WebMvcApiGenerator$(*func.requestTypeGenericArguments.toTypedArray())</ID>
+    <ID>SpreadOperator:WebMvcApiGenerator.kt:WebMvcApiGenerator$(*func.responseTypeGenericArguments.toTypedArray())</ID>
+    <ID>ThrowsCount:GraphQlApiGenerator.kt:GraphQlApiGenerator$private fun validateUniqueGraphQlDeclarations()</ID>
+    <ID>TooManyFunctions:CrudServiceImplGenerator.kt:CrudServiceImplGenerator</ID>
+    <ID>TooManyFunctions:GraphQlApiGenerator.kt:GraphQlApiGenerator</ID>
+    <ID>UseRequireNotNull:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$require(function.requestType != null) { "CRUD operation '${operation.functionName}' requires a request DTO." }</ID>
+    <ID>UseRequireNotNull:CrudServiceImplGenerator.kt:CrudServiceImplGenerator$require(function.responseType != null) { "CRUD operation '${operation.functionName}' requires a response DTO." }</ID>
+  </CurrentIssues>
+</SmellBaseline>

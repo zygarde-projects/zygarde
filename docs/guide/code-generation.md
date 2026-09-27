@@ -22,7 +22,7 @@ Generate DAOs and type-safe search DSL from annotated JPA entities at compile-ti
 Place `@ZyModel` on your `@Entity` classes:
 
 ```kotlin
-import javax.persistence.*
+import jakarta.persistence.*
 import zygarde.codegen.apt.jpa.ZyModel
 
 @Entity
@@ -77,12 +77,12 @@ Configure KAPT in your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-  kotlin("kapt") version "1.8.22"
+  kotlin("kapt") version "2.2.20"
 }
 
 dependencies {
-  implementation("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 
 kapt {

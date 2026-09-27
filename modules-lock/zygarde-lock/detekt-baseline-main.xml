@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongParameterList:Locked.kt:Locked$( val manuallyReleased: Boolean = false, val storeId: String = "distributed_lock", val prefix: String = "", val expression: String = "#executionPath", val expiration: Interval = Interval(value = "10", unit = TimeUnit.SECONDS), val timeout: Interval = Interval(value = "1", unit = TimeUnit.SECONDS), val retry: Interval = Interval(value = "50"), val refresh: Interval = Interval(value = "0"), val type: KClass&lt;out Lock&gt; = Lock::class, val throwing: Boolean = true )</ID>
+    <ID>MaxLineLength:LockBeanPostProcessor.kt:LockBeanPostProcessor$val interceptor = LockMethodInterceptor(keyGenerator, lockTypeResolver, intervalConverter, retriableLockFactory, taskScheduler)</ID>
+    <ID>MaxLineLength:LockMethodInterceptor.kt:LockMethodInterceptor$"Cannot return null for primitive return type ${context.method.returnType.name} on method ${context.method}. "</ID>
+    <ID>MaxLineLength:LockMethodInterceptor.kt:LockMethodInterceptor$log.debug("Acquired lock for keys {} with token {} in store {}", context.keys, context.token, context.locked.storeId)</ID>
+    <ID>MaxLineLength:LockMethodInterceptor.kt:LockMethodInterceptor$log.debug("Released lock for keys {} with token {} in store {}", context.keys, context.token, context.locked.storeId)</ID>
+    <ID>MaxLineLength:LockMethodInterceptor.kt:LockMethodInterceptor$log.error("Couldn't release lock for keys {} with token {} in store {}", context.keys, context.token, context.locked.storeId)</ID>
+    <ID>MaxLineLength:LockMethodInterceptor.kt:LockMethodInterceptor.LockContext$return keyGenerator.resolveKeys(locked.prefix, locked.expression, invocation.`this`!!, method, invocation.arguments)</ID>
+    <ID>MaxLineLength:SpelKeyGenerator.kt:SpelKeyGenerator$val genericCollection = TypeDescriptor.collection(Collection::class.java, TypeDescriptor.valueOf(Any::class.java))</ID>
+    <ID>MaxLineLength:ZygardeLockAutoConfiguration.kt:ZygardeLockAutoConfiguration$@ConditionalOnProperty(prefix = "zygarde.lock.task-scheduler.default", name = ["enabled"], havingValue = "true", matchIfMissing = true)</ID>
+    <ID>MaxLineLength:ZygardeLockAutoConfiguration.kt:ZygardeLockAutoConfiguration.Companion$return</ID>
+    <ID>ReturnCount:DefaultRetryTemplateConverter.kt:DefaultRetryTemplateConverter$override fun construct(locked: Locked): RetryTemplate?</ID>
+    <ID>SwallowedException:RetriableLock.kt:RetriableLock$e: LockNotAvailableException</ID>
+    <ID>ThrowsCount:SpelKeyGenerator.kt:SpelKeyGenerator$protected open fun convertResultToList(expressionValue: Any?): List&lt;String&gt;</ID>
+    <ID>TooGenericExceptionCaught:LockMethodInterceptor.kt:LockMethodInterceptor$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:LockMethodInterceptor.kt:LockMethodInterceptor.LockContext$e: RuntimeException</ID>
+    <ID>UnsafeCallOnNullableType:LockMethodInterceptor.kt:LockMethodInterceptor$context.token!!</ID>
+    <ID>UnsafeCallOnNullableType:LockMethodInterceptor.kt:LockMethodInterceptor.LockContext$AnnotatedElementUtils.findMergedAnnotation(method, Locked::class.java)!!</ID>
+    <ID>UnsafeCallOnNullableType:LockMethodInterceptor.kt:LockMethodInterceptor.LockContext$invocation.`this`!!</ID>
+    <ID>UnsafeCallOnNullableType:SpelKeyGenerator.kt:SpelKeyGenerator$genericArray!!</ID>
+    <ID>UseCheckOrError:LockMethodInterceptor.kt:LockMethodInterceptor$throw IllegalStateException("No token acquired")</ID>
+  </CurrentIssues>
+</SmellBaseline>

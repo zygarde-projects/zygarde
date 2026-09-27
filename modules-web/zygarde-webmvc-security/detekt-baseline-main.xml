@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:CorsFilter.kt:CorsFilter$200</ID>
+    <ID>MaxLineLength:AuthFilter.kt:AuthFilter$(req.getHeader(apiRole.authHeader()) ?: req.getHeader(apiRole.authHeader().lowercase()))</ID>
+    <ID>SwallowedException:AuthFilter.kt:AuthFilter$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:AuthFilter.kt:AuthFilter$t: Throwable</ID>
+  </CurrentIssues>
+</SmellBaseline>

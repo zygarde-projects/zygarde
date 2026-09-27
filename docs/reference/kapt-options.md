@@ -147,12 +147,12 @@ class BookService(private val dao: Dao) {
 ```kotlin
 // build.gradle.kts
 plugins {
-  kotlin("kapt") version "1.8.22"
+  kotlin("kapt") version "2.2.20"
 }
 
 dependencies {
-  implementation("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 
 kapt {

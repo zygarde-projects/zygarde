@@ -876,7 +876,8 @@ class ZygardeJpaDaoKspGenerator(
     }
 
     if (idProperty != null) {
-      return idProperty.type.resolve().toTypeName().kotlin(canBeNullable = false)
+      val resolvedProperty = allProperties.first { it.simpleName.asString() == idProperty.simpleName.asString() }
+      return resolvedProperty.type.resolve().toTypeName().kotlin(canBeNullable = false)
     }
 
     throw IllegalStateException("No @Id or @IdClass found for entity ${simpleName.asString()}")
@@ -900,6 +901,6 @@ class ZygardeJpaDaoKspGenerator(
       }
     }
 
-    return props.distinctBy { it.simpleName.asString() }
+    return props
   }
 }

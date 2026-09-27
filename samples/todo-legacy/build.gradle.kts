@@ -11,10 +11,11 @@ dependencies {
   implementation(project(":zygarde-webmvc"))
   implementation(project(":zygarde-webmvc-security"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
   runtimeOnly("com.h2database:h2")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 }
 
 tasks.getByName("bootJar").enabled = false

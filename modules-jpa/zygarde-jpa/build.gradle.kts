@@ -9,7 +9,7 @@ dependencies {
   testImplementation("org.jeasy:easy-random-core:4.2.0")
   testImplementation("com.h2database:h2")
   testImplementation(project(":zygarde-test"))
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 }
 
 tasks.getByName("bootJar").enabled = false

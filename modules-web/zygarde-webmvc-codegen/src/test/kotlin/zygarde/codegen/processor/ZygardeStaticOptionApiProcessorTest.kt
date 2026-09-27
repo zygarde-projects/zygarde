@@ -21,7 +21,7 @@ class ZygardeStaticOptionApiProcessorTest {
         ClassPathResource("input/options/BarType.kt").file,
         ClassPathResource("input/options/FooType.kt").file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_21.description
+      jvmTarget = JvmTarget.JVM_24.description
       annotationProcessors = listOf(ZygardeStaticOptionApiProcessor())
       inheritClassPath = true
       messageOutputStream = System.out
@@ -67,7 +67,7 @@ class ZygardeStaticOptionApiProcessorTest {
     }
     val result = KotlinCompilation().apply {
       sources = listOf(SourceFile.kotlin("ScaleTypes.kt", "package foo.scale\n\n$manyEnums"))
-      jvmTarget = JvmTarget.JVM_21.description
+      jvmTarget = JvmTarget.JVM_24.description
       annotationProcessors = listOf(ZygardeStaticOptionApiProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

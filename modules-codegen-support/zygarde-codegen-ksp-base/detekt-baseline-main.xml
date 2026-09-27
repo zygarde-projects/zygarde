@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>TooManyFunctions:KotlinPoetKspExtension.kt:zygarde.codegen.ksp.extension.KotlinPoetKspExtension.kt</ID>
+    <ID>UseOrEmpty:KotlinPoetKspExtension.kt:(getArgumentValue(name) as? List&lt;KSAnnotation&gt;) ?: emptyList()</ID>
+    <ID>UseOrEmpty:KotlinPoetKspExtension.kt:(getArgumentValue(name) as? List&lt;String&gt;) ?: emptyList()</ID>
+    <ID>UseOrEmpty:KotlinPoetKspExtension.kt:getArgumentValue(name) as? String ?: ""</ID>
+  </CurrentIssues>
+</SmellBaseline>

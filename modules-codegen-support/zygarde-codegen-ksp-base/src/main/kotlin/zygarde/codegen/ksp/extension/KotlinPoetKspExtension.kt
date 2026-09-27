@@ -92,7 +92,7 @@ fun KSAnnotation.getArgumentValueAsEnumEntry(name: String): String? {
   return if (value is KSType) {
     value.declaration.simpleName.asString()
   } else {
-    value.toString()
+    value.toString().substringAfterLast('.')
   }
 }
 

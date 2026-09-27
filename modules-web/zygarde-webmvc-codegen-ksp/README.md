@@ -13,7 +13,7 @@ A KSP (Kotlin Symbol Processing) based code generator for Spring WebMVC APIs. Th
 
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.25-1.0.20"
+    id("com.google.devtools.ksp") version "2.2.20-2.0.4"
 }
 
 dependencies {

@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:XlsColIdxExt.kt:XlsColIdxExt$26</ID>
+    <ID>MagicNumber:XlsColIdxExt.kt:XlsColIdxExt$64</ID>
+    <ID>MagicNumber:XlsColIdxExt.kt:XlsColIdxExt$65</ID>
+    <ID>MaxLineLength:PoiCellExt.kt:PoiCellExt$CellType.NUMERIC -&gt; numericCellValue.toBigDecimal().setScale(scaleWhenNumeric, scaleRoundingWhenNumeric).toPlainString()</ID>
+  </CurrentIssues>
+</SmellBaseline>

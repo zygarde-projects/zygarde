@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeConcreteClass:AbstractZygardeGenerator.kt:AbstractZygardeGenerator$AbstractZygardeGenerator</ID>
+    <ID>CyclomaticComplexMethod:KotlinPoetExtension.kt:fun TypeName.kotlin(canBeNullable: Boolean = true): TypeName</ID>
+    <ID>ReturnCount:ElementExtensions.kt:ElementExtensions$internal fun parseTypeArguments(str: String): Pair&lt;String, List&lt;String&gt;&gt;?</ID>
+    <ID>ReturnCount:KotlinPoetExtension.kt:fun TypeMirror.kotlinTypeName(canBeNullable: Boolean = true): TypeName</ID>
+    <ID>SpreadOperator:KotlinPoetExtension.kt:( *genericClasses.map { it.asTypeName().kotlin(it.asTypeName().isNullable) }.toTypedArray() )</ID>
+    <ID>SpreadOperator:KotlinPoetExtension.kt:( *this.typeArguments.map { it.kotlinTypeName(false) }.toTypedArray() )</ID>
+    <ID>SpreadOperator:KotlinPoetExtension.kt:(*genericTypes)</ID>
+    <ID>TooManyFunctions:ElementExtensions.kt:ElementExtensions</ID>
+    <ID>UtilityClassWithPublicConstructor:ZygardeKaptOptions.kt:ZygardeKaptOptions</ID>
+  </CurrentIssues>
+</SmellBaseline>

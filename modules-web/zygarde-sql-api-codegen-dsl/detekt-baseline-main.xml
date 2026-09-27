@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:DslSqlQuery.kt:DslSqlQuery$internal fun toSqlQueryToGenerateVo( apiName: String?, sqlValidationRules: List&lt;SqlValidationRule&gt;, ): SqlQueryToGenerateVo</ID>
+    <ID>LargeClass:SqlApiGenerator.kt:SqlApiGenerator</ID>
+    <ID>LongMethod:DslSqlQuery.kt:DslSqlQuery$internal fun toSqlQueryToGenerateVo( apiName: String?, sqlValidationRules: List&lt;SqlValidationRule&gt;, ): SqlQueryToGenerateVo</ID>
+    <ID>LongMethod:SqlApiGenerator.kt:SqlApiGenerator$private fun SqlApiToGenerateVo.generateServiceImplFileSpec(): FileSpec</ID>
+    <ID>LongMethod:SqlApiGenerator.kt:SqlApiGenerator$private fun SqlQueryToGenerateVo.toProviderServiceFunctionBody( responseClass: ClassName, sqlConstantName: String, countSqlConstantName: String?, ): CodeBlock</ID>
+    <ID>LongParameterList:SqlApiGenerator.kt:SqlApiGenerator$( config: SqlApiDslCodegenConfig, query: SqlQueryToGenerateVo, sqlConstantName: String, countSqlConstantName: String?, transactionPolicy: SqlApiTransactionPolicy, transactionManagerQualifier: String?, )</ID>
+    <ID>MaxLineLength:DslSqlCommand.kt:DslSqlCommand$"SQL command '$functionName' declares parameters that are not used by SQL: ${unusedDeclaredParamNames.joinToString()}"</ID>
+    <ID>MaxLineLength:DslSqlCommand.kt:DslSqlCommand$"SQL command '$functionName' declares path parameters that are not present in path '$path': ${missingPathParamNames.joinToString()}"</ID>
+    <ID>MaxLineLength:DslSqlCommand.kt:DslSqlCommand$inline</ID>
+    <ID>MaxLineLength:DslSqlQuery.kt:DslSqlQuery$"SQL query '$functionName' declares columns that are not selected by SQL: ${unusedDeclaredColumnNames.joinToString()}"</ID>
+    <ID>MaxLineLength:DslSqlQuery.kt:DslSqlQuery$"SQL query '$functionName' declares parameters that are not used by SQL: ${unusedDeclaredParamNames.joinToString()}"</ID>
+    <ID>MaxLineLength:DslSqlQuery.kt:DslSqlQuery$"SQL query '$functionName' declares path parameters that are not present in path '$path': ${missingPathParamNames.joinToString()}"</ID>
+    <ID>MaxLineLength:DslSqlQuery.kt:DslSqlQuery$"SQL query '$functionName' declares provider key columns that are not selected by SQL: ${unknownProviderKeyColumns.joinToString()}"</ID>
+    <ID>MaxLineLength:DslSqlQuery.kt:DslSqlQuery$inline</ID>
+    <ID>MaxLineLength:DslSqlQuery.kt:DslSqlQuery$val</ID>
+    <ID>MaxLineLength:SqlApiDslCodegen.kt:SqlApiDslCodegen$apiInterfacePackage = System.getProperty("zygarde.codegen.dsl.sql-api.api-interface.package") ?: "zygarde.generated.api"</ID>
+    <ID>MaxLineLength:SqlApiDslCodegen.kt:SqlApiDslCodegen$controllerPackage = System.getProperty("zygarde.codegen.dsl.sql-api.controller.package") ?: "zygarde.generated.controller"</ID>
+    <ID>MaxLineLength:SqlApiDslCodegen.kt:SqlApiDslCodegen$serviceImplPackage = System.getProperty("zygarde.codegen.dsl.sql-api.service-impl.package") ?: "zygarde.generated.service.impl"</ID>
+    <ID>MaxLineLength:SqlApiDslCodegen.kt:SqlApiDslCodegen$serviceInterfacePackage = System.getProperty("zygarde.codegen.dsl.sql-api.service-interface.package") ?: "zygarde.generated.service"</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$SqlQueryResultShape.ONE_NULLABLE -&gt; body.add("return executor.queryOneOrNull(%N, params) { row -&gt;\n", sqlConstantName)</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$body.addStatement("return %T(%L, totalPages, items, totalCount)", PageDto::class, paramValueExpression(page.pageParamName))</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$requestType = ClassName(config.dtoPackage, command.requestName).takeIf { command.requestDtoParams().isNotEmpty() }</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$requestType = ClassName(config.dtoPackage, query.requestName).takeIf { query.requestDtoParams().isNotEmpty() }</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$return</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$val expression = providerFields.firstOrNull { it.name == field.name }?.providerValueExpression("row") ?: "row.${field.name}"</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$val hasConflict = definitions.any { (_, fields) -&gt; fields.map { it.toDtoField() } != firstFields.map { it.toDtoField() } }</ID>
+    <ID>MaxLineLength:SqlApiGenerator.kt:SqlApiGenerator$val providerTypes = queries.flatMap { it.providerFields.map { providerField -&gt; providerField.providerType } }.distinct()</ID>
+    <ID>MaxLineLength:SqlSelectParser.kt:SqlSelectParser$val duplicateAliases = columnAliases.groupBy { it.lowercase() }.filterValues { it.size &gt; 1 }.values.map { it.first() }</ID>
+    <ID>ThrowsCount:SqlSelectParser.kt:SqlSelectParser$private fun parseOutputColumns(statement: PlainSelect): List&lt;String&gt;</ID>
+    <ID>ThrowsCount:SqlSelectParser.kt:SqlSelectParser$private fun parseStatement(sql: String): PlainSelect</ID>
+    <ID>TooGenericExceptionCaught:SqlCommandParser.kt:SqlCommandParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SqlSelectParser.kt:SqlSelectParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SqlValidationRule.kt:e: Exception</ID>
+    <ID>TooManyFunctions:DslSqlCommand.kt:DslSqlCommand</ID>
+    <ID>TooManyFunctions:DslSqlQuery.kt:DslSqlQuery</ID>
+    <ID>TooManyFunctions:SqlApiGenerator.kt:SqlApiGenerator</ID>
+    <ID>UseOrEmpty:DslSqlQuery.kt:DslSqlQuery$this?.parameterNames ?: emptyList()</ID>
+    <ID>UseRequire:SqlSelectParser.kt:SqlSelectParser$throw IllegalArgumentException("SELECT * is not allowed. Please specify output columns.")</ID>
+    <ID>UseRequire:SqlSelectParser.kt:SqlSelectParser$throw IllegalArgumentException("SELECT expression '$source' must declare an AS alias.")</ID>
+    <ID>UseRequire:SqlSelectParser.kt:SqlSelectParser$throw IllegalArgumentException("SQL API only supports SELECT statements")</ID>
+  </CurrentIssues>
+</SmellBaseline>

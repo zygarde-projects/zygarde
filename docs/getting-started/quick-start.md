@@ -9,7 +9,7 @@ Define a JPA entity with the `@ZyModel` annotation:
 ```kotlin
 package com.example.todo.model
 
-import javax.persistence.*
+import jakarta.persistence.*
 import zygarde.codegen.apt.jpa.ZyModel
 
 @Entity
@@ -216,4 +216,4 @@ curl -X PUT http://localhost:8080/api/todos/1/complete
 
 ## Complete Example
 
-For a complete working example, see the [todo-legacy sample](https://github.com/zygarde-projects/zygarde/tree/v2/samples/todo-legacy) in the Zygarde repository.
+For a complete working example, see the [todo-legacy sample](https://github.com/zygarde-projects/zygarde/tree/v4/samples/todo-legacy) in the Zygarde repository.

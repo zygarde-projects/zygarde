@@ -13,10 +13,13 @@ dependencies {
   implementation(project(":zygarde-model-mapping"))
   implementation(project(":zygarde-webmvc"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
   runtimeOnly("com.h2database:h2")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+  testImplementation("org.springframework.boot:spring-boot-resttestclient")
+  testImplementation("org.springframework.boot:spring-boot-restclient")
 }
 
 ksp {

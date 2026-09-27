@@ -8,7 +8,7 @@ dependencies {
   implementation(project(":todo-dsl-generated-dto"))
   implementation(project(":todo-dsl-generated-api-interface"))
   implementation(project(":todo-dsl-generated-service-interface"))
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 tasks.getByName("bootJar").enabled = false

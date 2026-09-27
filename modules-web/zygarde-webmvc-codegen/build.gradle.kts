@@ -6,7 +6,7 @@ dependencies {
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-codegen-base"))
   implementation(project(":zygarde-web-codegen"))
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
   testImplementation(project(":zygarde-model-mapping-codegen"))
@@ -22,7 +22,7 @@ dependencies {
 
   testImplementation(platform(project(":zygarde-bom-codegen-test")))
   testImplementation(project(":zygarde-webmvc-security"))
-  testImplementation("com.github.tschuchortdev:kotlin-compile-testing")
+  testImplementation("dev.zacsweers.kctfork:core")
   testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
   testImplementation("org.jetbrains.kotlin:kotlin-annotation-processing-embeddable")
   testImplementation("org.springframework.boot:spring-boot-starter-test")

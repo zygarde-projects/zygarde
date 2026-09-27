@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongParameterList:RedisLocked.kt:RedisLocked$( @get:AliasFor(annotation = Locked::class) val manuallyReleased: Boolean = false, @get:AliasFor(annotation = Locked::class) val storeId: String = "distributed_lock", @get:AliasFor(annotation = Locked::class) val prefix: String = "", @get:AliasFor(annotation = Locked::class) val expression: String = "#executionPath", @get:AliasFor(annotation = Locked::class) val expiration: Interval = Interval(value = "10", unit = TimeUnit.SECONDS), @get:AliasFor(annotation = Locked::class) val timeout: Interval = Interval(value = "1", unit = TimeUnit.SECONDS), @get:AliasFor(annotation = Locked::class) val retry: Interval = Interval(value = "50"), @get:AliasFor(annotation = Locked::class) val refresh: Interval = Interval(value = "0"), @get:AliasFor(annotation = Locked::class) val throwing: Boolean = true )</ID>
+    <ID>LongParameterList:RedisMultiLocked.kt:RedisMultiLocked$( @get:AliasFor(annotation = Locked::class) val manuallyReleased: Boolean = false, @get:AliasFor(annotation = Locked::class) val storeId: String = "distributed_lock", @get:AliasFor(annotation = Locked::class) val prefix: String = "", @get:AliasFor(annotation = Locked::class) val expression: String = "#executionPath", @get:AliasFor(annotation = Locked::class) val expiration: Interval = Interval(value = "10", unit = TimeUnit.SECONDS), @get:AliasFor(annotation = Locked::class) val timeout: Interval = Interval(value = "1", unit = TimeUnit.SECONDS), @get:AliasFor(annotation = Locked::class) val retry: Interval = Interval(value = "50"), @get:AliasFor(annotation = Locked::class) val refresh: Interval = Interval(value = "0"), @get:AliasFor(annotation = Locked::class) val throwing: Boolean = true )</ID>
+    <ID>MaxLineLength:MultiRedisLock.kt:MultiRedisLock$"Refresh script thread interrupted to update expiration for keys {} with token {} in store {} with expiration: {}"</ID>
+    <ID>MaxLineLength:MultiRedisLock.kt:MultiRedisLock$if</ID>
+    <ID>MaxLineLength:MultiRedisLock.kt:MultiRedisLock$log.debug("Refresh script failed to update expiration for keys {} with token {} in store {}", keys, token, storeId)</ID>
+    <ID>MaxLineLength:MultiRedisLock.kt:MultiRedisLock$refreshed = stringRedisTemplate.execute(lockRefreshScript, keysWithStoreIdPrefix, token, expiration.toString()) ?: false</ID>
+    <ID>MaxLineLength:SimpleRedisLock.kt:SimpleRedisLock$"Refresh script thread interrupted to update expiration for key {} with token {} in store {} with expiration: {}"</ID>
+    <ID>MaxLineLength:SimpleRedisLock.kt:SimpleRedisLock$if</ID>
+    <ID>MaxLineLength:SimpleRedisLock.kt:SimpleRedisLock$log.debug("Refresh script updated the expiration for key {} with token {} in store {} to {}", key, token, storeId, expiration)</ID>
+    <ID>MaxLineLength:SimpleRedisLock.kt:SimpleRedisLock$refreshed = stringRedisTemplate.execute(lockRefreshScript, singletonKeyList, token, expiration.toString()) ?: false</ID>
+  </CurrentIssues>
+</SmellBaseline>

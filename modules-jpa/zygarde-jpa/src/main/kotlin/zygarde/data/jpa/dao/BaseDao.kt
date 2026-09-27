@@ -8,4 +8,4 @@ import org.springframework.data.repository.NoRepositoryBean
  * @author leo
  */
 @NoRepositoryBean
-interface BaseDao<T, ID> : JpaRepository<T, ID>, JpaSpecificationExecutor<T>
+interface BaseDao<T : Any, ID : Any> : JpaRepository<T, ID>, JpaSpecificationExecutor<T>

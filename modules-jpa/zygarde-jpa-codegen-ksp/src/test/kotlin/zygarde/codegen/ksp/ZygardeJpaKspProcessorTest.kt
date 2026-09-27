@@ -4,6 +4,7 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspArgs
 import com.tschuchort.compiletesting.kspSourcesDir
+import com.tschuchort.compiletesting.useKsp2
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -21,9 +22,11 @@ class ZygardeJpaKspProcessorTest {
   fun `should able to generate Dao`() {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
-        ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+        SourceFile.kotlin("TestGenerateDao.kt", ClassPathResource("codegen/jpa/TestGenerateDao.kt").file.readText())
+      )
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -70,8 +73,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
       kspArgs[ZygardeJpaKspOptions.DAO_INHERIT] = "zygarde.data.jpa.dao.ZygardeEnhancedDao"
@@ -94,8 +99,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -111,8 +118,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -147,8 +156,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -172,8 +183,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -198,8 +211,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -224,8 +239,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -245,8 +262,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -273,8 +292,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -304,8 +325,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -339,15 +362,17 @@ class ZygardeJpaKspProcessorTest {
   fun `nullable scope constructors should resolve null without ambiguity`() {
     val fixture = ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
     val compilation = KotlinCompilation().apply {
-      sources = listOf(SourceFile.fromPath(fixture))
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      sources = listOf(SourceFile.kotlin(fixture.name, fixture.readText()))
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
     }
     val generated = compilation.compile()
     generated.exitCode shouldBe KotlinCompilation.ExitCode.OK
 
     val result = KotlinCompilation().apply {
-      sources = listOf(SourceFile.fromPath(fixture)) +
+      sources = listOf(SourceFile.kotlin(fixture.name, fixture.readText())) +
         compilation.kspSourcesDir.walkTopDown()
           .filter { it.name == "ScopedOrderScope.kt" || it.name == "AdvancedScopedOrderScope.kt" }
           .map(SourceFile::fromPath)
@@ -386,8 +411,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -411,8 +438,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -438,8 +467,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -466,8 +497,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -491,8 +524,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
       kspArgs[ZygardeJpaKspOptions.DAO_INHERIT] = "zygarde.data.jpa.dao.ZygardeEnhancedDao"
@@ -525,8 +560,10 @@ class ZygardeJpaKspProcessorTest {
   fun `missing scope should report an actionable compiler error`() {
     val fixture = ClassPathResource("codegen/jpa/TestGenerateScopedQuery.kt").file
     val compilation = KotlinCompilation().apply {
-      sources = listOf(SourceFile.fromPath(fixture))
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      sources = listOf(SourceFile.kotlin(fixture.name, fixture.readText()))
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       kspArgs[ZygardeJpaKspOptions.DAO_INHERIT] = "zygarde.data.jpa.dao.ZygardeEnhancedDao"
       kspArgs[ZygardeJpaKspOptions.DAO_COMBINE] = "false"
@@ -541,7 +578,7 @@ class ZygardeJpaKspProcessorTest {
       "AdvancedScopedOrderScope.kt",
     )
     val result = KotlinCompilation().apply {
-      sources = listOf(SourceFile.fromPath(fixture)) +
+      sources = listOf(SourceFile.kotlin(fixture.name, fixture.readText())) +
         compilation.kspSourcesDir.walkTopDown()
           .filter { it.name in requiredGeneratedFiles }
           .map(SourceFile::fromPath)
@@ -591,8 +628,10 @@ class ZygardeJpaKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/jpa/TestGenerateDao.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeJpaKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeJpaKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
       kspArgs[ZygardeJpaKspOptions.BASE_PACKAGE] = "foo.generated"

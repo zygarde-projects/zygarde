@@ -5,7 +5,7 @@ dependencies {
   api(project(":zygarde-webmvc"))
   implementation(project(":zygarde-core"))
   implementation(project(":zygarde-codegen-base"))
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.boot:spring-boot-starter-graphql")
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
@@ -15,7 +15,7 @@ dependencies {
   implementation("com.squareup:kotlinpoet-metadata")
 
   testImplementation(platform(project(":zygarde-bom-codegen-test")))
-  testImplementation("com.github.tschuchortdev:kotlin-compile-testing")
+  testImplementation("dev.zacsweers.kctfork:core")
   testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

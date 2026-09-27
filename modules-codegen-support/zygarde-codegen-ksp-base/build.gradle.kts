@@ -5,7 +5,7 @@ dependencies {
   implementation(platform(project(":zygarde-bom-codegen")))
   implementation("com.squareup:kotlinpoet")
   implementation("com.squareup:kotlinpoet-ksp:1.18.1")
-  implementation("com.google.devtools.ksp:symbol-processing-api:1.9.25-1.0.20")
+  implementation("com.google.devtools.ksp:symbol-processing-api:2.2.20-2.0.4")
 }
 
 tasks.getByName("bootJar").enabled = false

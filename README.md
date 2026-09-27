@@ -3,8 +3,8 @@
 **Zygarde** is a powerful Kotlin framework for simplifying enterprise application development with Spring Boot. It provides code generation, JPA enhancements with type-safe search DSL, model mapping, and web/REST utilities.
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://zygarde-projects.github.io/zygarde/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-blue.svg?logo=kotlin)](https://kotlinlang.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.14-green.svg)](https://spring.io/projects/spring-boot)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.20-blue.svg?logo=kotlin)](https://kotlinlang.org)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.8-green.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Features
@@ -50,17 +50,21 @@ Complete REST API layer generation with consistent error handling and validation
 ```kotlin
 // build.gradle.kts
 plugins {
-  kotlin("jvm") version "1.8.22"
-  kotlin("kapt") version "1.8.22"
+  kotlin("jvm") version "2.2.20"
+  kotlin("kapt") version "2.2.20"
+}
+
+java {
+  toolchain.languageVersion.set(JavaLanguageVersion.of(24))
 }
 
 dependencies {
-  implementation("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 
 repositories {
-  maven("https://nexus.puni.tw/repository/maven-releases")
+  mavenCentral()
 }
 ```
 
@@ -123,10 +127,10 @@ Check out the sample applications:
 
 ## Tech Stack
 
-- **Kotlin** 1.9.25
-- **Spring Boot** 3.5.14
-- **Gradle** 8.5+ (Kotlin DSL)
-- **JDK** 21+
+- **Kotlin** 2.2.20
+- **Spring Boot** 4.0.8
+- **Gradle** 8.14.4 (Kotlin DSL)
+- **JDK** 24
 
 ## Build Commands
 
@@ -162,7 +166,7 @@ We welcome contributions! Please see our [Contributing Guide](https://zygarde-pr
 
 - [ ] Run `./gradlew ktlintFormat`
 - [ ] Run `./gradlew build` (all tests pass)
-- [ ] Run `./gradlew detekt` (no violations)
+- [ ] Run `./gradlew detektMain` (no new violations)
 - [ ] Update documentation if needed
 
 See [Development Guide](https://zygarde-projects.github.io/zygarde/development/coding-standards/) for detailed guidelines.
@@ -179,10 +183,9 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - [Issue Tracker](https://github.com/zygarde-projects/zygarde/issues)
 - [Discussions](https://github.com/zygarde-projects/zygarde/discussions)
 
-## Repositories
+## Repository
 
-- **Nexus**: `https://nexus.puni.tw/repository/maven-releases`
-- **GitHub Packages**: `https://maven.pkg.github.com/zygarde-projects/zygarde`
+- **Maven Central**: `io.github.zygarde-projects`
 
 ## Support
 

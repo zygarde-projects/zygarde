@@ -7,14 +7,14 @@ buildscript {
 }
 
 plugins {
-  id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
-  id("io.gitlab.arturbosch.detekt") version "1.23.8"
-  id("org.springframework.boot") version "3.5.14"
+  id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+  id("dev.detekt") version "2.0.0-alpha.1"
+  id("org.springframework.boot") version "4.0.8"
   id("io.spring.dependency-management") version "1.1.7"
-  id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
-  kotlin("jvm") version "1.9.25"
-  kotlin("plugin.spring") version "1.9.25"
-  kotlin("kapt") version "1.9.25"
+  id("com.google.devtools.ksp") version "2.2.20-2.0.4" apply false
+  kotlin("jvm") version "2.2.20"
+  kotlin("plugin.spring") version "2.2.20"
+  kotlin("kapt") version "2.2.20"
   `maven-publish`
   signing
   jacoco
@@ -41,6 +41,9 @@ fun Project.isPublishingProject() = this.name.startsWith("zygarde")
 allprojects {
   if (!isBomProject()) {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+      version.set("1.8.0")
+    }
   }
 
   repositories {
@@ -55,7 +58,7 @@ subprojects {
   if (isPublishingProject()) {
     apply(plugin = "org.gradle.maven-publish")
     apply(plugin = "org.gradle.signing")
-    apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "dev.detekt")
 
     publishing {
       repositories {
@@ -124,21 +127,21 @@ subprojects {
 
   configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.0.2")
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.1.3")
     }
   }
 
   configure<JavaPluginExtension> {
     toolchain {
-      languageVersion.set(JavaLanguageVersion.of(21))
+      languageVersion.set(JavaLanguageVersion.of(24))
     }
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
   }
 
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "21"
+    compilerOptions {
+      jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24)
     }
   }
 
@@ -173,6 +176,18 @@ subprojects {
 
   tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs(
+      "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+    )
   }
 
   jacoco {
@@ -298,13 +313,7 @@ task("covAll", JacocoReport::class) {
         .toTypedArray()
     )
   )
-  sourceSets(
-    *subProjectsForJacoco
-      .map {
-        it.sourceSets.getByName("main")
-      }
-      .toTypedArray()
-  )
+  sourceSets(*subProjectsForJacoco.map { it.sourceSets.getByName("main") }.toTypedArray())
   reports {
     html.required.set(true)
     xml.required.set(true)
@@ -328,8 +337,6 @@ tasks.getByName("bootJar").enabled = false
 tasks.getByName("jar").enabled = false
 
 task("collectJacocoSourcePath", Exec::class) {
-  val paths = subProjectsForJacoco
-    .flatMap { it.sourceSets.getByName("main").allJava.srcDirs }
-    .joinToString(" ")
+  val paths = subProjectsForJacoco.flatMap { it.sourceSets.getByName("main").allJava.srcDirs }.joinToString(" ")
   commandLine = listOf("echo", paths)
 }

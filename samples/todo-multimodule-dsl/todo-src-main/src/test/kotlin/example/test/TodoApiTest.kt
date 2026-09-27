@@ -4,6 +4,7 @@ import example.api
 import example.api.TodoApi
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import zygarde.codegen.data.dto.CreateTodoReq
@@ -11,6 +12,7 @@ import zygarde.codegen.data.dto.SearchTodoReq
 import zygarde.codegen.data.dto.UpdateTodoReq
 import zygarde.data.api.PagingRequest
 
+@AutoConfigureTestRestTemplate
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 class TodoApiTest {

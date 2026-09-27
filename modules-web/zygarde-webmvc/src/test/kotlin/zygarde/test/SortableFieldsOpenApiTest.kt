@@ -1,17 +1,19 @@
 package zygarde.test
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.test.web.client.getForObject
+import org.springframework.boot.resttestclient.TestRestTemplate
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
+import org.springframework.boot.resttestclient.getForObject
 import org.springframework.test.context.ActiveProfiles
 import zygarde.test.api.SearchBookReq
 
+@AutoConfigureTestRestTemplate
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = [ZygardeWebMvcTestApplication::class])
 @ActiveProfiles("test")
 class SortableFieldsOpenApiTest {
@@ -29,7 +31,7 @@ class SortableFieldsOpenApiTest {
     )
     val fieldEnum = requestSchema.at("/allOf/1/properties/sorts/items/properties/field/enum")
 
-    fieldEnum.map { it.textValue() } shouldContainExactly listOf("id", "title", "author.name")
+    fieldEnum.values().map { it.textValue() } shouldContainExactly listOf("id", "title", "author.name")
     openApi.at("/components/schemas/SortField/properties/field/enum").isMissingNode shouldBe true
   }
 

@@ -3,6 +3,7 @@ package zygarde.codegen.ksp
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspSourcesDir
+import com.tschuchort.compiletesting.useKsp2
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -18,8 +19,10 @@ class ZygardeApiKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/TestApiSpec.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeApiKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeApiKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }
@@ -52,8 +55,10 @@ class ZygardeStaticOptionApiKspProcessorTest {
     val compilation = KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource("codegen/TestStatus.kt").file
-      ).map { SourceFile.fromPath(it) }
-      symbolProcessorProviders = listOf(ZygardeStaticOptionApiKspProcessorProvider())
+      ).map { SourceFile.kotlin(it.name, it.readText()) }
+      useKsp2()
+      jvmTarget = "24"
+      symbolProcessorProviders = mutableListOf(ZygardeStaticOptionApiKspProcessorProvider())
       inheritClassPath = true
       messageOutputStream = System.out
     }

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$private fun toDtoFieldDescription( ref: String, refNullable: Boolean, refClass: TypeName, refCollection: Boolean, fieldElement: Element, dtoName: String, dtoFieldName: String, comment: String, valueProvider: TypeName? = null, entityValueProvider: TypeName? = null, forceNotNull: Boolean = false, forceNullable: Boolean = false, isTransient: Boolean ): DtoFieldDescriptionVo</ID>
+    <ID>LongMethod:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$private fun generateModel(element: Element)</ID>
+    <ID>LongParameterList:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$( ref: String, refNullable: Boolean, refClass: TypeName, refCollection: Boolean, fieldElement: Element, dtoName: String, dtoFieldName: String, comment: String, valueProvider: TypeName? = null, entityValueProvider: TypeName? = null, forceNotNull: Boolean = false, forceNullable: Boolean = false, isTransient: Boolean )</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$dtoFieldType = fieldType.kotlin(canBeNullable = if (forceNullable) true else !forceNotNull &amp;&amp; fieldElement.isNullable())</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$entityValueProvider = safeGetTypeFromAnnotation { additionalDtoProp.entityValueProvider.asTypeName() }.validValueProvider()</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$generateApplyToEntityExtension = !isTransient &amp;&amp; requestDto.applyValueToEntity &amp;&amp; requestDto.searchType == SearchType.NONE</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$val entityValueProvider = safeGetTypeFromAnnotation { dto.entityValueProvider.asTypeName() }.kotlin(false).validValueProvider()</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$val refClass = safeGetTypeFromAnnotation { requestDto.refClass.asTypeName() }.kotlin(requestDto.refClassNullable)</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$val valueProvider = safeGetTypeFromAnnotation { dto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$val valueProvider = safeGetTypeFromAnnotation { requestDto.valueProvider.asTypeName() }.kotlin(false).validValueProvider()</ID>
+    <ID>MaxLineLength:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$valueProvider = safeGetTypeFromAnnotation { additionalDtoProp.valueProvider.asTypeName() }.validValueProvider()</ID>
+    <ID>UseOrEmpty:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$element.getAnnotation(AdditionalDtoProps::class.java) ?.let { additionalDtoProps -&gt; additionalDtoProps.props.flatMap { additionalDtoProp -&gt; additionalDtoProp.forDto.map { DtoFieldDescriptionVo( entityFieldName = additionalDtoProp.field, entityFieldType = safeGetTypeFromAnnotation { additionalDtoProp.fieldType.asTypeName() }, dtoFieldType = safeGetTypeFromAnnotation { additionalDtoProp.fieldType.asTypeName() }, dtoName = it, dtoFieldName = additionalDtoProp.field, comment = additionalDtoProp.comment, valueProvider = safeGetTypeFromAnnotation { additionalDtoProp.valueProvider.asTypeName() }.validValueProvider(), entityValueProvider = safeGetTypeFromAnnotation { additionalDtoProp.entityValueProvider.asTypeName() }.validValueProvider(), generateToDtoExtension = true, generateApplyToEntityExtension = false ) } } } ?: emptyList()</ID>
+    <ID>UseOrEmpty:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$element.getAnnotation(DtoInherits::class.java)?.value ?: emptyArray()</ID>
+    <ID>UseRequire:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$throw IllegalArgumentException("field '$entityFieldName' should be annotated with @Transient")</ID>
+    <ID>UseRequire:ZygardeApiPropGenerator.kt:ZygardeApiPropGenerator$throw IllegalArgumentException("transient field '$entityFieldName' should be starts with '_'")</ID>
+  </CurrentIssues>
+</SmellBaseline>

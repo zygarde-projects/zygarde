@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inDoubleQuote &amp;&amp; !inBacktickQuote &amp;&amp; !inBracketQuote &amp;&amp; inSingleQuote &amp;&amp; next == '\''</ID>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inSingleQuote &amp;&amp; !inBacktickQuote &amp;&amp; !inBracketQuote &amp;&amp; char == '"'</ID>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inSingleQuote &amp;&amp; !inDoubleQuote &amp;&amp; !inBacktickQuote &amp;&amp; !inBracketQuote &amp;&amp; char == '-' &amp;&amp; next == '-'</ID>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inSingleQuote &amp;&amp; !inDoubleQuote &amp;&amp; !inBacktickQuote &amp;&amp; !inBracketQuote &amp;&amp; char == '/' &amp;&amp; next == '*'</ID>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inSingleQuote &amp;&amp; !inDoubleQuote &amp;&amp; !inBacktickQuote &amp;&amp; !inBracketQuote &amp;&amp; char == ':' &amp;&amp; next == ':'</ID>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inSingleQuote &amp;&amp; !inDoubleQuote &amp;&amp; !inBacktickQuote &amp;&amp; !inBracketQuote &amp;&amp; char == ':' &amp;&amp; next?.isSqlIdentifierStart() == true</ID>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inSingleQuote &amp;&amp; !inDoubleQuote &amp;&amp; !inBacktickQuote &amp;&amp; char == '['</ID>
+    <ID>ComplexCondition:NamedParameterSql.kt:NamedParameterSql$!inSingleQuote &amp;&amp; !inDoubleQuote &amp;&amp; !inBracketQuote &amp;&amp; char == '`'</ID>
+    <ID>CyclomaticComplexMethod:NamedParameterSql.kt:NamedParameterSql$fun parse(sql: String): ParsedSql</ID>
+    <ID>LongMethod:NamedParameterSql.kt:NamedParameterSql$fun parse(sql: String): ParsedSql</ID>
+    <ID>LoopWithTooManyJumpStatements:NamedParameterSql.kt:NamedParameterSql$while</ID>
+    <ID>MaxLineLength:NamedParameterSql.kt:NamedParameterSql$if</ID>
+    <ID>UseCheckOrError:ZygardeSqlExecutor.kt:ZygardeSqlExecutor$throw IllegalStateException("SQL insert did not return generated key '$keyColumnName'")</ID>
+    <ID>UseCheckOrError:ZygardeSqlExecutor.kt:ZygardeSqlRow$throw IllegalStateException("Required SQL column '$name' was null")</ID>
+    <ID>UseRequire:NamedParameterSql.kt:throw IllegalArgumentException("Missing SQL parameter '$parameterName'")</ID>
+    <ID>UseRequire:NamedParameterSql.kt:throw IllegalArgumentException("SQL parameter '$parameterName' must not be empty")</ID>
+    <ID>UseRequire:ZygardeSqlExecutor.kt:ZygardeSqlRow$throw IllegalArgumentException("SQL column '$name' was not found")</ID>
+    <ID>UseRequire:ZygardeSqlExecutor.kt:throw IllegalArgumentException("Unsupported SQL value conversion to ${T::class.qualifiedName}")</ID>
+  </CurrentIssues>
+</SmellBaseline>

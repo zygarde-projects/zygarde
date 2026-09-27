@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$private fun generateScopeDataClass( daoPackage: String, entityName: String, fields: List&lt;ScopeFieldInfo&gt;, folderToGenerate: File, )</ID>
+    <ID>FunctionOnlyReturningConstant:ZygardeEntityFieldGenerator.kt:ZygardeEntityFieldGenerator$private fun Element.fieldConditionFunction(): String</ID>
+    <ID>LargeClass:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator : AbstractZygardeGenerator</ID>
+    <ID>LongMethod:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$fun generateDaoForEntityElements(elements: Collection&lt;Element&gt;)</ID>
+    <ID>LongMethod:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$private fun buildExtensionFileSpec( daoPackage: String, daoName: String, daoType: ClassName, entityType: TypeName, searchContentType: LambdaTypeName, toSpringDataSort: MemberName, toSpringDataPageRequest: MemberName, generateRemove: Boolean, scopeClassName: ClassName?, scopeFields: List&lt;ScopeFieldInfo&gt;, ): FileSpec.Builder</ID>
+    <ID>LongMethod:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$private fun generateScopeDataClass( daoPackage: String, entityName: String, fields: List&lt;ScopeFieldInfo&gt;, folderToGenerate: File, )</ID>
+    <ID>LongParameterList:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$( daoPackage: String, daoName: String, daoType: ClassName, entityType: TypeName, searchContentType: LambdaTypeName, toSpringDataSort: MemberName, toSpringDataPageRequest: MemberName, generateRemove: Boolean, scopeClassName: ClassName?, scopeFields: List&lt;ScopeFieldInfo&gt;, )</ID>
+    <ID>LongParameterList:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$( fileSpec: FileSpec.Builder, daoType: ClassName, entityType: TypeName, searchContentType: LambdaTypeName, generateRemove: Boolean, scopeClassName: ClassName, scopeFields: List&lt;ScopeFieldInfo&gt;, )</ID>
+    <ID>MaxLineLength:ZygardeEntityFieldGenerator.kt:ZygardeEntityFieldGenerator$private</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$.</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$CodeBlock.of("${field.name} = ${field.name}?.let·{ %T.Of(it) } ?: %T.All", ScopeFilter::class, ScopeFilter::class)</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$CodeBlock.of("${field.name} = ${field.name}?.let·{ %T.Of(listOf(it)) } ?: %T.All", ScopeFilter::class, ScopeFilter::class)</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$ScopeOperator.IS_NULL, ScopeOperator.IS_NOT_NULL -&gt; if (field.nullable) fieldScopeType.copy(nullable = true) else fieldScopeType</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator$val singleType = if (field.nullable &amp;&amp; field != requiredCompatibilityField) baseType.copy(nullable = true) else baseType</ID>
+    <ID>TooGenericExceptionCaught:ZygardeEntityFieldGenerator.kt:ZygardeEntityFieldGenerator$t: Throwable</ID>
+    <ID>TooGenericExceptionThrown:ZygardeEntityFieldGenerator.kt:ZygardeEntityFieldGenerator$throw RuntimeException("error generating search field for entity $it", t)</ID>
+    <ID>TooManyFunctions:ZygardeJpaDaoGenerator.kt:ZygardeJpaDaoGenerator : AbstractZygardeGenerator</ID>
+    <ID>UnusedPrivateFunction:ZygardeEntityFieldGenerator.kt:ZygardeEntityFieldGenerator$private fun Element.buildRelateTypeConditionAction(rootEntityElement: Element, currentEntityElement: Element): FunSpec</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionOnlyReturningConstant:GraphQlDefaultValue.kt:GraphQlDefaultValue$fun nullValue(): String</ID>
+    <ID>LongParameterList:DslGraphQlEntityProjectionDefinition.kt:DslGraphQlEntityProjectionDefinition$( name: String, graphQlType: String, nullable: Boolean = false, itemNullable: Boolean = false, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlFunction.kt:DslGraphQlFunction$( name: String, graphQlType: String = graphQlTypeOf(T::class), nullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlFunction.kt:DslGraphQlFunction$( name: String, graphQlType: String = graphQlTypeOf(T::class), nullable: Boolean = false, itemNullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlFunction.kt:DslGraphQlFunction$( name: String, type: KClass&lt;*&gt;, graphQlType: String = graphQlTypeOf(type), nullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlFunction.kt:DslGraphQlFunction$( name: String, type: KClass&lt;*&gt;, graphQlType: String = graphQlTypeOf(type), nullable: Boolean = false, itemNullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlFunction.kt:DslGraphQlFunction$( name: String, type: TypeName, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlFunction.kt:DslGraphQlFunction$( name: String, type: TypeName, graphQlType: String, nullable: Boolean = false, itemNullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlSchema.kt:DslGraphQlSchema$( dto: CodegenDto, kind: GraphQlTypeDefinitionKind, keyword: String, name: String, description: String?, exclude: Set&lt;String&gt;, dsl: DslGraphQlDtoTypeDefinition.() -&gt; Unit, )</ID>
+    <ID>LongParameterList:DslGraphQlTypeDefinition.kt:DslGraphQlTypeDefinition$( name: String, graphQlType: String, nullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlTypeDefinition.kt:DslGraphQlTypeDefinition$( name: String, graphQlType: String, nullable: Boolean = false, itemNullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlTypeDefinition.kt:DslGraphQlTypeDefinition$( name: String, nullable: Boolean = false, itemNullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlTypeDefinition.kt:DslGraphQlTypeDefinition$( name: String, type: KClass&lt;*&gt;, nullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:DslGraphQlTypeDefinition.kt:DslGraphQlTypeDefinition$( name: String, type: KClass&lt;*&gt;, nullable: Boolean = false, itemNullable: Boolean = false, defaultValue: String? = null, description: String? = null, deprecationReason: String? = null, )</ID>
+    <ID>LongParameterList:GraphQlDtoDeriver.kt:GraphQlDtoDeriver$( dto: CodegenDto, kind: GraphQlTypeDefinitionKind, name: String, description: String?, exclude: Set&lt;String&gt;, lazyProviders: GraphQlLazyProvidersConfig?, sourceType: ClassName?, sourceAssemblerType: ClassName?, alreadyDeclared: (String) -&gt; Boolean, )</ID>
+    <ID>MaxLineLength:DslGraphQlEntityProjectionDefinition.kt:DslGraphQlEntityProjectionDefinition$"GraphQL entity projection '$typeDefinitionName': cannot map property '$fieldName' (type $type) to a GraphQL type. "</ID>
+    <ID>MaxLineLength:DslGraphQlFunction.kt:DslGraphQlFunction$collectionArgument(name, T::class, graphQlType, nullable, itemNullable, defaultValue, description, deprecationReason)</ID>
+    <ID>MaxLineLength:DslGraphQlFunction.kt:DslGraphQlFunction$requireGraphQlDescription(description, "GraphQL ${operation.name.lowercase()} field '$functionName' argument '$name'")</ID>
+    <ID>MaxLineLength:DslGraphQlFunction.kt:DslGraphQlFunction$responseGraphQlType = requireNotNull(responseGraphQlType) { "GraphQL function $functionName must declare a GraphQL response type" }</ID>
+    <ID>MaxLineLength:DslGraphQlLazyProviders.kt:DslGraphQlLazyProviders$"GraphQL type '$graphQlTypeName' cannot configure lazy provider '$fieldName' because the DTO metadata has no provider field '$fieldName'"</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$"Kotlin type '${type.qualifiedName ?: type.java.name}' is already mapped to GraphQL type '$existing'; cannot also map it to '$graphQlType'"</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$.</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$fun</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$private fun resolveGraphQlType(type: KClass&lt;*&gt;): String</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$val dtoDefinition = DslGraphQlDtoTypeDefinition(name, modelMappingMetadata.providerFieldsOf(dto).orEmpty()).also(dsl)</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$val projection = DslGraphQlEntityProjectionDefinition(kind, name, typeMapper, ::resolveReferenceGraphQlType).also(dsl).build()</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$val sourceAssemblerType = if (lazyProviders != null) ClassName(config.serviceInterfacePackage, "${name}GraphQlSourceAssembler") else null</ID>
+    <ID>MaxLineLength:DslGraphQlSchema.kt:DslGraphQlSchema$val sourceType = if (lazyProviders != null) ClassName(config.serviceInterfacePackage, "${name}GraphQlSource") else null</ID>
+    <ID>MaxLineLength:DslGraphQlTypeDefinition.kt:DslGraphQlTypeDefinition$collectionField(name, type.defaultGraphQlType(), nullable, itemNullable, defaultValue, description, deprecationReason)</ID>
+    <ID>MaxLineLength:GraphQlDslCodegen.kt:GraphQlDslCodegen$controllerPackage = System.getProperty("zygarde.codegen.dsl.graphql.controller.package") ?: "zygarde.generated.graphql"</ID>
+    <ID>MaxLineLength:GraphQlDslCodegen.kt:GraphQlDslCodegen$serviceInterfacePackage = System.getProperty("zygarde.codegen.dsl.graphql.service-interface.package") ?: "zygarde.generated.graphql.service"</ID>
+    <ID>MaxLineLength:GraphQlDtoDeriver.kt:GraphQlDtoDeriver$"GraphQL type '${request.name}' lazyProviders() requires DTO '${request.dto.name}' to map from exactly one model type"</ID>
+    <ID>MaxLineLength:GraphQlDtoDeriver.kt:GraphQlDtoDeriver$val sourceType = requireNotNull(request.sourceType) { "GraphQL type '${request.name}' lazyProviders() requires a source type" }</ID>
+    <ID>MaxLineLength:GraphQlDtoDeriver.kt:GraphQlDtoDeriver$val typeName = (valueType.copy(nullable = false) as? ClassName)?.simpleName ?: valueType.toString().substringAfterLast('.')</ID>
+    <ID>ReturnCount:DslGraphQlEntityProjectionDefinition.kt:DslGraphQlEntityProjectionDefinition$private fun TypeName.collectionElementOrNull(): CollectionElement?</ID>
+    <ID>ReturnCount:DslGraphQlEntityProjectionDefinition.kt:DslGraphQlEntityProjectionDefinition$private fun resolveGraphQlType(fieldName: String, type: TypeName, id: Boolean): ResolvedGraphQlProjectionType</ID>
+    <ID>ReturnCount:GraphQlDtoDeriver.kt:GraphQlDtoDeriver$private fun resolveFieldGraphQlType( request: DeriveRequest, field: ResolvedDtoField, referencedDtos: MutableList&lt;CodegenDto&gt;, enums: MutableList&lt;GraphQlTypeDefinitionToGenerateVo&gt;, ): String</ID>
+    <ID>SwallowedException:DslGraphQlEntityProjectionDefinition.kt:DslGraphQlEntityProjectionDefinition$e: ClassNotFoundException</ID>
+    <ID>SwallowedException:DslGraphQlEntityProjectionDefinition.kt:DslGraphQlEntityProjectionDefinition$e: LinkageError</ID>
+    <ID>SwallowedException:GraphQlDtoDeriver.kt:GraphQlDtoDeriver$e: ClassNotFoundException</ID>
+    <ID>SwallowedException:GraphQlDtoDeriver.kt:GraphQlDtoDeriver$e: LinkageError</ID>
+    <ID>TooManyFunctions:DslGraphQlEntityProjectionDefinition.kt:DslGraphQlEntityProjectionDefinition</ID>
+    <ID>TooManyFunctions:DslGraphQlFunction.kt:DslGraphQlFunction</ID>
+    <ID>TooManyFunctions:DslGraphQlSchema.kt:DslGraphQlSchema</ID>
+    <ID>TooManyFunctions:GraphQlDefaultValue.kt:GraphQlDefaultValue</ID>
+    <ID>TooManyFunctions:GraphQlDtoDeriver.kt:GraphQlDtoDeriver</ID>
+  </CurrentIssues>
+</SmellBaseline>

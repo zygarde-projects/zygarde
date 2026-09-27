@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ZygardeApiGenerator.kt:ZygardeApiGenerator$fun generateApi(elements: Collection&lt;Element&gt;)</ID>
+    <ID>LongMethod:ZygardeApiGenerator.kt:ZygardeApiGenerator$fun generateApi(elements: Collection&lt;Element&gt;)</ID>
+    <ID>MaxLineLength:ZygardeApiGenerator.kt:ZygardeApiGenerator$responseTypeGenericArguments = listOfNotNull(resRefTypeName.takeIf { genApi.resCollection || genApi.resPage })</ID>
+    <ID>MaxLineLength:ZygardeApiGenerator.kt:ZygardeApiGenerator$result.apiInterfaces.forEach { it.writeTo(getFolderToGenerate(ZygardeApiGeneratorTargetFolder::generateApiInterfacesTo)) }</ID>
+    <ID>MaxLineLength:ZygardeApiGenerator.kt:ZygardeApiGenerator$result.controllers.forEach { it.writeTo(getFolderToGenerate(ZygardeApiGeneratorTargetFolder::generateControllersTo)) }</ID>
+    <ID>MaxLineLength:ZygardeApiGenerator.kt:ZygardeApiGenerator$result.feignApiInterfaces.forEach { it.writeTo(getFolderToGenerate(ZygardeApiGeneratorTargetFolder::generateFeignApiInterfacesTo)) }</ID>
+    <ID>MaxLineLength:ZygardeApiGenerator.kt:ZygardeApiGenerator$result.serviceInterfaces.forEach { it.writeTo(getFolderToGenerate(ZygardeApiGeneratorTargetFolder::generateServiceInterfacesTo)) }</ID>
+    <ID>MaxLineLength:ZygardeApiGenerator.kt:ZygardeApiGenerator$val</ID>
+    <ID>UseOrEmpty:ZygardeApiProcessor.kt:ZygardeApiProcessor$processingEnv.options[ZygardeApiGeneratorKaptOptions.GROUPED_API_GENERATE_CONFIG] ?.let { File(it) } ?.takeIf { it.exists() } ?.let { val objectMapper = JacksonCommon.objectMapper() objectMapper .readValue( it, objectMapper.typeFactory.constructMapType( Map::class.java, String::class.java, ZygardeApiGeneratorTargetFolder::class.java ) ) } ?: emptyMap()</ID>
+    <ID>WildcardImport:ZygardeStaticOptionApiProcessor.kt:import javax.annotation.processing.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -4,9 +4,9 @@ This guide shows you how to add Zygarde to an existing Kotlin/Spring Boot projec
 
 ## Prerequisites
 
-- Existing Spring Boot 2.7+ project with Kotlin
-- Gradle 7.x+ with Kotlin DSL
-- JDK 8+ installed
+- Spring Boot 4.0 project with Kotlin 2.2.20
+- Gradle 8.14.4 with Kotlin DSL
+- JDK 24 installed or available through a Gradle toolchain resolver
 
 ## Add Zygarde Dependencies
 
@@ -17,26 +17,18 @@ The minimum setup requires only two dependencies:
 ```kotlin
 // build.gradle.kts
 plugins {
-  kotlin("kapt") version "1.8.22"  // Required for code generation
+  kotlin("kapt") version "2.2.20"  // Required for code generation
   // ... your existing plugins
 }
 
 repositories {
-  maven("https://nexus.puni.tw/repository/maven-releases")
-  // OR GitHub Packages
-  maven {
-    url = uri("https://maven.pkg.github.com/zygarde-projects/zygarde")
-    credentials {
-      username = System.getenv("GITHUB_ACTOR")
-      password = System.getenv("GITHUB_TOKEN")
-    }
-  }
+  mavenCentral()
 }
 
 dependencies {
   // These two dependencies are all you need to start
-  implementation("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 ```
 

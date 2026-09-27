@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>HasPlatformType:JacksonExtension.kt:fun Any?.toJsonString()</ID>
+    <ID>MaxLineLength:JacksonExtension.kt:inline fun &lt;reified K : Any, reified V : Any&gt; String.jsonStringToMap(): Map&lt;K, V?&gt;</ID>
+    <ID>SerialVersionUIDInSerializableClass:MergePatchField.kt:MergePatchField&lt;out T&gt; : Serializable</ID>
+  </CurrentIssues>
+</SmellBaseline>

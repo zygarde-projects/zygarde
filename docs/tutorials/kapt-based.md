@@ -12,14 +12,14 @@ You'll learn to:
 
 ## Prerequisites
 
-- JDK 8 or higher
+- JDK 24
 - Basic knowledge of Kotlin and Spring Boot
 - Completed [Quick Start](../getting-started/quick-start.md)
 
 ## Complete Sample Project
 
 The full working example is available at:
-**[samples/todo-legacy](https://github.com/zygarde-projects/zygarde/tree/v2/samples/todo-legacy)**
+**[samples/todo-legacy](https://github.com/zygarde-projects/zygarde/tree/v4/samples/todo-legacy)**
 
 ## Step 1: Project Setup
 
@@ -30,20 +30,24 @@ Add Zygarde JPA dependencies:
 ```kotlin
 // build.gradle.kts
 plugins {
-  kotlin("jvm") version "1.8.22"
-  kotlin("kapt") version "1.8.22"
-  kotlin("plugin.spring") version "1.8.22"
-  id("org.springframework.boot") version "2.7.14"
+  kotlin("jvm") version "2.2.20"
+  kotlin("kapt") version "2.2.20"
+  kotlin("plugin.spring") version "2.2.20"
+  id("org.springframework.boot") version "4.0.8"
+}
+
+java {
+  toolchain.languageVersion.set(JavaLanguageVersion.of(24))
 }
 
 dependencies {
   // Zygarde JPA with code generation
-  implementation("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 
   // Spring Boot
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
   // Database
   runtimeOnly("com.h2database:h2")
@@ -64,7 +68,7 @@ Create your domain entities with `@ZyModel`:
 ```kotlin
 package com.example.todo.model
 
-import javax.persistence.*
+import jakarta.persistence.*
 import zygarde.codegen.apt.jpa.ZyModel
 import zygarde.data.jpa.entity.AutoIntIdEntity
 
@@ -371,7 +375,7 @@ val deletedCount = dao.todo.remove {
 - **[DSL-Based Tutorial →](dsl-based.md)** - Learn DSL code generation
 - **[Search DSL →](../guide/search-dsl.md)** - Master advanced queries
 - **[JPA Extensions →](../guide/jpa-extensions.md)** - Explore more JPA features
-- **[Complete Sample →](https://github.com/zygarde-projects/zygarde/tree/v2/samples/todo-legacy)** - Full source code
+- **[Complete Sample →](https://github.com/zygarde-projects/zygarde/tree/v4/samples/todo-legacy)** - Full source code
 
 ## Troubleshooting
 

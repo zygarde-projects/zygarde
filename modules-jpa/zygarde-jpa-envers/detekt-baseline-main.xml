@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeConcreteClass:AuditedAutoIdEntity.kt:AuditedAutoIdEntity$AuditedAutoIdEntity</ID>
+    <ID>AbstractClassCanBeConcreteClass:AuditedSequenceIdEntity.kt:AuditedSequenceIdEntity$AuditedSequenceIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:AuditedAutoIntIdEntity.kt:AuditedAutoIntIdEntity$AuditedAutoIntIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:AuditedAutoLongIdEntity.kt:AuditedAutoLongIdEntity$AuditedAutoLongIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:AuditedSequenceIntIdEntity.kt:AuditedSequenceIntIdEntity$AuditedSequenceIntIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:AuditedSequenceLongIdEntity.kt:AuditedSequenceLongIdEntity$AuditedSequenceLongIdEntity</ID>
+    <ID>UnnecessarySafeCall:AuditorProvider.kt:AuditorProvider$SecurityContextHolder.getContext()?.authentication</ID>
+  </CurrentIssues>
+</SmellBaseline>

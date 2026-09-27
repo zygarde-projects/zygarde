@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeConcreteClass:SearchRangeOverlap.kt:SearchRangeOverlap$SearchRangeOverlap</ID>
+    <ID>MaxLineLength:FileBasedPropertyLoader.kt:FileBasedPropertyLoader$LOGGER.trace("props loaded from $directoryPath:\r\n${resolvedProps.map { (k, v) -&gt; "$k=$v" }.joinToString("\r\n")}")</ID>
+    <ID>MaxLineLength:SearchRange.kt:SearchRange.Date$SearchRangeLocalDateTime : SearchRange</ID>
+    <ID>MaxLineLength:SearchRange.kt:SearchRange.Number$SearchRangeBigDecimal : SearchRange</ID>
+    <ID>MaxLineLength:SearchRangeOverlap.kt:SearchDateTimeRangeOverlap : SearchRangeOverlap</ID>
+    <ID>ReturnCount:DateUtils.kt:DateUtils$fun overlap( srcStart: LocalDateTime, srcEnd: LocalDateTime, targetStart: LocalDateTime, targetEnd: LocalDateTime, ): Boolean</ID>
+    <ID>ReturnCount:ExceptionExtensions.kt:private fun buildException( errorCode: ErrorCode, message: String?, args: Array&lt;out Any?&gt; ): BusinessException</ID>
+    <ID>SpreadOperator:ExceptionExtensions.kt:(errorCode, message, *args)</ID>
+    <ID>SwallowedException:ExceptionExtensions.kt:t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ExceptionExtensions.kt:t: Throwable</ID>
+    <ID>UseOrEmpty:FileBasedPropertyLoader.kt:FileBasedPropertyLoader$File(directoryPath) .takeIf { it.exists() &amp;&amp; it.isDirectory } ?.listFiles() ?.mapNotNull { propertyFile -&gt; propertyFile.readLines() .firstOrNull() ?.replace(System.lineSeparator(), "") ?.let { value -&gt; propertyFile.name to value } } ?.toMap() ?: emptyMap()</ID>
+    <ID>VariableNaming:Loggable.kt:Loggable$val LOGGER: Logger get() = LoggerFactory.getLogger(javaClass)</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -6,9 +6,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.test.web.client.getForObject
-import org.springframework.boot.test.web.client.postForObject
+import org.springframework.boot.resttestclient.TestRestTemplate
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
+import org.springframework.boot.resttestclient.getForObject
+import org.springframework.boot.resttestclient.postForObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.test.annotation.DirtiesContext
@@ -34,6 +35,7 @@ import zygarde.samples.todo.generated.search.id
 import zygarde.samples.todo.generated.search.priority
 import io.kotest.assertions.throwables.shouldThrow
 
+@AutoConfigureTestRestTemplate
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   classes = [TodoApplication::class],

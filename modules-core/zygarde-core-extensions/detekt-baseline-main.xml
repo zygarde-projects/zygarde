@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:StringSqlExtensions.kt:StringSqlExtensions$3</ID>
+    <ID>MaxLineLength:DateExtensions.kt:fun</ID>
+    <ID>MaxLineLength:StringSqlExtensions.kt:StringSqlExtensions$private val PATTERN_SQL_TABLE_AND_COL = "\\(?(\\w+)\\.(\\w+)\\)? as (\\w+)".toRegex(RegexOption.IGNORE_CASE).toPattern()</ID>
+    <ID>NestedBlockDepth:StringSqlExtensions.kt:StringSqlExtensions$fun String.shortenSelectSql(removeColAlias: Boolean = true): String</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,6 +1,6 @@
 package zygarde.api.exception.mapper
 
-import com.fasterxml.jackson.module.kotlin.KotlinInvalidNullException
+import tools.jackson.module.kotlin.KotlinInvalidNullException
 import org.springframework.stereotype.Component
 import zygarde.api.exception.ExceptionToBusinessExceptionMapper
 import zygarde.core.exception.ApiErrorCode

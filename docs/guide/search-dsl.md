@@ -369,7 +369,7 @@ Create custom search actions for domain-specific operations:
 
 ```kotlin
 import zygarde.data.jpa.search.ConditionAction
-import javax.persistence.criteria.*
+import jakarta.persistence.criteria.*
 
 class CustomStringAction<ROOT, CURRENT>(
   root: ROOT,

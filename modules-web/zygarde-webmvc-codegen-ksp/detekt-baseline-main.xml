@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ZygardeApiKspProcessor.kt:ZygardeApiKspProcessor$private fun generateApis(elements: List&lt;KSClassDeclaration&gt;)</ID>
+    <ID>LongMethod:ZygardeApiKspProcessor.kt:ZygardeApiKspProcessor$private fun generateApis(elements: List&lt;KSClassDeclaration&gt;)</ID>
+    <ID>ReturnCount:ZygardeApiKspProcessor.kt:ZygardeApiKspProcessor$override fun process(resolver: Resolver): List&lt;KSAnnotated&gt;</ID>
+    <ID>ReturnCount:ZygardeStaticOptionApiKspProcessor.kt:ZygardeStaticOptionApiKspProcessor$override fun process(resolver: Resolver): List&lt;KSAnnotated&gt;</ID>
+    <ID>UnsafeCallOnNullableType:ZygardeStaticOptionApiKspProcessor.kt:ZygardeStaticOptionApiKspProcessor$OptionEnum::class.qualifiedName!!</ID>
+    <ID>UnusedPrivateProperty:ZygardeApiKspProcessor.kt:ZygardeApiKspProcessor$private val logger: KSPLogger = environment.logger</ID>
+    <ID>UnusedVariable:ZygardeApiKspProcessor.kt:ZygardeApiKspProcessor$apiGroup</ID>
+    <ID>UseOrEmpty:ZygardeStaticOptionApiKspProcessor.kt:ZygardeStaticOptionApiKspProcessor$staticOptionApiAnn?.getArgumentValueAsString("comment") ?: ""</ID>
+    <ID>UseOrEmpty:ZygardeStaticOptionApiKspProcessor.kt:ZygardeStaticOptionApiKspProcessor$staticOptionApiAnn?.getArgumentValueAsString("key") ?: ""</ID>
+    <ID>UseOrEmpty:ZygardeStaticOptionApiKspProcessor.kt:ZygardeStaticOptionApiKspProcessor$staticOptionApiAnn?.getArgumentValueAsString("path") ?: ""</ID>
+  </CurrentIssues>
+</SmellBaseline>

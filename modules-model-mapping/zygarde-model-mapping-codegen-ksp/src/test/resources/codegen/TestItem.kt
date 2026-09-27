@@ -17,7 +17,7 @@ data class Item(
   var amount: Int,
   @ApiProp(
     comment = "tags",
-    dto = [Dto("ItemDto", refClass = String::class, refCollection = true)]
+    dto = [Dto("ItemDto", refClass = String::class, refClassNullable = true, refCollection = true)]
   )
   var tagList: Collection<String?>,
 )

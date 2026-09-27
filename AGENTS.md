@@ -6,7 +6,7 @@
 - Use `$zygarde-verification` before handing off changes to Kotlin code, tests, Gradle configuration, or generated samples. Documentation-only and agent-instruction-only changes do not require the full verification stack.
 
 ## Project Structure & Module Organization
-Zygarde is a multi-module Kotlin/JDK 21 project managed with Gradle Kotlin DSL. Production code lives under each `modules-*` directory (for example `modules-core/zygarde-core`, `modules-web/zygarde-webmvc`), while reusable test fixtures are centralized in `modules-test-support`. Sample applications and generated outputs are kept in `samples/`, and long-form design notes in `doc/`. Follow the conventional layout of `src/main/kotlin` and `src/test/kotlin` inside every module when adding new packages.
+Zygarde is a multi-module Kotlin/JDK 24 project managed with Gradle Kotlin DSL. Production code lives under each `modules-*` directory (for example `modules-core/zygarde-core`, `modules-web/zygarde-webmvc`), while reusable test fixtures are centralized in `modules-test-support`. Sample applications and generated outputs are kept in `samples/`, and long-form design notes in `doc/`. Follow the conventional layout of `src/main/kotlin` and `src/test/kotlin` inside every module when adding new packages.
 
 ## Build, Test, and Development Commands
 - `./gradlew build` compiles all modules, executes the full unit-test suite, and reports coverage.

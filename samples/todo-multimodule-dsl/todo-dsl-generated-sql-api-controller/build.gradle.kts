@@ -9,7 +9,7 @@ dependencies {
   implementation(project(":todo-dsl-generated-sql-api-dto"))
   implementation(project(":todo-dsl-generated-sql-api-interface"))
   implementation(project(":todo-dsl-generated-sql-api-service-interface"))
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 

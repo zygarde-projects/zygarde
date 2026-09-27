@@ -248,20 +248,20 @@ Zygarde seamlessly integrates with your Spring Boot stack:
 
 ```kotlin
 dependencies {
-  // Spring Boot (your choice of version)
+  // Spring Boot 4
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   
   // Add Zygarde
-  implementation("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 ```
 
 Works with:
-- ✅ Spring Boot 2.x & 3.x
+- ✅ Spring Boot 4.0
 - ✅ Hibernate / JPA
-- ✅ Kotlin 1.8+
+- ✅ Kotlin 2.2.20
 - ✅ Gradle & Maven
 - ✅ Multi-module projects
 

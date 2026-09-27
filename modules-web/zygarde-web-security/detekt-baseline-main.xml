@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeInterface:ApiRole.kt:ApiRole$ApiRole</ID>
+  </CurrentIssues>
+</SmellBaseline>

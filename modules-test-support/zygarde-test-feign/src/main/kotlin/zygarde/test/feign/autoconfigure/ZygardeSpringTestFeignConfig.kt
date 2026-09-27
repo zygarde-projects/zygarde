@@ -7,7 +7,7 @@ import feign.Request
 import feign.Target
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations
+import org.springframework.boot.webmvc.autoconfigure.WebMvcRegistrations
 import org.springframework.cloud.openfeign.FeignLoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

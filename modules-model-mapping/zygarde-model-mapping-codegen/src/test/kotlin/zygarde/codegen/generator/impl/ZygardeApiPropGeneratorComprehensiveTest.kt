@@ -68,12 +68,12 @@ class ZygardeApiPropGeneratorComprehensiveTest {
     result.exitCode shouldBe KotlinCompilation.ExitCode.OK
   }
 
-  private fun compileFile(resourcePath: String): KotlinCompilation.Result {
+  private fun compileFile(resourcePath: String): com.tschuchort.compiletesting.JvmCompilationResult {
     return KotlinCompilation().apply {
       sources = listOf(
         ClassPathResource(resourcePath).file
       ).map { SourceFile.fromPath(it) }
-      jvmTarget = JvmTarget.JVM_21.description
+      jvmTarget = JvmTarget.JVM_24.description
       annotationProcessors = listOf(ZygardeApiPropProcessor())
       inheritClassPath = true
       messageOutputStream = System.out

@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>HasPlatformType:ApiTracingContext.kt:ApiTracingContext$fun getTracingData()</ID>
+    <ID>LongParameterList:GenApi.kt:GenApi$( val method: RequestMethod, val path: String, val pathVariable: Array&lt;ApiPathVariable&gt; = [], val api: String, val apiDescription: String = "", val service: String, val servicePostProcessing: Boolean = false, val servicePostProcessingParam: KClass&lt;*&gt; = Any::class, @Deprecated("use reqRefClass") val reqRef: String = "", val reqRefClass: KClass&lt;*&gt; = Any::class, val reqCollection: Boolean = false, @Deprecated("use resRefClass") val resRef: String = "", val resRefClass: KClass&lt;*&gt; = Any::class, val resCollection: Boolean = false, val resPage: Boolean = false, val authenticationDetail: KClass&lt;*&gt; = Any::class, val requestBodyContentType: RequestBodyContentType = RequestBodyContentType.DEFAULT, val deprecated: Boolean = false, val deprecatedMessage: String = "", val deprecatedReplacement: ReplaceWith = ReplaceWith(""), )</ID>
+    <ID>MaxLineLength:ApiExceptionHandler.kt:ApiExceptionHandler$if (code is HttpErrorCode) HttpStatus.resolve(code.httpStatus) ?: HttpStatus.EXPECTATION_FAILED else HttpStatus.EXPECTATION_FAILED</ID>
+    <ID>ProtectedMemberInFinalClass:ApiExceptionHandler.kt:ApiExceptionHandler$@Value("\${zygarde.api.business-exception-log.include-stack-trace:true}") protected var businessExceptionLogIncludeStackTrace: Boolean = true</ID>
+    <ID>ProtectedMemberInFinalClass:ApiExceptionHandler.kt:ApiExceptionHandler$@Value("\${zygarde.api.business-exception-log.level:INFO}") protected var businessExceptionLogLevel: LogLevel = LogLevel.INFO</ID>
+    <ID>ProtectedMemberInFinalClass:ApiExceptionHandler.kt:ApiExceptionHandler$protected fun handleThrowableInternal( t: Throwable, req: HttpServletRequest, onNoMatch: (t: Throwable) -&gt; ResponseEntity&lt;Any&gt; )</ID>
+    <ID>ProtectedMemberInFinalClass:ApiExceptionHandler.kt:ApiExceptionHandler$protected open fun businessExceptionLogMessage(e: BusinessException): String</ID>
+    <ID>ProtectedMemberInFinalClass:ApiExceptionHandler.kt:ApiExceptionHandler$protected open fun logBusinessException(e: BusinessException)</ID>
+    <ID>ProtectedMemberInFinalClass:ApiExceptionHandler.kt:ApiExceptionHandler$protected open fun logUnknownException(t: Throwable, req: HttpServletRequest)</ID>
+    <ID>TooGenericExceptionCaught:ApiExceptionFilter.kt:ApiExceptionFilter$t: Throwable</ID>
+    <ID>UselessCallOnNotNull:ApiExceptionHandler.kt:ApiExceptionHandler$listOfNotNull( "uri='${req.requestURI}", "requestHeaders=${tracingData.requestHeaders},", "exceptionMessage=${t.message}" )</ID>
+    <ID>VarCouldBeVal:ApiExceptionHandler.kt:ApiExceptionHandler$@Autowired private lateinit var apiErrorResponseFactory: ApiErrorResponseFactory</ID>
+    <ID>VarCouldBeVal:ApiExceptionHandler.kt:ApiExceptionHandler$@Autowired private lateinit var exceptionToBusinessExceptionMappers: List&lt;ExceptionToBusinessExceptionMapper&lt;*&gt;&gt;</ID>
+    <ID>VarCouldBeVal:ApiExceptionHandler.kt:ApiExceptionHandler$@Autowired private lateinit var messageSource: MessageSource</ID>
+  </CurrentIssues>
+</SmellBaseline>

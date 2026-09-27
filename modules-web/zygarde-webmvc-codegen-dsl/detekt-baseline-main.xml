@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongParameterList:DslApi.kt:DslApi$( functionName: String, path: String, method: RequestMethod, reqClass: KClass&lt;*&gt;?, reqClassGenericClasses: List&lt;KClass&lt;*&gt;&gt;, resClass: KClass&lt;*&gt;?, resClassGenericClasses: List&lt;KClass&lt;*&gt;&gt;, crossinline dsl: DslApiFunction.() -&gt; Unit )</ID>
+    <ID>MaxLineLength:DslApi.kt:DslApi$buildForMethodReified(functionName, path, RequestMethod.GET, REQ::class, emptyList(), Collection::class, listOf(RES_IN_LIST::class), dsl)</ID>
+    <ID>MaxLineLength:DslApi.kt:DslApi$buildForMethodReified(functionName, path, RequestMethod.GET, REQ::class, emptyList(), PageDto::class, listOf(RES_IN_LIST::class), dsl)</ID>
+    <ID>MaxLineLength:DslApi.kt:DslApi$buildForMethodReified(functionName, path, RequestMethod.PATCH, REQ::class, emptyList(), RES::class, emptyList(), dsl)</ID>
+    <ID>MaxLineLength:DslApi.kt:DslApi$buildForMethodReified(functionName, path, RequestMethod.POST, REQ::class, emptyList(), Collection::class, listOf(RES_IN_LIST::class), dsl)</ID>
+    <ID>MaxLineLength:DslApi.kt:DslApi$buildForMethodReified(functionName, path, RequestMethod.POST, REQ::class, emptyList(), PageDto::class, listOf(RES_IN_LIST::class), dsl)</ID>
+    <ID>MaxLineLength:DslApi.kt:DslApi$inline</ID>
+    <ID>MaxLineLength:DslCrudServiceImpl.kt:DslCrudServiceImpl$daoPropertyName = requireNotNull(daoPropertyName) { "CRUD service impl '$serviceName' requires dao&lt;T&gt;(propertyName)." }</ID>
+    <ID>MaxLineLength:DslCrudServiceImpl.kt:DslCrudServiceImpl$dtoBuilderType = requireNotNull(dtoBuilderType) { "CRUD service impl '$serviceName' requires dtoBuilder&lt;T&gt;(builderName)." }</ID>
+    <ID>MaxLineLength:DslCrudServiceImpl.kt:DslCrudServiceImpl$inline</ID>
+    <ID>MaxLineLength:WebMvcDslCodegen.kt:WebMvcDslCodegen$apiInterfacePackage = System.getProperty("zygarde.codegen.dsl.webmvc.api-interface.package") ?: "zygarde.generated.api"</ID>
+    <ID>MaxLineLength:WebMvcDslCodegen.kt:WebMvcDslCodegen$controllerPackage = System.getProperty("zygarde.codegen.dsl.webmvc.controller.package") ?: "zygarde.generated.api.impl"</ID>
+    <ID>MaxLineLength:WebMvcDslCodegen.kt:WebMvcDslCodegen$serviceImplPackage = System.getProperty("zygarde.codegen.dsl.webmvc.service-impl.package") ?: "zygarde.generated.service.impl"</ID>
+    <ID>MaxLineLength:WebMvcDslCodegen.kt:WebMvcDslCodegen$serviceInterfacePackage = System.getProperty("zygarde.codegen.dsl.webmvc.service-interface.package") ?: "zygarde.generated.service"</ID>
+    <ID>TooManyFunctions:DslApi.kt:DslApi</ID>
+    <ID>TooManyFunctions:DslApiFunction.kt:DslApiFunction</ID>
+    <ID>TooManyFunctions:DslCrudServiceImpl.kt:DslCrudServiceImpl</ID>
+  </CurrentIssues>
+</SmellBaseline>

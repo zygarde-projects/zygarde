@@ -3,9 +3,9 @@ apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
-  api("org.springframework.boot:spring-boot-starter-web")
+  api("org.springframework.boot:spring-boot-starter-webmvc")
   api("org.springframework.boot:spring-boot-starter-validation")
-  api("org.springdoc:springdoc-openapi-starter-common:2.8.17")
+  api("org.springdoc:springdoc-openapi-starter-common:3.1.1")
   api(project(":zygarde-core"))
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation(project(":zygarde-test"))

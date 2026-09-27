@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Upgraded the framework, code generators, and samples to Spring Boot 4.0.8, Spring Cloud 2025.1.3, Kotlin 2.2.20, and Java 24.
+- Migrated JSON support to Jackson 3 and updated Spring Data JPA, Web MVC, GraphQL, and test integrations for Boot 4.
+- Updated KAPT and KSP compile testing, regenerated DSL sample output, and added detekt 2 baselines.
+- See `doc/spring-boot-4-upgrade.md` for compatibility and verification details.
+
 ## [3.3.1] - 2026-08-18
 
 ### Added

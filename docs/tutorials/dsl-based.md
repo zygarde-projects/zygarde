@@ -19,7 +19,7 @@ You'll learn to:
 ## Complete Sample Project
 
 The full working example is available at:
-**[samples/todo-multimodule-dsl](https://github.com/zygarde-projects/zygarde/tree/v2/samples/todo-multimodule-dsl)**
+**[samples/todo-multimodule-dsl](https://github.com/zygarde-projects/zygarde/tree/v4/samples/todo-multimodule-dsl)**
 
 ## Project Structure
 
@@ -41,7 +41,7 @@ todo-app/
 // todo-domain/src/main/kotlin/model/Todo.kt
 package com.example.todo.model
 
-import javax.persistence.*
+import jakarta.persistence.*
 import zygarde.codegen.apt.jpa.ZyModel
 import zygarde.data.jpa.entity.AutoLongIdEntity
 
@@ -76,8 +76,8 @@ plugins {
 }
 
 dependencies {
-  api("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  api("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 
 kapt {
@@ -484,7 +484,7 @@ The generated `Dao` class depends on all entity DAOs from `todo-domain`.
 - **[Model Mapping →](../guide/model-mapping.md)** - Advanced mapping patterns
 - **[Web & REST →](../guide/web-rest.md)** - API best practices
 - **[Reference →](../reference/dsl-properties.md)** - DSL configuration options
-- **[Complete Sample →](https://github.com/zygarde-projects/zygarde/tree/v2/samples/todo-multimodule-dsl)** - Full source code
+- **[Complete Sample →](https://github.com/zygarde-projects/zygarde/tree/v4/samples/todo-multimodule-dsl)** - Full source code
 
 ## Troubleshooting
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongParameterList:Dto.kt:Dto$( /** * Name of DTO in this field */ val name: String = "", /** * Name of DTO in this field */ val names: Array&lt;String&gt; = [], /** * override fieldName in DTO */ val fieldName: String = "", /** * ref DTO Name */ val ref: String = "", val refNullable: Boolean = false, /** * specify if ref is Collection */ val refCollection: Boolean = false, /** * specify ref Class if it's not DTO */ val refClass: KClass&lt;*&gt; = Any::class, val refClassNullable: Boolean = false, /** * whether assign value in dto from entity in generated toXXXDto extension function */ val applyValueFromEntity: Boolean = true, val entityValueProvider: KClass&lt;out ValueProvider&lt;*, *&gt;&gt; = NoOpValueProvider::class, val valueProvider: KClass&lt;out ValueProvider&lt;*, *&gt;&gt; = NoOpValueProvider::class )</ID>
+    <ID>LongParameterList:RequestDto.kt:RequestDto$( val name: String = "", val names: Array&lt;String&gt; = [], /** * override fieldName in DTO */ val fieldName: String = "", val refClass: KClass&lt;*&gt; = Any::class, val refClassNullable: Boolean = false, val refCollection: Boolean = false, val ref: String = "", val refNullable: Boolean = false, val applyValueToEntity: Boolean = true, val valueProvider: KClass&lt;out ValueProvider&lt;*, *&gt;&gt; = NoOpValueProvider::class, val searchType: SearchType = SearchType.NONE, val searchForField: String = "", val notNullInReq: Boolean = false, val forceNullableInReq: Boolean = false, val sinceApiVersion: Long = 0, )</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>InvalidPackageDeclaration:TestSupportExtensions.kt:package zygarde.test.extension</ID>
+    <ID>MaxLineLength:TestFeignLogger.kt:TestFeignLogger$override</ID>
+    <ID>MaxLineLength:TestFeignLogger.kt:TestFeignLogger$val reason = if (response!!.reason() != null &amp;&amp; logLevel!!.compareTo(Level.NONE) &gt; 0) " " + response.reason() else ""</ID>
+    <ID>MaxLineLength:TestSupportExtensions.kt:throw failure("Expected errorCode $errorCode(${errorCode.code}) but got ${apiErrorResponse.code}\r\nresponseBody=\r\n$json")</ID>
+  </CurrentIssues>
+</SmellBaseline>

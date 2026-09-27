@@ -53,11 +53,11 @@ buildscript {
 }
 
 plugins {
-  kotlin("jvm") version "1.8.22" apply false
-  kotlin("kapt") version "1.8.22" apply false
-  kotlin("plugin.spring") version "1.8.22" apply false
-  id("org.springframework.boot") version "2.7.14" apply false
-  id("io.spring.dependency-management") version "1.1.3" apply false
+  kotlin("jvm") version "2.2.20" apply false
+  kotlin("kapt") version "2.2.20" apply false
+  kotlin("plugin.spring") version "2.2.20" apply false
+  id("org.springframework.boot") version "4.0.8" apply false
+  id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
 allprojects {
@@ -66,12 +66,15 @@ allprojects {
 
   repositories {
     mavenCentral()
-    maven("https://nexus.puni.tw/repository/maven-releases")
   }
 }
 
 subprojects {
   apply(plugin = "kotlin")
+
+  configure<JavaPluginExtension> {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(24))
+  }
 
   dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -95,9 +98,9 @@ plugins {
 }
 
 dependencies {
-  api("org.springframework.boot:spring-boot-starter-data-jpa:2.7.14")
-  api("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  api("org.springframework.boot:spring-boot-starter-data-jpa:4.0.8")
+  api("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 
 kapt {
@@ -121,8 +124,8 @@ plugins {
 
 dependencies {
   api(project(":my-app-domain"))
-  api("org.springframework.boot:spring-boot-starter-data-jpa:2.7.14")
-  api("zygarde:zygarde-jpa:VERSION")
+  api("org.springframework.boot:spring-boot-starter-data-jpa:4.0.8")
+  api("io.github.zygarde-projects:zygarde-jpa:VERSION")
 }
 
 sourceSets {
@@ -151,10 +154,10 @@ plugins {
 
 dependencies {
   api(project(":my-app-codegen"))
-  implementation("org.springframework.boot:spring-boot-starter:2.7.14")
-  implementation("zygarde:zygarde-core:VERSION")
+  implementation("org.springframework.boot:spring-boot-starter:4.0.8")
+  implementation("io.github.zygarde-projects:zygarde-core:VERSION")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.14")
+  testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.8")
   testImplementation("io.mockk:mockk:1.12.0")
 }
 ```
@@ -174,12 +177,13 @@ plugins {
 
 dependencies {
   implementation(project(":my-app-service"))
-  implementation("org.springframework.boot:spring-boot-starter-web:2.7.14")
-  implementation("zygarde:zygarde-webmvc:VERSION")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc:4.0.8")
+  implementation("io.github.zygarde-projects:zygarde-webmvc:VERSION")
 
   runtimeOnly("com.h2database:h2")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.14")
+  testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.8")
+  testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test:4.0.8")
 }
 
 springBoot {

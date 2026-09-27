@@ -1,6 +1,6 @@
 package zygarde.codegen.processor
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import com.google.auto.service.AutoService
 import zygarde.codegen.StaticOptionApi
 import zygarde.codegen.ZygardeApiGeneratorKaptOptions

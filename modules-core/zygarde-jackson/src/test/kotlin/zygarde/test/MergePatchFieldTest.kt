@@ -1,13 +1,15 @@
 package zygarde.test
 
 import com.fasterxml.jackson.annotation.JsonAnySetter
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.kotest.matchers.shouldBe
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.DatabindException
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 import zygarde.json.patch.MergePatchField
 
 class MergePatchFieldTest {
@@ -56,10 +58,12 @@ class MergePatchFieldTest {
 
   @Test
   fun `should reject unknown field with JsonAnySetter even when object mapper allows unknown properties`() {
-    val tolerantObjectMapper = jacksonObjectMapper()
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val tolerantObjectMapper = JsonMapper.builder()
+      .addModule(kotlinModule())
+      .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+      .build()
 
-    shouldThrow<JsonMappingException> {
+    shouldThrow<DatabindException> {
       tolerantObjectMapper.readValue<StrictPatchReq>("""{"unknown":100}""")
     }
   }

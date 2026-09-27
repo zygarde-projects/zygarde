@@ -69,11 +69,11 @@ Yes. Zygarde builds on standard JPA, so it works with any JPA provider including
 
 ### What Kotlin version is required?
 
-Zygarde requires Kotlin 1.8 or higher. It's fully compatible with Kotlin 1.9 and 2.0.
+Zygarde v4 uses Kotlin 2.2.20 and requires Java 24.
 
 ### What Spring Boot version is supported?
 
-Zygarde works with Spring Boot 2.7+ and Spring Boot 3.x. It's compatible with both javax.persistence (Boot 2) and jakarta.persistence (Boot 3).
+Zygarde v4 targets Spring Boot 4.0 and uses `jakarta.persistence`.
 
 ## Usage Questions
 

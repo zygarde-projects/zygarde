@@ -10,7 +10,7 @@ dependencies {
   implementation("io.github.classgraph:classgraph")
   implementation("com.squareup:kotlinpoet")
   api("com.github.jsqlparser:jsqlparser:5.0")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
   testImplementation(platform(project(":zygarde-bom-codegen-test")))
   testImplementation("org.springframework.boot:spring-boot-starter-test")

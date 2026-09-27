@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$private fun generateScopeDataClass( daoPackage: String, entityName: String, fields: List&lt;ScopeFieldInfo&gt;, )</ID>
+    <ID>LargeClass:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator</ID>
+    <ID>LongMethod:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$fun generateDaoForEntityElements(elements: Collection&lt;KSClassDeclaration&gt;)</ID>
+    <ID>LongMethod:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$private fun buildExtensionFileSpec( daoPackage: String, daoName: String, daoType: ClassName, entityType: TypeName, searchContentType: LambdaTypeName, toSpringDataSort: MemberName, toSpringDataPageRequest: MemberName, generateRemove: Boolean, scopeClassName: ClassName?, scopeFields: List&lt;ScopeFieldInfo&gt;, ): FileSpec.Builder</ID>
+    <ID>LongMethod:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$private fun generateScopeDataClass( daoPackage: String, entityName: String, fields: List&lt;ScopeFieldInfo&gt;, )</ID>
+    <ID>LongParameterList:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$( daoPackage: String, daoName: String, daoType: ClassName, entityType: TypeName, searchContentType: LambdaTypeName, toSpringDataSort: MemberName, toSpringDataPageRequest: MemberName, generateRemove: Boolean, scopeClassName: ClassName?, scopeFields: List&lt;ScopeFieldInfo&gt;, )</ID>
+    <ID>LongParameterList:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$( fileSpec: FileSpec.Builder, daoType: ClassName, entityType: TypeName, searchContentType: LambdaTypeName, generateRemove: Boolean, scopeClassName: ClassName, scopeFields: List&lt;ScopeFieldInfo&gt;, )</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$.</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$CodeBlock.of("${field.name} = ${field.name}?.let·{ %T.Of(it) } ?: %T.All", ScopeFilter::class, ScopeFilter::class)</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$CodeBlock.of("${field.name} = ${field.name}?.let·{ %T.Of(listOf(it)) } ?: %T.All", ScopeFilter::class, ScopeFilter::class)</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$ScopeOperator.IS_NULL, ScopeOperator.IS_NOT_NULL -&gt; if (field.nullable) fieldScopeType.copy(nullable = true) else fieldScopeType</ID>
+    <ID>MaxLineLength:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$val singleType = if (field.nullable &amp;&amp; field != requiredCompatibilityField) baseType.copy(nullable = true) else baseType</ID>
+    <ID>ReturnCount:ZygardeEntityFieldKspGenerator.kt:ZygardeEntityFieldKspGenerator$private fun isComparableType(type: KSType): Boolean</ID>
+    <ID>ReturnCount:ZygardeJpaKspProcessor.kt:ZygardeJpaKspProcessor$override fun process(resolver: Resolver): List&lt;KSAnnotated&gt;</ID>
+    <ID>TooGenericExceptionCaught:ZygardeEntityFieldKspGenerator.kt:ZygardeEntityFieldKspGenerator$t: Throwable</ID>
+    <ID>TooGenericExceptionThrown:ZygardeEntityFieldKspGenerator.kt:ZygardeEntityFieldKspGenerator$throw RuntimeException("error generating search field for entity ${element.simpleName.asString()}", t)</ID>
+    <ID>TooManyFunctions:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator</ID>
+    <ID>UnusedPrivateProperty:ZygardeEntityFieldKspGenerator.kt:ZygardeEntityFieldKspGenerator$private val logger: KSPLogger</ID>
+    <ID>UnusedPrivateProperty:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$private val logger: KSPLogger</ID>
+    <ID>UseCheckOrError:ZygardeJpaDaoKspGenerator.kt:ZygardeJpaDaoKspGenerator$throw IllegalStateException("No @Id or @IdClass found for entity ${simpleName.asString()}")</ID>
+  </CurrentIssues>
+</SmellBaseline>

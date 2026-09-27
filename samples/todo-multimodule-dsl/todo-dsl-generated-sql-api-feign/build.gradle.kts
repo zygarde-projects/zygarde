@@ -7,7 +7,7 @@ dependencies {
   implementation(project(":todo-dsl-generated-sql-api-dto"))
   implementation(project(":todo-dsl-generated-sql-api-interface"))
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
 }
 
 tasks.getByName("bootJar").enabled = false

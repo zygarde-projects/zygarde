@@ -15,9 +15,8 @@ tasks.getByName("bootStartScripts").enabled = false
 
 tasks.getByName("run").dependsOn(":todo-codegen-dsl-models:run")
 
-fun codegenWriteToArg(propertyName: String, projectName: String): String {
-  return "-D$propertyName=${project(projectName).file("src/main/kotlin").absolutePath}"
-}
+fun codegenWriteToArg(propertyName: String, projectName: String): String =
+  "-D$propertyName=${project(projectName).file("src/main/kotlin").absolutePath}"
 
 configure<JavaApplication> {
   mainClass.set("zygarde.codegen.dsl.webmvc.WebMvcDslCodegenMainKt")

@@ -1,21 +1,21 @@
 package zygarde.json
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.kotlinModule
 
 object JacksonCommon {
-  private var objectMapper = jacksonObjectMapper()
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
-    .registerModule(JavaTimeModule())
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+  private var objectMapper: ObjectMapper = JsonMapper.builder()
+    .addModule(kotlinModule())
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+    .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .build()
 
   fun setObjectMapper(mapper: ObjectMapper) {
-    objectMapper = mapper.registerKotlinModule()
+    objectMapper = if (mapper is JsonMapper) mapper.rebuild().addModule(kotlinModule()).build() else mapper
   }
 
   fun objectMapper() = objectMapper

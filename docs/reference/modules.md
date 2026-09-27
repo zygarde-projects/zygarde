@@ -16,7 +16,7 @@ Complete reference of all Zygarde modules and their purposes.
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-core:VERSION")
+implementation("io.github.zygarde-projects:zygarde-core:VERSION")
 ```
 
 ### zygarde-jackson
@@ -30,7 +30,7 @@ implementation("zygarde:zygarde-core:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-jackson:VERSION")
+implementation("io.github.zygarde-projects:zygarde-jackson:VERSION")
 ```
 
 ### zygarde-jwt
@@ -43,7 +43,7 @@ implementation("zygarde:zygarde-jackson:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-jwt:VERSION")
+implementation("io.github.zygarde-projects:zygarde-jwt:VERSION")
 ```
 
 ### zygarde-mail
@@ -56,7 +56,7 @@ implementation("zygarde:zygarde-jwt:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-mail:VERSION")
+implementation("io.github.zygarde-projects:zygarde-mail:VERSION")
 ```
 
 ### zygarde-codegen-support
@@ -70,7 +70,7 @@ implementation("zygarde:zygarde-mail:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-codegen-support:VERSION")
+implementation("io.github.zygarde-projects:zygarde-codegen-support:VERSION")
 ```
 
 ## JPA Modules (`modules-jpa/`)
@@ -87,7 +87,7 @@ implementation("zygarde:zygarde-codegen-support:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-jpa:VERSION")
+implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
 ```
 
 ### zygarde-jpa-codegen
@@ -102,7 +102,7 @@ implementation("zygarde:zygarde-jpa:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-kapt("zygarde:zygarde-jpa-codegen:VERSION")
+kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 ```
 
 ### zygarde-jpa-envers
@@ -116,7 +116,7 @@ kapt("zygarde:zygarde-jpa-codegen:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-jpa-envers:VERSION")
+implementation("io.github.zygarde-projects:zygarde-jpa-envers:VERSION")
 ```
 
 ## Web Modules (`modules-web/`)
@@ -133,7 +133,7 @@ implementation("zygarde:zygarde-jpa-envers:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-webmvc:VERSION")
+implementation("io.github.zygarde-projects:zygarde-webmvc:VERSION")
 ```
 
 ### zygarde-webflux
@@ -147,7 +147,7 @@ implementation("zygarde:zygarde-webmvc:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-webflux:VERSION")
+implementation("io.github.zygarde-projects:zygarde-webflux:VERSION")
 ```
 
 ### zygarde-webmvc-codegen-dsl
@@ -162,7 +162,7 @@ implementation("zygarde:zygarde-webflux:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-webmvc-codegen-dsl:VERSION")
+implementation("io.github.zygarde-projects:zygarde-webmvc-codegen-dsl:VERSION")
 ```
 
 ## Model Mapping Modules (`modules-model-mapping/`)
@@ -178,7 +178,7 @@ implementation("zygarde:zygarde-webmvc-codegen-dsl:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-model-mapping-core:VERSION")
+implementation("io.github.zygarde-projects:zygarde-model-mapping-core:VERSION")
 ```
 
 ### zygarde-model-mapping-codegen-dsl
@@ -193,7 +193,7 @@ implementation("zygarde:zygarde-model-mapping-core:VERSION")
 
 **Maven Coordinates**:
 ```kotlin
-implementation("zygarde:zygarde-model-mapping-codegen-dsl:VERSION")
+implementation("io.github.zygarde-projects:zygarde-model-mapping-codegen-dsl:VERSION")
 ```
 
 ## Supporting Modules
@@ -205,7 +205,7 @@ implementation("zygarde:zygarde-model-mapping-codegen-dsl:VERSION")
 **Usage**:
 ```kotlin
 dependencies {
-  implementation(platform("zygarde:zygarde-bom-codegen:VERSION"))
+  implementation(platform("io.github.zygarde-projects:zygarde-bom-codegen:VERSION"))
 }
 ```
 
@@ -216,7 +216,7 @@ dependencies {
 **Usage**:
 ```kotlin
 dependencies {
-  testImplementation(platform("zygarde:zygarde-bom-codegen-test:VERSION"))
+  testImplementation(platform("io.github.zygarde-projects:zygarde-bom-codegen-test:VERSION"))
 }
 ```
 
@@ -261,29 +261,29 @@ Code Generation (compile-time only)
 ### For Basic JPA Projects
 ```kotlin
 dependencies {
-  implementation("zygarde:zygarde-jpa:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 ```
 
 ### For REST API Projects
 ```kotlin
 dependencies {
-  implementation("zygarde:zygarde-jpa:VERSION")
-  implementation("zygarde:zygarde-webmvc:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-webmvc:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 ```
 
 ### For Full-Stack Projects with DSL
 ```kotlin
 dependencies {
-  implementation("zygarde:zygarde-jpa:VERSION")
-  implementation("zygarde:zygarde-webmvc:VERSION")
-  implementation("zygarde:zygarde-model-mapping-core:VERSION")
-  implementation("zygarde:zygarde-model-mapping-codegen-dsl:VERSION")
-  implementation("zygarde:zygarde-webmvc-codegen-dsl:VERSION")
-  kapt("zygarde:zygarde-jpa-codegen:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-jpa:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-webmvc:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-model-mapping-core:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-model-mapping-codegen-dsl:VERSION")
+  implementation("io.github.zygarde-projects:zygarde-webmvc-codegen-dsl:VERSION")
+  kapt("io.github.zygarde-projects:zygarde-jpa-codegen:VERSION")
 }
 ```
 
@@ -291,6 +291,7 @@ dependencies {
 
 | Zygarde Version | Kotlin | Spring Boot | Java |
 |-----------------|--------|-------------|------|
+| v4              | 2.2.20 | 4.0.8       | 24   |
 | 1.x.x          | 1.8.22 | 2.7.14      | 8+   |
 
 ## See Also

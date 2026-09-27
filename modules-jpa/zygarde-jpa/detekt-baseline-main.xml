@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeConcreteClass:AutoIdEntity.kt:AutoIdEntity$AutoIdEntity</ID>
+    <ID>AbstractClassCanBeConcreteClass:ListToJsonStringConverter.kt:ListToJsonStringConverter$ListToJsonStringConverter</ID>
+    <ID>AbstractClassCanBeConcreteClass:LocalDateConverter.kt:LocalDateConverter$LocalDateConverter</ID>
+    <ID>AbstractClassCanBeConcreteClass:LocalDateTimeConverter.kt:LocalDateTimeConverter$LocalDateTimeConverter</ID>
+    <ID>AbstractClassCanBeConcreteClass:SequenceIdEntity.kt:SequenceIdEntity$SequenceIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:AutoIntIdEntity.kt:AutoIntIdEntity$AutoIntIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:AutoLongIdEntity.kt:AutoLongIdEntity$AutoLongIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:SequenceIntIdEntity.kt:SequenceIntIdEntity$SequenceIntIdEntity</ID>
+    <ID>AbstractClassCanBeInterface:SequenceLongIdEntity.kt:SequenceLongIdEntity$SequenceLongIdEntity</ID>
+    <ID>LongParameterList:EnhancedSearchImpl.kt:EnhancedSearchImpl$( val predicates: MutableList&lt;Predicate&gt;, val root: Root&lt;EntityType&gt;, val query: CriteriaQuery&lt;*&gt;, val cb: CriteriaBuilder, val orders: MutableList&lt;Order&gt; = mutableListOf(), val joinMap: MutableMap&lt;String, Join&lt;Any, Any&gt;&gt; = mutableMapOf(), val fetchMap: MutableMap&lt;String, Fetch&lt;Any, Any&gt;&gt; = mutableMapOf(), )</ID>
+    <ID>MagicNumber:ConditionActionImpl.kt:ConditionActionImpl$500</ID>
+    <ID>MaxLineLength:ComparableConditionActionImpl.kt:ComparableConditionActionImpl$override</ID>
+    <ID>MaxLineLength:ConditionActionExtension.kt:infix</ID>
+    <ID>MaxLineLength:ConditionActionImpl.kt:ConditionActionImpl$override</ID>
+    <ID>MaxLineLength:EnhancedSearch.kt:EnhancedSearch$fun</ID>
+    <ID>MaxLineLength:EnhancedSearchExtensions.kt:inline</ID>
+    <ID>MaxLineLength:EnhancedSearchImpl.kt:EnhancedSearchImpl$override</ID>
+    <ID>MaxLineLength:ListToJsonStringConverter.kt:ListToJsonStringConverter$abstract</ID>
+    <ID>MaxLineLength:LocalDateTimeConverter.kt:LocalDateTimeConverter$abstract</ID>
+    <ID>MaxLineLength:StringConditionAction.kt:StringConditionAction$interface</ID>
+    <ID>MaxLineLength:StringConditionActionImpl.kt:StringConditionActionImpl$)</ID>
+    <ID>MaxLineLength:StringConditionActionImpl.kt:StringConditionActionImpl$override</ID>
+    <ID>MaxLineLength:TemporalStringConverter.kt:TemporalStringConverter$abstract</ID>
+    <ID>ReturnCount:ConditionActionImpl.kt:ConditionActionImpl$@Suppress("UNCHECKED_CAST") protected fun Root&lt;*&gt;.columnNameToPath(columnName: String): Path&lt;FieldType&gt;</ID>
+    <ID>SerialVersionUIDInSerializableClass:AutoIdEntity.kt:AutoIdEntity&lt;T : Serializable&gt; : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:SequenceIdEntity.kt:SequenceIdEntity&lt;T : Serializable&gt; : Serializable</ID>
+    <ID>SpreadOperator:ConditionActionImpl.kt:ConditionActionImpl$(*v.chunked(500).map { chunkedValues -&gt; path.`in`(chunkedValues) }.toTypedArray())</ID>
+    <ID>SpreadOperator:ConditionActionImpl.kt:ConditionActionImpl$(*v.chunked(500).map { chunkedValues -&gt; path.`in`(chunkedValues).not() }.toTypedArray())</ID>
+    <ID>SpreadOperator:EnhancedSearchExtensions.kt:(*predicatesForJoin.toTypedArray())</ID>
+    <ID>SpreadOperator:EnhancedSearchImpl.kt:EnhancedSearchImpl$(*predicatesForAnd.toTypedArray())</ID>
+    <ID>SpreadOperator:EnhancedSearchImpl.kt:EnhancedSearchImpl$(*predicatesForOr.toTypedArray())</ID>
+    <ID>SpreadOperator:SearchSpecBuilder.kt:SearchSpecBuilder$(*predicates.toTypedArray())</ID>
+    <ID>SpreadOperator:StringConditionActionImpl.kt:StringConditionActionImpl$( *keywords.map { keyword -&gt; cb.like(path, "%${escapeLike(keyword)}%", ESCAPE_CHAR) }.toTypedArray() )</ID>
+    <ID>SpreadOperator:ZygardeJpaRepository.kt:ZygardeJpaRepository$(*predicates.toTypedArray())</ID>
+    <ID>TooManyFunctions:ConditionAction.kt:ConditionAction&lt;RootEntityType, EntityType, FieldType&gt;</ID>
+    <ID>TooManyFunctions:ConditionActionImpl.kt:ConditionActionImpl&lt;RootEntityType, EntityType, FieldType&gt; : ConditionAction</ID>
+    <ID>TooManyFunctions:EnhancedSearch.kt:EnhancedSearch&lt;EntityType&gt;</ID>
+    <ID>TooManyFunctions:StringConditionAction.kt:StringConditionAction&lt;RootEntityType, EntityType&gt; : ComparableConditionAction</ID>
+    <ID>TooManyFunctions:StringConditionActionImpl.kt:StringConditionActionImpl&lt;RootEntityType, EntityType&gt; : ComparableConditionActionImplStringConditionAction</ID>
+    <ID>UnnecessarySafeCall:SearchSpecBuilder.kt:SearchSpecBuilder$query?.orderBy(enhancedSearchImpl.orders)</ID>
+    <ID>UnreachableCode:SearchSpecBuilder.kt:SearchSpecBuilder$query ?: cb.createQuery()</ID>
+    <ID>UnsafeCallOnNullableType:AutoIdEntityExtensions.kt:id!!</ID>
+    <ID>UnsafeCallOnNullableType:StringConditionActionImpl.kt:StringConditionActionImpl$value!!</ID>
+    <ID>UseOrEmpty:ListToJsonStringConverter.kt:ListToJsonStringConverter$dbData?.jsonStringToList(clz) ?: emptyList&lt;T&gt;()</ID>
+    <ID>UseRequire:ConditionActionImpl.kt:ConditionActionImpl$throw IllegalArgumentException("another action is not subclass of ConditionActionImpl")</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -43,7 +43,8 @@ public class TodoApiServiceImpl(
   }
 
   override fun updateTodo(todoId: Int, req: UpdateTodoReq): TodoDto {
-    val entity = todoDao.findById(todoId).orElseThrow { BusinessException(ApiErrorCode.NOT_FOUND) }.applyFrom(req)
+    val entity =
+        todoDao.findById(todoId).orElseThrow { BusinessException(ApiErrorCode.NOT_FOUND) }.applyFrom(req)
     val saved = todoDao.saveAndFlush(entity)
     return todoDtoAssembler.build(saved)
   }
