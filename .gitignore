@@ -1,7 +1,19 @@
-build
-.idea
-.gradle
-out
+# Build and tool output
+build/
+.gradle/
+.kotlin/
+out/
+.cache/
+
+# IDE and operating-system files
+.idea/
+*.iml
+.DS_Store
+
+# Machine-local environment and agent settings
+.sdkmanrc
+local.properties
+.claude/settings.local.json
 
 # Documentation build artifacts
 site/

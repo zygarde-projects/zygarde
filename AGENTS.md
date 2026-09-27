@@ -1,7 +1,12 @@
 # Repository Guidelines
 
+## Mandatory Skill Usage
+
+- Use `$zygarde-codegen` when changing KAPT/KSP processors, codegen DSLs, generator configuration, or tracked generated samples.
+- Use `$zygarde-verification` before handing off changes to Kotlin code, tests, Gradle configuration, or generated samples. Documentation-only and agent-instruction-only changes do not require the full verification stack.
+
 ## Project Structure & Module Organization
-Zygarde is a multi-module Kotlin project managed with Gradle Kotlin DSL. Production code lives under each `modules-*` directory (for example `modules-core/zygarde-core`, `modules-web/zygarde-webmvc`), while reusable test fixtures are centralized in `modules-test-support`. Sample applications and generated outputs are kept in `samples/`, and long-form design notes in `doc/`. Follow the conventional layout of `src/main/kotlin` and `src/test/kotlin` inside every module when adding new packages.
+Zygarde is a multi-module Kotlin/JDK 21 project managed with Gradle Kotlin DSL. Production code lives under each `modules-*` directory (for example `modules-core/zygarde-core`, `modules-web/zygarde-webmvc`), while reusable test fixtures are centralized in `modules-test-support`. Sample applications and generated outputs are kept in `samples/`, and long-form design notes in `doc/`. Follow the conventional layout of `src/main/kotlin` and `src/test/kotlin` inside every module when adding new packages.
 
 ## Build, Test, and Development Commands
 - `./gradlew build` compiles all modules, executes the full unit-test suite, and reports coverage.
@@ -20,4 +25,4 @@ Modules rely on JUnit Platform with Kotest assertions and MockK; co-locate tests
 Commit messages use the Conventional Commits format (`feat:`, `fix:`, `chore:`) as seen in `git log`; keep scope descriptors meaningful and group related changes together. When opening a pull request, include a concise summary of behavior changes, reference any tracked issues, and document new configuration or migration steps in `doc/` or the relevant module README. Attach screenshots or logs when UI- or HTTP-facing modules change, and confirm that build, ktlint, detekt, and tests pass locally before requesting review.
 
 ## Code Generation & Tooling Tips
-Code generation support lives in `modules-codegen-support` and related `*-codegen` modules. When touching DSLs or generators, regenerate the sample outputs in `samples/todo-multimodule-dsl` and verify differences in version control. Use `scripts/deps.sh` to refresh dependency locks when upgrading libraries, and keep publishing credentials externalized through the documented environment variables (`PUNI_NEXUS_*`, `ZYGARDE_GH_*`).
+Code generation support lives in `modules-codegen-support` and related `*-codegen` modules. Generated sample source under `samples/todo-multimodule-dsl/todo-dsl-generated-*` is tracked and must be regenerated from its DSL rather than edited by hand. Release publishing uses `.github/workflows/tag_release.yml` and `publish-central.sh`; keep Maven Central and GPG credentials outside the repository.
