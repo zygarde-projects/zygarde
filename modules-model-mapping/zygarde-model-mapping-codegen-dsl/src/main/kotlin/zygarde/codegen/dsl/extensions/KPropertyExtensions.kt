@@ -3,23 +3,26 @@ package zygarde.codegen.dsl.extensions
 import com.squareup.kotlinpoet.asTypeName
 import zygarde.codegen.meta.ModelMetaField
 import zygarde.core.annotation.Comment
+import zygarde.core.extension.reflect.javaFieldOrNull
+import zygarde.core.extension.reflect.resolvable
 import kotlin.jvm.internal.CallableReference
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
-import kotlin.reflect.jvm.javaField
 import org.hibernate.annotations.Comment as HibernateComment
 
 fun KProperty1<*, *>.asModelMetaField(): ModelMetaField {
-  val comment = this.javaField?.getAnnotation(HibernateComment::class.java)?.value
-    ?: this.javaField?.getAnnotation(Comment::class.java)?.comment
+  val resolved = this.resolvable()
+  val javaField = resolved.javaFieldOrNull()
+  val comment = javaField?.getAnnotation(HibernateComment::class.java)?.value
+    ?: javaField?.getAnnotation(Comment::class.java)?.comment
   if (this is CallableReference) {
     val owner = this.owner
     if (owner is KClass<*>) {
       return ModelMetaField(
         modelClass = owner.asTypeName(),
         fieldName = this.name,
-        fieldClass = this.returnType.asTypeName(),
-        fieldNullable = this.returnType.isMarkedNullable,
+        fieldClass = resolved.returnType.asTypeName(),
+        fieldNullable = resolved.returnType.isMarkedNullable,
         extra = false,
         comment = comment.orEmpty(),
       )

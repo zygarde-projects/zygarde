@@ -13,12 +13,13 @@ import zygarde.codegen.meta.ModelMetaField
 import zygarde.codegen.value.AutoIntIdValueProvider
 import zygarde.codegen.value.AutoLongIdValueProvider
 import zygarde.codegen.value.ValueProvider
+import zygarde.core.extension.reflect.javaFieldOrNull
+import zygarde.core.extension.reflect.resolvable
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
-import kotlin.reflect.jvm.javaField
 
 open class ModelMappingSpec(
   val dto: CodegenDto,
@@ -230,7 +231,7 @@ open class ModelMappingSpec(
   }
 
   private fun addSortableFieldPath(props: List<KProperty1<*, *>>) {
-    props.forEach { requireSortableFieldType(it.returnType, it.name) }
+    props.forEach { requireSortableFieldType(it.resolvable().returnType, it.name) }
     val path = DtoSortableFieldPath(dto, props.map { it.asModelMetaField() })
     val existingRoot = dtoSortableFieldPaths.firstOrNull { it.dto == dto }?.rootModelClass
     require(existingRoot == null || existingRoot == path.rootModelClass) {
@@ -351,7 +352,7 @@ open class ModelMappingSpec(
   fun DtoFieldMapping.applyValidationAnnotations(p: KProperty1<*, *>) {
     additionalAnnotations = buildList {
       addAll(additionalAnnotations)
-      p.javaField?.declaredAnnotations
+      p.javaFieldOrNull()?.declaredAnnotations
         ?.filter { a ->
           val packageName = a.annotationClass.asClassName().packageName
           packageName.startsWith("jakarta.validation") || packageName.startsWith("org.hibernate.validator")

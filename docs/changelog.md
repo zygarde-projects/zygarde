@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated KAPT and KSP compile testing, regenerated DSL sample output, and added detekt 2 baselines.
 - See `doc/spring-boot-4-upgrade.md` for compatibility and verification details.
 
+### Fixed
+- Model mapping, GraphQL projection, and sortable-field DSLs no longer fail with `KotlinReflectionInternalError` when a
+  property reference compiled by Kotlin 2.3+ points to an intersection override, such as `name` of an enum implementing
+  `OptionEnum`. New `javaFieldOrNull`, `javaGetterOrNull`, and `resolvable` helpers in `zygarde.core.extension.reflect`
+  fall back to the owner class's member properties; `MapToObjectTransformer` uses them as well.
+
 ## [3.3.1] - 2026-08-18
 
 ### Added

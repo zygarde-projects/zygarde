@@ -1,5 +1,7 @@
 package zygarde.core.transform
 
+import zygarde.core.extension.reflect.javaFieldOrNull
+import zygarde.core.extension.reflect.javaGetterOrNull
 import java.lang.reflect.Proxy
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -7,15 +9,13 @@ import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
-import kotlin.reflect.jvm.javaField
-import kotlin.reflect.jvm.javaGetter
 import kotlin.reflect.jvm.javaType
 
 class MapToObjectTransformer<T : Any>(
   private val clz: KClass<T>
 ) {
   private val propertyMap = clz.memberProperties.associateBy { it.name }
-  private val propertyGetterToNameMap = clz.memberProperties.associate { it.javaGetter to it.name }
+  private val propertyGetterToNameMap = clz.memberProperties.associate { it.javaGetterOrNull() to it.name }
 
   @Suppress("UNCHECKED_CAST")
   fun transform(map: Map<String, Any?>): T {
@@ -64,7 +64,7 @@ class MapToObjectTransformer<T : Any>(
   }
 
   private fun KProperty1<*, *>.applyValue(instance: Any, value: Any?) {
-    this.javaField?.let {
+    this.javaFieldOrNull()?.let {
       it.isAccessible = true
       it.set(instance, value)
     }
