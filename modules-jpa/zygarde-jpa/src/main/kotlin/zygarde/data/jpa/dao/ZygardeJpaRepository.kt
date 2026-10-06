@@ -3,6 +3,7 @@ package zygarde.data.jpa.dao
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.support.JpaEntityInformation
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
+import org.springframework.transaction.annotation.Transactional
 import zygarde.core.transform.MapToObjectTransformer
 import zygarde.data.jpa.search.EnhancedSearch
 import zygarde.data.jpa.search.impl.EnhancedSearchImpl
@@ -19,6 +20,9 @@ open class ZygardeJpaRepository<T : Any, ID : Any>(
   entityInformation: JpaEntityInformation<T, ID>,
   val entityManager: EntityManager
 ) : SimpleJpaRepository<T, ID>(entityInformation, entityManager), ZygardeEnhancedDao<T, ID> {
+  // Spring Data JPA 4 moved its writable delete to delete(DeleteSpecification), so this no longer
+  // inherits @Transactional from an overridden method and would fall back to the class-level readOnly = true.
+  @Transactional
   override fun delete(spec: Specification<T>): Long {
     val cb = entityManager.criteriaBuilder
     val criteriaDelete = cb.createCriteriaDelete(domainClass)
