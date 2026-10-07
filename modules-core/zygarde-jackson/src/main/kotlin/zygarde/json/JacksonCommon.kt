@@ -4,6 +4,7 @@ import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import tools.jackson.module.kotlin.kotlinModule
 
 object JacksonCommon {
@@ -15,7 +16,12 @@ object JacksonCommon {
     .build()
 
   fun setObjectMapper(mapper: ObjectMapper) {
-    objectMapper = if (mapper is JsonMapper) mapper.rebuild().addModule(kotlinModule()).build() else mapper
+    // Only add a default KotlinModule when missing: re-adding one would replace a caller-configured KotlinModule.
+    objectMapper = if (mapper is JsonMapper && mapper.registeredModules().none { it is KotlinModule }) {
+      mapper.rebuild().addModule(kotlinModule()).build()
+    } else {
+      mapper
+    }
   }
 
   fun objectMapper() = objectMapper
